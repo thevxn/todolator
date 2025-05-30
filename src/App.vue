@@ -23,7 +23,11 @@ const tasks = ref([]);
 async function greet() {
   // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
   greetMsg.value = await invoke("greet", { name: name.value });
-  tasks.value = await invoke("get_tasks");
+  try {
+    tasks.value = await invoke("get_tasks");
+  } catch (e) {
+    console.log(e);
+  }
 }
 </script>
 

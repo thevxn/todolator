@@ -4,7 +4,8 @@ use std::fs;
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, TrayIconBuilder, TrayIconEvent},
-    Manager,
+    webview::WebviewWindowBuilder,
+    AppHandle, Manager,
 };
 
 #[tauri::command]
@@ -19,18 +20,35 @@ struct Task {
 
 #[tauri::command]
 fn get_tasks() -> Result<Vec<Task>, String> {
-    let data = fs::read_to_string("src/tasks.json").map_err(|e| e.to_string())?;
+    let data = fs::read_to_string("./tasks.json").map_err(|e| e.to_string())?;
     let tasks: Vec<Task> = serde_json::from_str(&data).map_err(|e| e.to_string())?;
     println!("{:?}", tasks);
+    // Err(String::from("error"))
     Ok(tasks)
+}
+
+fn spawn_reminder(handle: AppHandle) {
+    std::thread::spawn(move || {
+        WebviewWindowBuilder::new(
+            &handle,
+            "label",
+            tauri::WebviewUrl::App("reminder.html".into()),
+        )
+        .build()
+        .unwrap();
+    });
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
+            let handle = app.handle().clone();
+            spawn_reminder(handle);
+
             let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
             let menu = Menu::with_items(app, &[&quit_i])?;
+
             let _tray = TrayIconBuilder::new()
                 .menu(&menu)
                 .show_menu_on_left_click(false)
