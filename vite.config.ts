@@ -14,7 +14,7 @@ export default defineConfig(async () => ({
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        main: "./src/index.html", // index.html?
+        main: "./src/index.html",
         reminder: "./src/reminder.html"
       }
     }
