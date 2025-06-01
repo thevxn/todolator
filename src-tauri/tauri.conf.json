@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "todolator",
+        "title": "Todolator",
         "width": 800,
         "height": 600
       }
