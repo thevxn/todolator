@@ -1,7 +1,6 @@
-use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize};
-use serde_json;
-use std::fs;
+mod commands;
+mod tasks;
+
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, TrayIconBuilder, TrayIconEvent},
@@ -9,25 +8,10 @@ use tauri::{
     App, AppHandle, Manager,
 };
 
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct Task {
-    name: String,
-    timestamp: DateTime<Utc>,
-}
-
-#[tauri::command]
-fn get_tasks() -> Result<Vec<Task>, String> {
-    let data = fs::read_to_string("./tasks.json").map_err(|e| e.to_string())?;
-    let tasks: Vec<Task> = serde_json::from_str(&data).map_err(|e| e.to_string())?;
-    println!("{:?}", tasks);
-    // Err(String::from("error"))
-    Ok(tasks)
-}
+use crate::{
+    commands::{get_tasks, greet},
+    tasks::load_tasks,
+};
 
 fn setup_tray(app: &mut App) {
     let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>).unwrap();
@@ -87,7 +71,7 @@ pub fn run() {
             // Spawn a new window for a pop-up reminder
             let handle = app.handle().clone();
             spawn_reminder(handle);
-
+            load_tasks();
             Ok(())
         })
         .plugin(tauri_plugin_opener::init())
