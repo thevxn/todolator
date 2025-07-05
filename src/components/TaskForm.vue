@@ -1,16 +1,25 @@
 <template>
     <div v-if="display"
-        class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-2  bg-primary p-10 rounded-md"
+        class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-2  bg-primary p-10 rounded-md min-w-1/2"
         @keydown.esc="$emit('close')">
 
         <h1 class="text-center">New Task</h1>
 
         <div class="row flex flex-col justify-center items-center gap-2 mt-8"
             @keydown.ctrl.enter="$emit('submit', { name, desc, timestamp })">
-            <input v-model="name" placeholder="Title" type="text" class="w-full" tabindex="1" ref="focusInput" />
-            <input v-model="desc" placeholder="Description" type="text" class="w-full" tabindex="2" />
-            <input v-model="timestamp" placeholder="Timestamp" type="datetime-local" class="w-full" tabindex="3" />
-            <button class="mt-8 mb-0" @click="$emit('submit', { name, desc, timestamp })" tabindex="4">{{ submitText
+            <label for="name" class="text-left w-full font-bold">Title <span class="text-error">*</span></label>
+            <input v-model="name" placeholder="Title" type="text" class="w-full" tabindex="1" ref="focusInput"
+                name="title" required />
+
+            <label for="desc" class="text-left w-full font-bold">Description </label>
+            <textarea v-model="desc" placeholder="Description" name="desc" class="w-full" tabindex="2"></textarea>
+
+            <label for="timestamp" class="text-left w-full font-bold">Remind At <span
+                    class="text-error">*</span></label>
+            <input v-model="timestamp" placeholder="Timestamp" name="timestamp" type="datetime-local" class="w-full "
+                tabindex="3" required />
+            <small class="text-left w-full mt-4"><span class="text-error ">*</span> = Required attribute</small>
+            <button class="mb-0" @click="$emit('submit', { name, desc, timestamp })" tabindex="4">{{ submitText
             }}</button>
         </div>
     </div>
