@@ -1,7 +1,7 @@
 <template>
-    <div class="absolute bottom-0 w-full flex flex-row items-center justify-center gap-4 mb-2">
-        <div>Hotkeys:</div>
-        <div v-for="hotkey in hotkeys"><span class="font-semibold text-secondary">{{ hotkey.shortcut }}: </span><span>{{
+    <div
+        class="absolute bottom-0 w-full flex flex-row items-center justify-center gap-4 mb-2 bg-secondary text-primary font-semibold">
+        <div v-for="hotkey in hotkeys"><span class="font-semibold">[{{ hotkey.shortcut }}]: </span><span>{{
             hotkey.description }}</span></div>
     </div>
 </template>
