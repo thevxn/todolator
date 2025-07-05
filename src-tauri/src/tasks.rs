@@ -7,8 +7,9 @@ use std::sync::Mutex;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Task {
-    name: String,
-    timestamp: DateTime<Utc>,
+    pub name: String,
+    pub desc: Option<String>,
+    pub timestamp: DateTime<Utc>,
 }
 
 pub static TASKS: Lazy<Mutex<Vec<Task>>> = Lazy::new(|| Mutex::new(Vec::new()));

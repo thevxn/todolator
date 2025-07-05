@@ -9,7 +9,7 @@ use tauri::{
 };
 
 use crate::{
-    commands::{get_tasks, greet},
+    commands::{create_task, get_tasks, greet},
     tasks::load_tasks,
 };
 
@@ -69,13 +69,13 @@ pub fn run() {
         .setup(|app| {
             setup_tray(app);
             // Spawn a new window for a pop-up reminder
-            let handle = app.handle().clone();
-            spawn_reminder(handle);
+            // let handle = app.handle().clone();
+            // spawn_reminder(handle);
             load_tasks();
             Ok(())
         })
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet, get_tasks])
+        .invoke_handler(tauri::generate_handler![greet, get_tasks, create_task])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

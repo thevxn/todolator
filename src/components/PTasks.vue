@@ -5,11 +5,13 @@
         <h2>Tasks:</h2>
         <p>{{ tasks }}</p>
 
-        <form class="row" @submit.prevent="greet">
-            <input id="greet-input" v-model="name" placeholder="Enter a name..." />
-            <button type="submit">Greet</button>
+        <form class="row" @submit.prevent="addTask">
+            <input id="greet-input" v-model="name" placeholder="Title" type="text" />
+            <input id="greet-input" v-model="desc" placeholder="Description" type="text" />
+            <input id="greet-input" v-model="timestamp" placeholder="Timestamp" type="datetime-local" />
+            <button type="submit">Add task</button>
         </form>
-        <p>{{ greetMsg }}</p>
+
     </main>
 </template>
 
@@ -17,22 +19,40 @@
 import { ref } from "vue";
 import { invoke } from "@tauri-apps/api/core";
 
-const greetMsg = ref("");
-const name = ref("");
-const tasks = ref([]);
+const tasks = ref();
+const name = ref();
+const desc = ref();
+const timestamp = ref();
 
 try {
     tasks.value = await invoke("get_tasks");
+    console.log("tasks loaded");
 } catch (e) {
     console.log(e);
 }
 
 console.log(tasks.value);
 
-async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    greetMsg.value = await invoke("greet", { name: name.value });
+async function addTask() {
+    try {
+        const task = { name: name.value, desc: desc.value, timestamp: new Date(timestamp.value).toISOString() };
+
+        console.log(`name: ${name.value}, description: ${desc.value}, timestamp: ${timestamp.value}`)
+
+        await invoke("create_task", task);
+        console.log("task created!");
+
+        // const newTasks = await invoke("get_tasks");
+        // console.log(`new tasks:`);
+        // console.log(newTasks);
+
+        tasks.value.push(task)
+    }
+    catch (e) {
+        console.log(e);
+    }
 }
+
 </script>
 
 <style scoped></style>
