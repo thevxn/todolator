@@ -6,10 +6,10 @@
     <main class="flex flex-col items-center justify-center p-4">
         <TaskForm submit-text="Save" :display="displayNewTaskModal" @submit="addTask" @close="toggleCreateModal" />
         <h1 class="text-secondary">Todolator</h1>
-        <div class="flex flex-row w-full items-center justify-end">
+        <div class="flex flex-row w-full items-center" :class="tasks.length > 0 ? 'justify-end' : 'justify-center'">
             <button tabindex="-1" @click="toggleCreateModal">New Task</button>
         </div>
-        <table>
+        <table v-if="tasks.length > 0">
             <thead>
                 <tr>
                     <th>Title</th>

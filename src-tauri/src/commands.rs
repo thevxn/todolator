@@ -1,7 +1,7 @@
 use std::fs;
 
 use chrono::{DateTime, Utc};
-use serde::Serialize;
+use uuid::Uuid;
 
 use crate::tasks;
 
@@ -25,6 +25,7 @@ pub fn create_task(
     let mut tasks = tasks::TASKS.lock().map_err(|e| e.to_string())?;
 
     let new_task = tasks::Task {
+        id: Uuid::new_v4(),
         name: name.to_string(),
         desc: match desc {
             Some(d) => Some(d.to_string()),
