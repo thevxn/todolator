@@ -15,6 +15,7 @@ pub struct Task {
     pub id: Uuid,
 }
 
+// TODO: Probably not needed to keep all tasks in memory at all times
 pub static TASKS: Lazy<Mutex<Vec<Task>>> = Lazy::new(|| Mutex::new(Vec::new()));
 
 pub fn load_tasks() {
