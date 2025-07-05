@@ -5,18 +5,19 @@
 
         <h1 class="text-center">New Task</h1>
 
-        <form class="row flex flex-col justify-center items-center gap-2 mt-8" ref="form" @submit.prevent
-            @keydown.enter.ctrl="$emit('submit')">
+        <div class="row flex flex-col justify-center items-center gap-2 mt-8" ref="form"
+            @keydown.ctrl.enter="$emit('submit', { name, desc, timestamp })">
             <input v-model="name" placeholder="Title" type="text" class="w-full" tabindex="1" ref="focusInput" />
             <input v-model="desc" placeholder="Description" type="text" class="w-full" tabindex="2" />
             <input v-model="timestamp" placeholder="Timestamp" type="datetime-local" class="w-full" tabindex="3" />
-            <button class="mt-8 mb-0" @click="$emit('submit')" tabindex="4">{{ submitText }}</button>
-        </form>
+            <button class="mt-8 mb-0" @click="$emit('submit', { name, desc, timestamp })" tabindex="4">{{ submitText
+                }}</button>
+        </div>
     </div>
 </template>
 
 <script lang="ts" setup>
-import { nextTick, ref, watch } from 'vue';
+import { nextTick, onMounted, ref, watch } from 'vue';
 
 const props = defineProps({
     submitText: {
@@ -51,7 +52,13 @@ defineEmits(["submit", "close"]);
 const focusInput = ref<HTMLInputElement | null>(null);
 watch(() => props.display, (display) => {
     if (display) {
+        // Clear inputs
+        name.value = ""
+        desc.value = ""
+        timestamp.value = ""
+
         nextTick(() => {
+            // Focus the first input
             focusInput.value?.focus();
         });
     }
