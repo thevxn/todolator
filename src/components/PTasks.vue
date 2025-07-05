@@ -4,11 +4,10 @@
         @click="toggleCreateModal"></div>
 
     <main class="flex flex-col items-center justify-center p-4">
-        <TaskForm submit-text="Save" :display="displayNewTaskModal" @submit="toggleCreateModal"
-            @close="toggleCreateModal" />
+        <TaskForm submit-text="Save" :display="displayNewTaskModal" @submit="addTask" @close="toggleCreateModal" />
         <h1 class="text-secondary">Todolator</h1>
         <div class="flex flex-row w-full items-center justify-end">
-            <button @click="toggleCreateModal">New Task</button>
+            <button tabindex="-1" @click="toggleCreateModal">New Task</button>
         </div>
         <table>
             <thead>
@@ -30,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, onUnmounted, Ref, ref, watch } from "vue";
+import { onMounted, onUnmounted, Ref, ref } from "vue";
 import { invoke } from "@tauri-apps/api/core";
 import TaskForm from './TaskForm.vue'
 
@@ -58,25 +57,27 @@ interface ITask {
     timestamp: DateTimeString;
 }
 
-// async function addTask() {
-//     try {
-//         const task = { name: name.value, desc: desc.value, timestamp: new Date(timestamp.value).toISOString() };
+async function addTask(e: ITask) {
+    if (!e.name || !e.timestamp) {
+        console.log("missing required attributes");
+        return;
+    }
+    try {
+        console.log("Adding task:")
+        console.log(e);
+        const task = { name: e.name, desc: e.desc, timestamp: new Date(e.timestamp).toISOString() };
 
-//         console.log(`name: ${name.value}, description: ${desc.value}, timestamp: ${timestamp.value}`)
+        await invoke("create_task", task);
+        console.log("task created!");
 
-//         await invoke("create_task", task);
-//         console.log("task created!");
+        tasks.value.push(task)
 
-//         // const newTasks = await invoke("get_tasks");
-//         // console.log(`new tasks:`);
-//         // console.log(newTasks);
-
-//         tasks.value.push(task)
-//     }
-//     catch (e) {
-//         console.log(e);
-//     }
-// }
+        toggleCreateModal();
+    }
+    catch (e) {
+        console.log(e);
+    }
+}
 
 function toggleCreateModal() {
     displayNewTaskModal.value = !displayNewTaskModal.value

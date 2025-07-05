@@ -1,4 +1,7 @@
+use std::fs;
+
 use chrono::{DateTime, Utc};
+use serde::Serialize;
 
 use crate::tasks;
 
@@ -31,5 +34,9 @@ pub fn create_task(
     };
 
     tasks.push(new_task);
+
+    let json_string = serde_json::to_string(&*tasks).map_err(|e| e.to_string())?;
+    fs::write("./tasks.json", json_string).map_err(|e| e.to_string())?;
+
     Ok(())
 }
