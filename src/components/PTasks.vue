@@ -4,7 +4,8 @@
         @click="toggleCreateModal"></div>
 
     <main class="flex flex-col items-center justify-center p-4">
-        <TaskForm submit-text="Save" :display="displayNewTaskModal" @submit="addTask" @close="toggleCreateModal" />
+        <TaskForm submit-text="Save" :display="displayNewTaskModal" @submit="addTask" @close="toggleCreateModal"
+            :error-text="taskCreationError" />
         <h1 class="text-secondary">Todolator</h1>
         <div class="flex flex-row w-full items-center" :class="tasks.length > 0 ? 'justify-end' : 'justify-center'">
             <button tabindex="-1" @click="toggleCreateModal">New Task</button>
@@ -57,9 +58,12 @@ interface ITask {
     timestamp: DateTimeString;
 }
 
+const taskCreationError = ref(undefined) as Ref<string | undefined>;
+
 async function addTask(e: ITask) {
     if (!e.name || !e.timestamp) {
         console.log("missing required attributes");
+        taskCreationError.value = "Missing required attributes!";
         return;
     }
     try {
@@ -80,6 +84,7 @@ async function addTask(e: ITask) {
 }
 
 function toggleCreateModal() {
+    taskCreationError.value = undefined;
     displayNewTaskModal.value = !displayNewTaskModal.value
 }
 

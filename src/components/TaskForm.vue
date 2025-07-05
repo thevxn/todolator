@@ -19,8 +19,9 @@
             <input v-model="timestamp" placeholder="Timestamp" name="timestamp" type="datetime-local" class="w-full "
                 tabindex="3" required />
             <small class="text-left w-full mt-4"><span class="text-error ">*</span> = Required attribute</small>
-            <button class="mb-0" @click="$emit('submit', { name, desc, timestamp })" tabindex="4">{{ submitText
+            <button class="mb-4" @click="$emit('submit', { name, desc, timestamp })" tabindex="4">{{ submitText
             }}</button>
+            <span class="text-error text-lg" v-if="errorText">{{ errorText }}</span>
         </div>
     </div>
 </template>
@@ -48,6 +49,10 @@ const props = defineProps({
     display: {
         type: Boolean,
         default: false
+    },
+    errorText: {
+        type: String,
+        default: null
     }
 })
 
@@ -65,6 +70,7 @@ watch(() => props.display, (display) => {
         name.value = ""
         desc.value = ""
         timestamp.value = ""
+
 
         nextTick(() => {
             // Focus the first input
