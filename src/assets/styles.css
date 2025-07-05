@@ -20,6 +20,10 @@
     @apply my-2 text-secondary;
   }
 
+  html {
+    @apply text-font-primary;
+  }
+
   main {
     @apply w-full h-screen bg-primary   text-font-primary;
   }

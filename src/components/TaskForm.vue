@@ -1,7 +1,10 @@
 <template>
     <div v-if="display"
-        class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-2  bg-primary p-10 rounded-md">
+        class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-2  bg-primary p-10 rounded-md"
+        @keydown.esc="$emit('close')">
+
         <h1 class="text-center">New Task</h1>
+
         <form class="row flex flex-col justify-center items-center gap-2 mt-8" ref="form" @submit.prevent
             @keydown.enter.ctrl="$emit('submit')">
             <input v-model="name" placeholder="Title" type="text" class="w-full" tabindex="1" ref="focusInput" />
@@ -43,7 +46,7 @@ const name = ref(props.name);
 const desc = ref(props.desc);
 const timestamp = ref(props.timestamp);
 
-defineEmits(["submit"]);
+defineEmits(["submit", "close"]);
 
 const focusInput = ref<HTMLInputElement | null>(null);
 watch(() => props.display, (display) => {

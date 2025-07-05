@@ -1,13 +1,14 @@
 <template>
     <!-- Modal overlay -->
-    <div class="min-w-screen w-screen min-h-screen opacity-50 bg-black z-1 fixed " v-if="displayNewTaskModal"></div>
+    <div class="min-w-screen w-screen min-h-screen opacity-50 bg-black z-1 fixed " v-if="displayNewTaskModal"
+        @click="toggleCreateModal"></div>
 
     <main class="flex flex-col items-center justify-center p-4">
-        <TaskForm submit-text="Save" :display="displayNewTaskModal"
-            @submit="displayNewTaskModal = !displayNewTaskModal" />
+        <TaskForm submit-text="Save" :display="displayNewTaskModal" @submit="toggleCreateModal"
+            @close="toggleCreateModal" />
         <h1 class="text-secondary">Todolator</h1>
         <div class="flex flex-row w-full items-center justify-end">
-            <button @click="displayNewTaskModal = !displayNewTaskModal">New Task</button>
+            <button @click="toggleCreateModal">New Task</button>
         </div>
         <table>
             <thead>
@@ -76,6 +77,10 @@ interface ITask {
 //         console.log(e);
 //     }
 // }
+
+function toggleCreateModal() {
+    displayNewTaskModal.value = !displayNewTaskModal.value
+}
 
 onMounted(() => {
     const handler = (e: KeyboardEvent) => {
