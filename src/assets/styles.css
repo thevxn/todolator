@@ -1,0 +1,115 @@
+@import "tailwindcss";
+
+@tailwind utilities;
+
+@theme {
+  --color-primary: #191d32;
+  --color-secondary: #58bc82;
+  --color-font-primary: #f3f4f6;
+  --color-warning: #de9151;
+  --color-error: #da4167;
+}
+
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply my-2 text-secondary;
+  }
+
+  main {
+    @apply w-full h-screen bg-primary   text-font-primary;
+  }
+
+  body main {
+    @apply w-full;
+  }
+
+  table {
+    @apply my-2 table-auto border-collapse border border-gray-500 w-full text-gray-100;
+  }
+
+  thead {
+    @apply text-primary bg-secondary font-bold text-lg;
+  }
+
+  th {
+    @apply border border-gray-500 px-4 py-2 text-left;
+  }
+
+  tbody {
+    @apply text-lg;
+    tr {
+      @apply hover:bg-gray-400;
+    }
+    td {
+      @apply border border-gray-500 px-4 py-2;
+    }
+  }
+
+  button {
+    @apply rounded bg-secondary py-2 px-6 text-xl text-primary font-bold my-2 hover:cursor-pointer;
+  }
+
+  form {
+    @apply text-lg my-2;
+  }
+
+  input {
+    @apply border-1 border-font-primary rounded px-2 py-1 outline-none focus:border-2;
+  }
+}
+
+:root {
+  --black: #000000;
+  --yellow: #ffd700;
+  --orange: #e67104;
+  /* Tailwind red-500 */
+  --red: #fb2c36;
+  /* Tailwind gray-100 */
+  --white: #f3f4f6;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: Poppins, Avenir, Helvetica, Arial, sans-serif;
+}
+
+h1 {
+  font-size: 2em; /* 40px if base font-size is 16px */
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+h2 {
+  font-size: 1.75em; /* 32px if base font-size is 16px */
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+h3 {
+  font-size: 1.5em; /* 28px if base font-size is 16px */
+  font-weight: bold;
+}
+
+h4 {
+  font-size: 1.25em; /* 24px if base font-size is 16px */
+  font-weight: bold;
+}
+
+h5 {
+  font-size: 1em; /* 20px if base font-size is 16px */
+  font-weight: bold;
+}
+
+h6 {
+  font-size: 1em; /* 16px if base font-size is 16px */
+  font-weight: bold;
+}
