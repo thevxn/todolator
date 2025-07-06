@@ -50,6 +50,8 @@ import TaskForm from './TaskForm.vue'
 import PHotkeys from './PHotkeys.vue'
 import { ITask, useTasks } from "../composables/useTasks";
 import { useRowSelect } from "../composables/useRowSelect";
+import { toDatetimeLocalValue } from "../helpers/datetime";
+import { resetTask } from "../helpers/task";
 
 const {
     tasks,
@@ -83,7 +85,7 @@ onMounted(async () => {
 
     const handler = (e: KeyboardEvent) => {
         if (e.key === "n" && !displayNewTaskModal.value) {
-            resetCurrentTask();
+            resetTask(currentTask);
             toggleTaskModal();
             e.stopPropagation();
             e.preventDefault();
@@ -94,7 +96,7 @@ onMounted(async () => {
             e.preventDefault();
             if (displayNewTaskModal.value) {
                 toggleTaskModal();
-                resetCurrentTask();
+                resetTask(currentTask);
                 return
             }
             resetSelectedIndex();
@@ -105,11 +107,11 @@ onMounted(async () => {
             e.preventDefault();
 
             if (!displayNewTaskModal.value && selectedIndex.value !== null) {
-                resetCurrentTask();
+                resetTask(currentTask);
                 currentTask.value = {
                     name: tasks.value[selectedIndex.value].name,
                     desc: tasks.value[selectedIndex.value].desc,
-                    timestamp: tasks.value[selectedIndex.value].timestamp,
+                    timestamp: toDatetimeLocalValue(tasks.value[selectedIndex.value].timestamp),
                 }
                 toggleTaskModal();
             }
@@ -119,13 +121,7 @@ onMounted(async () => {
     onUnmounted(() => window.removeEventListener("keydown", handler));
 });
 
-const resetCurrentTask = () => {
-    currentTask.value = {
-        name: "",
-        desc: undefined,
-        timestamp: ""
-    }
-}
+
 
 </script>
 
