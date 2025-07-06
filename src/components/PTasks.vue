@@ -112,6 +112,7 @@ onMounted(async () => {
 /* Track */
 ::-webkit-scrollbar-track {
     background: #f3f4f6c0;
+    border-radius: 1rem;
 }
 
 /* Handle */
