@@ -12,8 +12,9 @@ export interface ITask {
 
 export const useTasks = () => {
   const tasks = ref([]) as Ref<Array<ITask>>;
-  const displayNewTaskModal = ref(false);
+  const displayTaskModal = ref(false);
   const taskCreationError = ref(undefined) as Ref<string | undefined>;
+  const displayConfirmationModal = ref(false);
 
   const loadTasks = async () => {
     try {
@@ -60,17 +61,35 @@ export const useTasks = () => {
     }
   };
 
+  const deleteTask = async (id: string) => {
+    try {
+      console.log("Deleting task with ID ", id);
+      await invoke("delete_task", { id });
+      await loadTasks();
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
   const toggleTaskModal = () => {
     taskCreationError.value = undefined;
-    displayNewTaskModal.value = !displayNewTaskModal.value;
+    displayTaskModal.value = !displayTaskModal.value;
+  };
+
+  const toggleConfirmationModal = () => {
+    // taskCreationError.value = undefined;
+    displayConfirmationModal.value = !displayConfirmationModal.value;
   };
 
   return {
     tasks,
-    displayNewTaskModal,
+    displayTaskModal,
     taskCreationError,
+    displayConfirmationModal,
     loadTasks,
     saveTask,
-    toggleTaskModal
+    toggleTaskModal,
+    toggleConfirmationModal,
+    deleteTask
   };
 };

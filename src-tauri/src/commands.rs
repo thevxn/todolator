@@ -64,6 +64,23 @@ pub fn update_task(
 }
 
 #[tauri::command]
+pub fn delete_task(id: Uuid) -> Result<(), String> {
+    let mut tasks = tasks::TASKS.lock().map_err(|e| e.to_string())?;
+
+    let task_index = tasks.iter_mut().position(|el| el.id == id);
+
+    if let Some(t) = task_index {
+        tasks.remove(t);
+    }
+
+    // TODO: Refactor this into its own fn (in all places where its used)
+    let json_string = serde_json::to_string(&*tasks).map_err(|e| e.to_string())?;
+    fs::write("./tasks.json", json_string).map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+#[tauri::command]
 pub fn maximize(window: tauri::Window) -> Result<(), String> {
     if !window.is_maximized().unwrap() {
         window.maximize().unwrap();

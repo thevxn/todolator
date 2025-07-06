@@ -9,7 +9,7 @@ use tauri::{
 };
 
 use crate::{
-    commands::{close, create_task, get_tasks, maximize, minimize, update_task},
+    commands::{close, create_task, delete_task, get_tasks, maximize, minimize, update_task},
     tasks::load_tasks,
 };
 
@@ -83,7 +83,8 @@ pub fn run() {
             maximize,
             minimize,
             close,
-            update_task
+            update_task,
+            delete_task
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

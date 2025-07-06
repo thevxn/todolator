@@ -1,17 +1,15 @@
 <template>
     <div
         class="absolute bottom-0 w-full flex flex-row items-center justify-center gap-4  bg-secondary text-primary font-semibold rounded-b-md invisible sm:visible">
-        <div v-for="hotkey in hotkeys">
-            <div v-if="hotkey.screens.some((el) => el === screenCode)">
-                <span class="font-semibold">[{{ hotkey.shortcut }}]: </span><span>{{
-                    hotkey.description }}</span>
-            </div>
+        <div v-for="hotkey in hotkeys.filter(h => h.screens.includes(screenCode))">
+            <span class="font-semibold">[{{ hotkey.shortcut }}]: </span><span>{{
+                hotkey.description }}</span>
         </div>
     </div>
 </template>
 
 <script lang="ts" setup>
-type Screen = "MAIN" | "NEW_TASK_MODAL"
+type Screen = "MAIN" | "NEW_TASK_MODAL" | "CONFIRMATION_MODAL"
 
 interface IHotkey {
     shortcut: string;
@@ -36,6 +34,11 @@ const hotkeys: Array<IHotkey> = [
         screens: ["MAIN"]
     },
     {
+        shortcut: "⌫",
+        description: "Delete Selected",
+        screens: ["MAIN"]
+    },
+    {
         shortcut: "ESC",
         description: "Close",
         screens: ["NEW_TASK_MODAL"]
@@ -49,6 +52,16 @@ const hotkeys: Array<IHotkey> = [
         shortcut: "⇥",
         description: "Next input",
         screens: ["NEW_TASK_MODAL"]
+    },
+    {
+        shortcut: "Y",
+        description: "Yes",
+        screens: ["CONFIRMATION_MODAL"]
+    },
+    {
+        shortcut: "N",
+        description: "No",
+        screens: ["CONFIRMATION_MODAL"]
     }
 ]
 

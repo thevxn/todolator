@@ -1,10 +1,13 @@
 <template>
     <!-- Modal overlay -->
-    <div class="min-w-screen w-screen min-h-screen opacity-50 bg-black z-1 fixed " v-if="displayNewTaskModal"
-        @click="toggleTaskModal"></div>
+    <div class="min-w-screen w-screen min-h-screen opacity-50 bg-black z-1 fixed "
+        v-if="displayTaskModal || displayConfirmationModal" @click="toggleTaskModal"></div>
 
+    <!-- TODO: The submit and close events in ConfirmationModal will be used for clicking on yes/no buttons (instead of using hotkeys) -->
     <main class="flex flex-col items-center justify-center p-4">
-        <TaskForm submit-text="Save" :display="displayNewTaskModal" @submit="saveTask" @close="toggleTaskModal"
+        <ConfirmationModal :display="displayConfirmationModal" @submit="console.log(' submitted!!!')"
+            @close="console.log('closed!!!')" :name="currentTask.name" />
+        <TaskForm submit-text="Save" :display="displayTaskModal" @submit="saveTask" @close="toggleTaskModal"
             :error-text="taskCreationError" :current-task="currentTask" />
         <div class="flex flex-row w-full items-center mt-10"
             :class="tasks.length > 0 ? 'justify-end' : 'justify-center'">
@@ -52,22 +55,26 @@ import { ITask, useTasks } from "../composables/useTasks";
 import { useRowSelect } from "../composables/useRowSelect";
 import { toDatetimeLocalValue } from "../helpers/datetime";
 import { resetTask } from "../helpers/task";
+import ConfirmationModal from './ConfirmationModal.vue'
 
 const {
     tasks,
-    displayNewTaskModal,
+    displayTaskModal,
     taskCreationError,
     loadTasks,
     saveTask,
-    toggleTaskModal
+    deleteTask,
+    toggleTaskModal,
+    toggleConfirmationModal,
+    displayConfirmationModal
 } = useTasks();
 
-const { selectedIndex, resetSelectedIndex } = useRowSelect(() => tasks.value.length, () => displayNewTaskModal.value);
+const { selectedIndex, resetSelectedIndex } = useRowSelect(() => tasks.value.length, () => displayTaskModal.value);
 
 const rowRefs = ref<HTMLElement[]>([]);
 const tableRef = ref<HTMLElement | null>(null);
 
-const currentTask = ref() as Ref<ITask>;
+const currentTask = ref({}) as Ref<ITask>;
 
 watch(selectedIndex, (newIndex) => {
     const el = rowRefs.value[newIndex as number];
@@ -83,46 +90,87 @@ watch(selectedIndex, (newIndex) => {
 onMounted(async () => {
     await loadTasks();
 
-    const handler = (e: KeyboardEvent) => {
-        if (e.key === "n" && !displayNewTaskModal.value) {
-            resetTask(currentTask);
-            toggleTaskModal();
-            e.stopPropagation();
-            e.preventDefault();
-        }
+    const handler = async (e: KeyboardEvent) => {
 
-        if (e.key === "Escape") {
-            e.stopPropagation();
-            e.preventDefault();
-            if (displayNewTaskModal.value) {
-                toggleTaskModal();
-                resetTask(currentTask);
-                return
-            }
-            resetSelectedIndex();
-        }
+        switch (e.key) {
+            case "n":
+                if (!displayTaskModal.value && !displayConfirmationModal.value) {
+                    resetTask(currentTask);
+                    toggleTaskModal();
+                    e.stopPropagation();
+                    e.preventDefault();
+                }
+                if (displayConfirmationModal.value && selectedIndex.value !== null) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    // resetTask(currentTask);
+                    toggleConfirmationModal();
+                }
+                break;
 
-        if (e.key === "Enter") {
-            if (!displayNewTaskModal.value && selectedIndex.value !== null) {
+            case "Escape":
                 e.stopPropagation();
                 e.preventDefault();
-                resetTask(currentTask);
-                currentTask.value = {
-                    id: tasks.value[selectedIndex.value].id,
-                    name: tasks.value[selectedIndex.value].name,
-                    desc: tasks.value[selectedIndex.value].desc,
-                    timestamp: toDatetimeLocalValue(tasks.value[selectedIndex.value].timestamp),
+                if (!displayConfirmationModal.value && !displayTaskModal.value) {
+                    resetSelectedIndex();
                 }
-                toggleTaskModal();
-            }
+                if (displayTaskModal.value) {
+                    toggleTaskModal();
+                    resetTask(currentTask);
+                }
+                if (displayConfirmationModal.value) {
+                    toggleConfirmationModal();
+                }
+                break;
+
+            case "Enter":
+                if (!displayTaskModal.value && !displayConfirmationModal.value && selectedIndex.value !== null) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    resetTask(currentTask);
+                    currentTask.value = {
+                        id: tasks.value[selectedIndex.value].id,
+                        name: tasks.value[selectedIndex.value].name,
+                        desc: tasks.value[selectedIndex.value].desc,
+                        timestamp: toDatetimeLocalValue(tasks.value[selectedIndex.value].timestamp),
+                    }
+                    toggleTaskModal();
+                }
+                break;
+
+            case "Backspace":
+                if (!displayTaskModal.value && !displayConfirmationModal.value && selectedIndex.value !== null) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    resetTask(currentTask);
+                    currentTask.value = {
+                        id: tasks.value[selectedIndex.value].id,
+                        name: tasks.value[selectedIndex.value].name,
+                        desc: tasks.value[selectedIndex.value].desc,
+                        timestamp: toDatetimeLocalValue(tasks.value[selectedIndex.value].timestamp),
+                    }
+                    toggleConfirmationModal();
+                    // deleteTask(tasks.value[selectedIndex.value].id as string);
+                }
+                break;
+
+            case "y":
+                if (displayConfirmationModal.value && selectedIndex.value !== null) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    await deleteTask(tasks.value[selectedIndex.value].id as string);
+                    resetTask(currentTask);
+                    toggleConfirmationModal();
+                }
+                break;
+
+            default:
+                break;
         }
     };
     window.addEventListener("keydown", handler);
     onUnmounted(() => window.removeEventListener("keydown", handler));
 });
-
-
-
 </script>
 
 <style>
