@@ -9,7 +9,7 @@ use tauri::{
 };
 
 use crate::{
-    commands::{create_task, get_tasks, greet},
+    commands::{close, create_task, get_tasks, maximize, minimize},
     tasks::load_tasks,
 };
 
@@ -36,9 +36,11 @@ fn setup_tray(app: &mut App) {
                 ..
             } => {
                 println!("double left-click pressed");
+
                 let app = tray.app_handle();
                 if let Some(window) = app.get_webview_window("main") {
                     let _ = window.show();
+                    let _ = window.unminimize();
                     let _ = window.set_focus();
                 }
             }
@@ -75,7 +77,13 @@ pub fn run() {
             Ok(())
         })
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet, get_tasks, create_task])
+        .invoke_handler(tauri::generate_handler![
+            get_tasks,
+            create_task,
+            maximize,
+            minimize,
+            close
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

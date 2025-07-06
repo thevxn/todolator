@@ -19,7 +19,7 @@
                     class="w-full " tabindex="3" required />
                 <small class="text-left w-full mt-4"><span class="text-error ">*</span> = Required attribute</small>
                 <button class="mb-4" @click="$emit('submit', { name, desc, timestamp })" tabindex="4">{{ submitText
-                }}</button>
+                    }}</button>
                 <span class="text-error text-lg" v-if="errorText">{{ errorText }}</span>
                 <!-- TODO: Add hotkey text on the bottom of the modal as well as the main window. Only show relevant hotkeys for each component. -->
             </div>
@@ -31,7 +31,7 @@
 </template>
 
 <script lang="ts" setup>
-import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import { nextTick, ref, watch } from 'vue';
 import PHotkeys from './PHotkeys.vue'
 
 const props = defineProps({
@@ -84,25 +84,6 @@ watch(() => props.display, (display) => {
 });
 
 const emit = defineEmits(["submit", "close"]);
-
-// onMounted(() => {
-//     const handler = (e: KeyboardEvent) => {
-//         // This only works when no input is focused, while the Vue listener on the root div of this component 
-//         // only works when the input is focused.
-//         // Don't ask me.
-//         if (e.key === "Escape") {
-//             if (!props.display) {
-//                 return
-//             };
-
-//             emit("close");
-//             e.stopPropagation();
-//             e.preventDefault();
-//         }
-//     };
-//     window.addEventListener("keydown", handler);
-//     onUnmounted(() => window.removeEventListener("keydown", handler));
-// });
 </script>
 
 <style></style>
