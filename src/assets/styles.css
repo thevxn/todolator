@@ -47,7 +47,7 @@
     @apply text-lg;
     tr {
       /* #58bc82 */
-      @apply hover:bg-[#ffffff27];
+      /* @apply hover:bg-[#58bc82]; */
     }
     td {
       @apply border border-gray-500 px-4 py-2;

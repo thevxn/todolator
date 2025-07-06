@@ -6,8 +6,9 @@
     <main class="flex flex-col items-center justify-center p-4">
         <TaskForm submit-text="Save" :display="displayNewTaskModal" @submit="addTask" @close="toggleCreateModal"
             :error-text="taskCreationError" />
-        <h1 class="text-secondary">Todolator</h1>
-        <div class="flex flex-row w-full items-center" :class="tasks.length > 0 ? 'justify-end' : 'justify-center'">
+        <!-- <h1 class="text-secondary">Todolator</h1> -->
+        <div class="flex flex-row w-full items-center mt-10"
+            :class="tasks.length > 0 ? 'justify-end' : 'justify-center'">
             <button tabindex="-1" @click="toggleCreateModal">New Task</button>
         </div>
         <div class="overflow-y-scroll max-h-full w-full mt-2 mb-10" ref="tableRef">
@@ -20,7 +21,8 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="(task, i) in tasks" :key="i" :class="{ 'bg-black': selectedIndex === i }"
+                    <tr v-for="(task, i) in tasks" :key="i"
+                        :class="selectedIndex === i ? 'bg-secondary text-primary' : ''"
                         :ref="el => (rowRefs[i] = el as HTMLElement)">
 
                         <td>{{ task.name }}</td>
@@ -50,7 +52,7 @@ const {
     toggleCreateModal
 } = useTasks();
 
-const { selectedIndex } = useRowSelect(() => tasks.value.length);
+const { selectedIndex } = useRowSelect(() => tasks.value.length, () => displayNewTaskModal.value);
 const rowRefs = ref<HTMLElement[]>([]);
 const tableRef = ref<HTMLElement | null>(null);
 

@@ -1,10 +1,13 @@
 import { ref, onMounted, onUnmounted } from "vue";
 
-export function useRowSelect(lengthRef: () => number) {
+export function useRowSelect(
+  lengthRef: () => number,
+  modalOpenRef: () => boolean
+) {
   const selectedIndex = ref<number | null>(null);
 
   const selectNext = () => {
-    if (lengthRef() === 0) return;
+    if (lengthRef() === 0 || modalOpenRef()) return;
     if (selectedIndex.value === null) selectedIndex.value = 0;
     else
       selectedIndex.value = Math.min(selectedIndex.value + 1, lengthRef() - 1);
@@ -14,7 +17,7 @@ export function useRowSelect(lengthRef: () => number) {
   };
 
   const selectPrev = () => {
-    if (lengthRef() === 0) return;
+    if (lengthRef() === 0 || modalOpenRef()) return;
     if (selectedIndex.value === null) selectedIndex.value = 0;
     else selectedIndex.value = Math.max(selectedIndex.value - 1, 0);
     console.log(
@@ -29,11 +32,11 @@ export function useRowSelect(lengthRef: () => number) {
   const handleKeydown = (e: KeyboardEvent) => {
     if (e.key === "ArrowDown") {
       selectNext();
-      e.preventDefault();
+      //   e.preventDefault();
     }
     if (e.key === "ArrowUp") {
       selectPrev();
-      e.preventDefault();
+      //   e.preventDefault();
     }
   };
 

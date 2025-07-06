@@ -1,7 +1,9 @@
 <template>
   <!-- https://v2.tauri.app/learn/window-customization/#creating-a-custom-titlebar -->
   <div class="titlebar">
-    <div data-tauri-drag-region></div>
+    <div data-tauri-drag-region>
+      <img :src="logoUrl" width="30">
+    </div>
     <div class="controls">
       <button id="titlebar-minimize" title="minimize">
         <!-- https://api.iconify.design/mdi:window-minimize.svg -->
@@ -32,6 +34,7 @@
 </template>
 
 <script setup lang="ts">
+import logoUrl from './assets/logo.png'
 import Tasks from "./components/PTasks.vue"
 
 </script>
@@ -39,7 +42,7 @@ import Tasks from "./components/PTasks.vue"
 <style>
 .titlebar {
   height: 30px;
-  background: #329ea3;
+  background: #58bc82;
   user-select: none;
   display: grid;
   grid-template-columns: auto max-content;
