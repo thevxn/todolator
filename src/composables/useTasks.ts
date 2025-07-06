@@ -45,13 +45,13 @@ export const useTasks = () => {
 
       tasks.value.push(task);
 
-      toggleCreateModal();
+      toggleTaskModal();
     } catch (e) {
       console.log(e);
     }
   };
 
-  const toggleCreateModal = () => {
+  const toggleTaskModal = () => {
     taskCreationError.value = undefined;
     displayNewTaskModal.value = !displayNewTaskModal.value;
   };
@@ -62,6 +62,6 @@ export const useTasks = () => {
     taskCreationError,
     loadTasks,
     addTask,
-    toggleCreateModal
+    toggleTaskModal
   };
 };

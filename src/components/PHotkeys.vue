@@ -31,6 +31,11 @@ const hotkeys: Array<IHotkey> = [
         screens: ["MAIN"]
     },
     {
+        shortcut: "⏎",
+        description: "Open Selected",
+        screens: ["MAIN"]
+    },
+    {
         shortcut: "ESC",
         description: "Close",
         screens: ["NEW_TASK_MODAL"]

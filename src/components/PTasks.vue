@@ -1,15 +1,14 @@
 <template>
     <!-- Modal overlay -->
     <div class="min-w-screen w-screen min-h-screen opacity-50 bg-black z-1 fixed " v-if="displayNewTaskModal"
-        @click="toggleCreateModal"></div>
+        @click="toggleTaskModal"></div>
 
     <main class="flex flex-col items-center justify-center p-4">
-        <TaskForm submit-text="Save" :display="displayNewTaskModal" @submit="addTask" @close="toggleCreateModal"
-            :error-text="taskCreationError" />
-        <!-- <h1 class="text-secondary">Todolator</h1> -->
+        <TaskForm submit-text="Save" :display="displayNewTaskModal" @submit="addTask" @close="toggleTaskModal"
+            :error-text="taskCreationError" :current-task="currentTask" />
         <div class="flex flex-row w-full items-center mt-10"
             :class="tasks.length > 0 ? 'justify-end' : 'justify-center'">
-            <button tabindex="-1" @click="toggleCreateModal">New Task</button>
+            <button tabindex="-1" @click="toggleTaskModal">New Task</button>
         </div>
 
         <div v-if="tasks.length > 0" class="w-full mt-2 mb-10">
@@ -46,10 +45,10 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, watch } from "vue";
+import { onMounted, onUnmounted, Ref, ref, watch } from "vue";
 import TaskForm from './TaskForm.vue'
 import PHotkeys from './PHotkeys.vue'
-import { useTasks } from "../composables/useTasks";
+import { ITask, useTasks } from "../composables/useTasks";
 import { useRowSelect } from "../composables/useRowSelect";
 
 const {
@@ -58,18 +57,20 @@ const {
     taskCreationError,
     loadTasks,
     addTask,
-    toggleCreateModal
+    toggleTaskModal
 } = useTasks();
 
-const { selectedIndex } = useRowSelect(() => tasks.value.length, () => displayNewTaskModal.value);
+const { selectedIndex, resetSelectedIndex } = useRowSelect(() => tasks.value.length, () => displayNewTaskModal.value);
+
 const rowRefs = ref<HTMLElement[]>([]);
 const tableRef = ref<HTMLElement | null>(null);
+
+const currentTask = ref(undefined) as Ref<ITask | undefined>;
 
 watch(selectedIndex, (newIndex) => {
     const el = rowRefs.value[newIndex as number];
     if (el) {
         if (newIndex === 0 && tableRef.value) {
-            console.log("here!!!");
             tableRef.value.scrollTo({ behavior: "smooth", top: 0 });
             return
         }
@@ -82,7 +83,8 @@ onMounted(async () => {
 
     const handler = (e: KeyboardEvent) => {
         if (e.key === "n" && !displayNewTaskModal.value) {
-            toggleCreateModal();
+            resetCurrentTask();
+            toggleTaskModal();
             e.stopPropagation();
             e.preventDefault();
         }
@@ -91,15 +93,39 @@ onMounted(async () => {
             e.stopPropagation();
             e.preventDefault();
             if (displayNewTaskModal.value) {
-                toggleCreateModal();
+                toggleTaskModal();
+                resetCurrentTask();
                 return
             }
-            selectedIndex.value = null;
+            resetSelectedIndex();
+        }
+
+        if (e.key === "Enter") {
+            e.stopPropagation();
+            e.preventDefault();
+
+            if (!displayNewTaskModal.value && selectedIndex.value !== null) {
+                resetCurrentTask();
+                currentTask.value = {
+                    name: tasks.value[selectedIndex.value].name,
+                    desc: tasks.value[selectedIndex.value].desc,
+                    timestamp: tasks.value[selectedIndex.value].timestamp,
+                }
+                toggleTaskModal();
+            }
         }
     };
     window.addEventListener("keydown", handler);
     onUnmounted(() => window.removeEventListener("keydown", handler));
 });
+
+const resetCurrentTask = () => {
+    currentTask.value = {
+        name: "",
+        desc: undefined,
+        timestamp: ""
+    }
+}
 
 </script>
 
@@ -117,7 +143,7 @@ onMounted(async () => {
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-    background:  #55555583;
+    background: #55555583;
 }
 
 /* Handle on hover */

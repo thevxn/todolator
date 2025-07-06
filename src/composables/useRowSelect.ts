@@ -25,7 +25,7 @@ export function useRowSelect(
     );
   };
 
-  const reset = () => {
+  const resetSelectedIndex = () => {
     selectedIndex.value = null;
   };
 
@@ -43,5 +43,5 @@ export function useRowSelect(
   onMounted(() => window.addEventListener("keydown", handleKeydown));
   onUnmounted(() => window.removeEventListener("keydown", handleKeydown));
 
-  return { selectedIndex, selectNext, selectPrev, reset };
+  return { selectedIndex, selectNext, selectPrev, resetSelectedIndex };
 }
