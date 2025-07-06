@@ -10,20 +10,20 @@
         <div class="flex flex-row w-full items-center" :class="tasks.length > 0 ? 'justify-end' : 'justify-center'">
             <button tabindex="-1" @click="toggleCreateModal">New Task</button>
         </div>
-        <div class="overflow-y-scroll max-h-[300px] w-full my-2">
+        <div class="overflow-y-scroll max-h-full w-full mt-2 mb-10">
             <table v-if="tasks.length > 0">
                 <thead>
                     <tr>
                         <th>Title</th>
                         <th>Description</th>
-                        <th>Timestamp</th>
+                        <th>Remind At</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="task in tasks">
                         <td>{{ task.name }}</td>
                         <td>{{ task.desc ? task.desc : '-' }}</td>
-                        <td>{{ task.timestamp }}</td>
+                        <td>{{ new Date(task.timestamp).toLocaleString() }}</td>
                     </tr>
                 </tbody>
             </table>
@@ -37,10 +37,6 @@ import { onMounted, onUnmounted } from "vue";
 import TaskForm from './TaskForm.vue'
 import PHotkeys from './PHotkeys.vue'
 import { useTasks } from "../composables/useTasks";
-
-// const name = ref();
-// const desc = ref();
-// const timestamp = ref();
 
 const {
     tasks,
