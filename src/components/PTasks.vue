@@ -27,12 +27,15 @@
             </tbody>
         </table>
     </main>
+    <PHotkeys screen-code="MAIN" />
 </template>
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, Ref, ref } from "vue";
 import { invoke } from "@tauri-apps/api/core";
+
 import TaskForm from './TaskForm.vue'
+import PHotkeys from './PHotkeys.vue'
 
 const tasks = ref() as Ref<Array<ITask>>;
 // const name = ref();
