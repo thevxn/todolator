@@ -20,7 +20,7 @@
                     class="w-full " tabindex="3" required />
                 <small class="text-left w-full mt-4"><span class="text-error ">*</span> = Required attribute</small>
                 <button class="mb-4" @click="$emit('submit', currentTask)" tabindex="4">{{ submitText
-                }}</button>
+                    }}</button>
                 <span class="text-error text-lg" v-if="errorText">{{ errorText }}</span>
             </div>
         </div>
@@ -33,38 +33,15 @@
 <script lang="ts" setup>
 import { nextTick, ref, watch } from 'vue';
 import PHotkeys from './PHotkeys.vue'
+import { ITask } from '../composables/useTasks';
 
-const props = defineProps({
-    currentTask: {
-        type: Object,
-        name: {
-            type: String,
-        },
-        desc: {
-            type: String,
-        },
-        timestamp: {
-            type: String,
-        },
-        default: {
-            name: undefined,
-            desc: undefined,
-            timestamp: undefined
-        }
-    },
-    display: {
-        type: Boolean,
-        default: false
-    },
-    submitText: {
-        type: String,
-        default: null
-    },
-    errorText: {
-        type: String,
-        default: null
-    }
-})
+
+const props = defineProps<{
+    currentTask: ITask
+    display: boolean
+    submitText?: string | undefined
+    errorText?: string | undefined
+}>()
 
 const focusInput = ref<HTMLInputElement | null>(null);
 watch(() => props.display, (display) => {

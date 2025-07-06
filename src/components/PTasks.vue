@@ -67,7 +67,7 @@ const { selectedIndex, resetSelectedIndex } = useRowSelect(() => tasks.value.len
 const rowRefs = ref<HTMLElement[]>([]);
 const tableRef = ref<HTMLElement | null>(null);
 
-const currentTask = ref(undefined) as Ref<ITask | undefined>;
+const currentTask = ref() as Ref<ITask>;
 
 watch(selectedIndex, (newIndex) => {
     const el = rowRefs.value[newIndex as number];
@@ -108,6 +108,7 @@ onMounted(async () => {
                 e.preventDefault();
                 resetTask(currentTask);
                 currentTask.value = {
+                    id: tasks.value[selectedIndex.value].id,
                     name: tasks.value[selectedIndex.value].name,
                     desc: tasks.value[selectedIndex.value].desc,
                     timestamp: toDatetimeLocalValue(tasks.value[selectedIndex.value].timestamp),

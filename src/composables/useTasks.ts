@@ -42,9 +42,11 @@ export const useTasks = () => {
       console.log("Adding task: ", taskToSave);
 
       if (taskToSave.id) {
-        // TODO: Implement update
+        // If the task has an ID, it's an update
+        await invoke("update_task", taskToSave);
+        console.log("task updated!");
       } else {
-        // If the task does not have an ID, it's a create action
+        // If the task does not have an ID, it's a create
         await invoke("create_task", taskToSave);
         console.log("task created!");
       }
@@ -52,6 +54,7 @@ export const useTasks = () => {
       tasks.value.push(task);
 
       toggleTaskModal();
+      await loadTasks();
     } catch (e) {
       console.log(e);
     }
