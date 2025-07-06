@@ -77,6 +77,16 @@ onMounted(async () => {
             e.stopPropagation();
             e.preventDefault();
         }
+
+        if (e.key === "Escape") {
+            e.stopPropagation();
+            e.preventDefault();
+            if (displayNewTaskModal.value) {
+                toggleCreateModal();
+                return
+            }
+            selectedIndex.value = null;
+        }
     };
     window.addEventListener("keydown", handler);
     onUnmounted(() => window.removeEventListener("keydown", handler));

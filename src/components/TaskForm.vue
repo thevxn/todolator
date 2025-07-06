@@ -1,7 +1,6 @@
 <template>
     <div v-if="display"
-        class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-2  bg-primary rounded-md min-w-1/2"
-        @keydown.esc="$emit('close')">
+        class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-2  bg-primary rounded-md min-w-1/2">
         <div class="p-10">
             <h1 class="text-center">New Task</h1>
 
@@ -20,7 +19,7 @@
                     class="w-full " tabindex="3" required />
                 <small class="text-left w-full mt-4"><span class="text-error ">*</span> = Required attribute</small>
                 <button class="mb-4" @click="$emit('submit', { name, desc, timestamp })" tabindex="4">{{ submitText
-                    }}</button>
+                }}</button>
                 <span class="text-error text-lg" v-if="errorText">{{ errorText }}</span>
                 <!-- TODO: Add hotkey text on the bottom of the modal as well as the main window. Only show relevant hotkeys for each component. -->
             </div>
@@ -86,24 +85,24 @@ watch(() => props.display, (display) => {
 
 const emit = defineEmits(["submit", "close"]);
 
-onMounted(() => {
-    const handler = (e: KeyboardEvent) => {
-        // This only works when no input is focused, while the Vue listener on the root div of this component 
-        // only works when the input is focused.
-        // Don't ask me.
-        if (e.key === "Escape") {
-            if (!props.display) {
-                return
-            };
+// onMounted(() => {
+//     const handler = (e: KeyboardEvent) => {
+//         // This only works when no input is focused, while the Vue listener on the root div of this component 
+//         // only works when the input is focused.
+//         // Don't ask me.
+//         if (e.key === "Escape") {
+//             if (!props.display) {
+//                 return
+//             };
 
-            emit("close");
-            e.stopPropagation();
-            e.preventDefault();
-        }
-    };
-    window.addEventListener("keydown", handler);
-    onUnmounted(() => window.removeEventListener("keydown", handler));
-});
+//             emit("close");
+//             e.stopPropagation();
+//             e.preventDefault();
+//         }
+//     };
+//     window.addEventListener("keydown", handler);
+//     onUnmounted(() => window.removeEventListener("keydown", handler));
+// });
 </script>
 
 <style></style>

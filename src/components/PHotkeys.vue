@@ -36,12 +36,12 @@ const hotkeys: Array<IHotkey> = [
         screens: ["NEW_TASK_MODAL"]
     },
     {
-        shortcut: "ENTER",
+        shortcut: "⏎",
         description: "Save",
         screens: ["NEW_TASK_MODAL"]
     },
     {
-        shortcut: "TAB",
+        shortcut: "⇥",
         description: "Next input",
         screens: ["NEW_TASK_MODAL"]
     }
