@@ -10,7 +10,7 @@
         <div class="flex flex-row w-full items-center" :class="tasks.length > 0 ? 'justify-end' : 'justify-center'">
             <button tabindex="-1" @click="toggleCreateModal">New Task</button>
         </div>
-        <div class="overflow-y-scroll max-h-full w-full mt-2 mb-10">
+        <div class="overflow-y-scroll max-h-full w-full mt-2 mb-10" ref="tableRef">
             <table v-if="tasks.length > 0">
                 <thead>
                     <tr>
@@ -20,7 +20,9 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="task in tasks">
+                    <tr v-for="(task, i) in tasks" :key="i" :class="{ 'bg-black': selectedIndex === i }"
+                        :ref="el => (rowRefs[i] = el as HTMLElement)">
+
                         <td>{{ task.name }}</td>
                         <td>{{ task.desc ? task.desc : '-' }}</td>
                         <td>{{ new Date(task.timestamp).toLocaleString() }}</td>
@@ -33,10 +35,11 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted } from "vue";
+import { onMounted, onUnmounted, ref, watch } from "vue";
 import TaskForm from './TaskForm.vue'
 import PHotkeys from './PHotkeys.vue'
 import { useTasks } from "../composables/useTasks";
+import { useRowSelect } from "../composables/useRowSelect";
 
 const {
     tasks,
@@ -46,6 +49,22 @@ const {
     addTask,
     toggleCreateModal
 } = useTasks();
+
+const { selectedIndex } = useRowSelect(() => tasks.value.length);
+const rowRefs = ref<HTMLElement[]>([]);
+const tableRef = ref<HTMLElement | null>(null);
+
+watch(selectedIndex, (newIndex) => {
+    const el = rowRefs.value[newIndex as number];
+    if (el) {
+        if (newIndex === 0 && tableRef.value) {
+            console.log("here!!!");
+            tableRef.value.scrollTo({ behavior: "smooth", top: 0 });
+            return
+        }
+        el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+});
 
 onMounted(async () => {
     await loadTasks();

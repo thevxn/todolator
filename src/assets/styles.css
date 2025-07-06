@@ -46,7 +46,8 @@
   tbody {
     @apply text-lg;
     tr {
-      @apply hover:bg-gray-400;
+      /* #58bc82 */
+      @apply hover:bg-[#ffffff27];
     }
     td {
       @apply border border-gray-500 px-4 py-2;
