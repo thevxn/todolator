@@ -3,7 +3,7 @@
     <div class="min-w-screen w-screen min-h-screen opacity-50 bg-black z-1 fixed " v-if="displayNewTaskModal"
         @click="toggleCreateModal"></div>
 
-    <main class="flex flex-col items-center justify-center p-4" @keydown.n.prevent="toggleCreateModal">
+    <main class="flex flex-col items-center justify-center p-4">
         <TaskForm submit-text="Save" :display="displayNewTaskModal" @submit="addTask" @close="toggleCreateModal"
             :error-text="taskCreationError" />
         <h1 class="text-secondary">Todolator</h1>
@@ -97,7 +97,7 @@ function toggleCreateModal() {
 
 onMounted(() => {
     const handler = (e: KeyboardEvent) => {
-        if (e.key === "n") {
+        if (e.key === "n" && !displayNewTaskModal.value) {
             toggleCreateModal();
             e.stopPropagation();
             e.preventDefault();
