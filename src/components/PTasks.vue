@@ -11,26 +11,35 @@
             :class="tasks.length > 0 ? 'justify-end' : 'justify-center'">
             <button tabindex="-1" @click="toggleCreateModal">New Task</button>
         </div>
-        <div class="overflow-y-scroll max-h-full w-full mt-2 mb-10" ref="tableRef">
-            <table v-if="tasks.length > 0">
-                <thead>
-                    <tr>
-                        <th>Title</th>
-                        <th>Description</th>
-                        <th>Remind At</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="(task, i) in tasks" :key="i"
-                        :class="selectedIndex === i ? 'bg-secondary text-primary' : ''"
-                        :ref="el => (rowRefs[i] = el as HTMLElement)">
 
-                        <td>{{ task.name }}</td>
-                        <td>{{ task.desc ? task.desc : '-' }}</td>
-                        <td>{{ new Date(task.timestamp).toLocaleString() }}</td>
-                    </tr>
-                </tbody>
-            </table>
+        <div v-if="tasks.length > 0" class="w-full mt-2 mb-10">
+            <div class="pr-[6px] bg-secondary border border-gray-500 ">
+
+                <table class="w-full table-fixed">
+                    <thead>
+                        <tr class="border-none">
+                            <th class="text-left border-gray-500 border border-t-0 border-b-0 border-l-0">Title</th>
+                            <th class="text-left border-gray-500 border border-t-0 border-b-0 border-l-0">Description
+                            </th>
+                            <th class="text-left border-r-secondary">Remind At</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+
+            <div ref="tableRef" class="overflow-y-auto max-h-[400px]">
+                <table class="w-full table-fixed">
+                    <tbody>
+                        <tr v-for="(task, i) in tasks" :key="i"
+                            :class="selectedIndex === i ? 'bg-secondary text-primary' : ''"
+                            :ref="el => (rowRefs[i] = el as HTMLElement)">
+                            <td>{{ task.name }}</td>
+                            <td>{{ task.desc || '-' }}</td>
+                            <td>{{ new Date(task.timestamp).toLocaleString() }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </main>
     <PHotkeys screen-code="MAIN" />
@@ -102,16 +111,16 @@ onMounted(async () => {
 
 /* Track */
 ::-webkit-scrollbar-track {
-    background: #f3f4f6;
+    background: #f3f4f6c0;
 }
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-    background: #58bc82;
+    background:  #55555583;
 }
 
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-    background: #555;
+    background: #555555d2;
 }
 </style>

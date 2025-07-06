@@ -32,7 +32,7 @@
   }
 
   table {
-    @apply table-auto border-collapse border border-gray-500 w-full text-gray-100;
+    @apply table-auto  w-full text-font-primary;
   }
 
   thead {
@@ -40,7 +40,7 @@
   }
 
   th {
-    @apply border border-gray-500 px-4 py-2 text-left;
+    @apply px-4 py-2 text-left;
   }
 
   tbody {
@@ -50,7 +50,7 @@
       /* @apply hover:bg-[#58bc82]; */
     }
     td {
-      @apply border border-gray-500 px-4 py-2;
+      @apply border border-b-gray-500 border-l-gray-500 border-r-gray-500 px-4 py-2 border-t-0;
     }
   }
 
