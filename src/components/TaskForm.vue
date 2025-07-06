@@ -66,21 +66,9 @@ const props = defineProps({
     }
 })
 
-// const submitText = ref(props.submitText);
-// const name = ref(props.currentTask?.name);
-// const desc = ref(props.currentTask?.desc);
-// const timestamp = ref(props.currentTask?.timestamp);
-
-
 const focusInput = ref<HTMLInputElement | null>(null);
 watch(() => props.display, (display) => {
     if (display) {
-        // Clear inputs
-        // name.value = ""
-        // desc.value = ""
-        // timestamp.value = ""
-
-
         nextTick(() => {
             // Focus the first input
             focusInput.value?.focus();

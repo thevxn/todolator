@@ -4,7 +4,7 @@
         @click="toggleTaskModal"></div>
 
     <main class="flex flex-col items-center justify-center p-4">
-        <TaskForm submit-text="Save" :display="displayNewTaskModal" @submit="addTask" @close="toggleTaskModal"
+        <TaskForm submit-text="Save" :display="displayNewTaskModal" @submit="saveTask" @close="toggleTaskModal"
             :error-text="taskCreationError" :current-task="currentTask" />
         <div class="flex flex-row w-full items-center mt-10"
             :class="tasks.length > 0 ? 'justify-end' : 'justify-center'">
@@ -58,7 +58,7 @@ const {
     displayNewTaskModal,
     taskCreationError,
     loadTasks,
-    addTask,
+    saveTask,
     toggleTaskModal
 } = useTasks();
 
@@ -103,10 +103,9 @@ onMounted(async () => {
         }
 
         if (e.key === "Enter") {
-            e.stopPropagation();
-            e.preventDefault();
-
             if (!displayNewTaskModal.value && selectedIndex.value !== null) {
+                e.stopPropagation();
+                e.preventDefault();
                 resetTask(currentTask);
                 currentTask.value = {
                     name: tasks.value[selectedIndex.value].name,

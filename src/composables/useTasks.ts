@@ -4,6 +4,7 @@ import { Ref, ref } from "vue";
 type DateTimeString = string;
 
 export interface ITask {
+  id?: string;
   name: string;
   desc?: string;
   timestamp: DateTimeString;
@@ -25,23 +26,28 @@ export const useTasks = () => {
     }
   };
 
-  const addTask = async (e: ITask) => {
-    if (!e.name || !e.timestamp) {
+  const saveTask = async (task: ITask) => {
+    if (!task.name || !task.timestamp) {
       console.log("missing required attributes");
       taskCreationError.value = "Missing required attributes!";
       return;
     }
     try {
-      console.log("Adding task:");
-      console.log(e);
-      const task = {
-        name: e.name,
-        desc: e.desc,
-        timestamp: new Date(e.timestamp).toISOString()
+      const taskToSave = {
+        id: task.id,
+        name: task.name,
+        desc: task.desc,
+        timestamp: new Date(task.timestamp).toISOString()
       };
+      console.log("Adding task: ", taskToSave);
 
-      await invoke("create_task", task);
-      console.log("task created!");
+      if (taskToSave.id) {
+        // TODO: Implement update
+      } else {
+        // If the task does not have an ID, it's a create action
+        await invoke("create_task", taskToSave);
+        console.log("task created!");
+      }
 
       tasks.value.push(task);
 
@@ -61,7 +67,7 @@ export const useTasks = () => {
     displayNewTaskModal,
     taskCreationError,
     loadTasks,
-    addTask,
+    saveTask,
     toggleTaskModal
   };
 };
