@@ -32,7 +32,7 @@
   }
 
   table {
-    @apply my-2 table-auto border-collapse border border-gray-500 w-full text-gray-100;
+    @apply table-auto border-collapse border border-gray-500 w-full text-gray-100;
   }
 
   thead {

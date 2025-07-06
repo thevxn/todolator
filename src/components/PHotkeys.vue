@@ -1,6 +1,6 @@
 <template>
     <div
-        class="absolute bottom-0 w-full flex flex-row items-center justify-center gap-4 mb-2 bg-secondary text-primary font-semibold">
+        class="absolute bottom-0 w-full flex flex-row items-center justify-center gap-4  bg-secondary text-primary font-semibold rounded-b-md invisible sm:visible">
         <div v-for="hotkey in hotkeys">
             <div v-if="hotkey.screens.some((el) => el === screenCode)">
                 <span class="font-semibold">[{{ hotkey.shortcut }}]: </span><span>{{
@@ -26,13 +26,18 @@ const hotkeys: Array<IHotkey> = [
         screens: ["MAIN"]
     },
     {
-        shortcut: "Esc",
-        description: "Close Modal",
+        shortcut: "ESC",
+        description: "Close",
         screens: ["NEW_TASK_MODAL"]
     },
     {
-        shortcut: "Enter",
-        description: "Save Task",
+        shortcut: "ENTER",
+        description: "Save",
+        screens: ["NEW_TASK_MODAL"]
+    },
+    {
+        shortcut: "TAB",
+        description: "Next input",
         screens: ["NEW_TASK_MODAL"]
     }
 ]
