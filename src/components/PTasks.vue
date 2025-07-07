@@ -3,10 +3,9 @@
     <div class="min-w-screen w-screen min-h-screen opacity-50 bg-black z-1 fixed "
         v-if="displayTaskModal || displayConfirmationModal" @click="closeModals"></div>
 
-    <!-- TODO: The submit and close events in ConfirmationModal will be used for clicking on yes/no buttons (instead of using hotkeys) -->
     <main class="flex flex-col items-center justify-center p-4">
-        <ConfirmationModal :display="displayConfirmationModal" @submit="console.log(' submitted!!!')"
-            @close="console.log('closed!!!')" :name="currentTask.name" />
+        <ConfirmationModal :display="displayConfirmationModal" @submit="handleTaskDelete(currentTask.id)"
+            @close="closeModals" :name="currentTask.name" :id="currentTask.id" />
         <TaskForm submit-text="Save" :display="displayTaskModal" @submit="saveTask" @close="toggleTaskModal"
             :error-text="taskCreationError" :current-task="currentTask" />
         <div class="flex flex-row w-full items-center mt-10"
@@ -131,6 +130,8 @@ const openDeleteModal = (taskIndex: number | null) => {
             desc: tasks.value[taskIndex].desc,
             timestamp: toDatetimeLocalValue(tasks.value[taskIndex].timestamp),
         }
+
+        console.log(currentTask);
         toggleConfirmationModal();
     }
 }
@@ -146,6 +147,22 @@ const closeModals = () => {
     if (displayConfirmationModal.value) {
         toggleConfirmationModal();
     }
+}
+
+const handleTaskDelete = async (id: string | undefined) => {
+    if (!id) {
+        return;
+    }
+
+    try {
+        await deleteTask(id);
+    }
+    catch (e) {
+        console.log(`Failed to delete task: ${e}`);
+    }
+
+    resetTask(currentTask);
+    toggleConfirmationModal();
 }
 
 onMounted(async () => {
@@ -194,7 +211,12 @@ onMounted(async () => {
                 if (displayConfirmationModal.value && selectedIndex.value !== null) {
                     e.stopPropagation();
                     e.preventDefault();
-                    await deleteTask(tasks.value[selectedIndex.value].id as string);
+                    try {
+                        await deleteTask(tasks.value[selectedIndex.value].id as string);
+                    }
+                    catch (e) {
+                        console.log(`Failed to delete task: ${e}`);
+                    }
                     resetTask(currentTask);
                     toggleConfirmationModal();
                 }
