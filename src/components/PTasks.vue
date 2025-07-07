@@ -14,35 +14,30 @@
             <button tabindex="-1" @click="toggleTaskModal">New Task</button>
         </div>
 
-        <div v-if="tasks.length > 0" class="w-full mt-2 mb-10">
-            <div class="pr-[6px] bg-secondary border border-gray-500 ">
+        <div v-if="tasks.length > 0"
+            class="w-full mt-2 mb-10 rounded-lg overflow-hidden border border-gray-500 min-h-[200px]">
+            <div class="flex flex-col h-full">
+                <!-- Header always visible -->
+                <div class="grid grid-cols-3 bg-secondary font-bold text-primary flex-shrink-0">
+                    <div class="p-2">Title</div>
+                    <div class="p-2">Description</div>
+                    <div class="p-2">Remind At</div>
+                </div>
 
-                <table class="w-full table-fixed">
-                    <thead>
-                        <tr class="border-none">
-                            <th class="text-left border-gray-500 border border-t-0 border-b-0 border-l-0">Title</th>
-                            <th class="text-left border-gray-500 border border-t-0 border-b-0 border-l-0">Description
-                            </th>
-                            <th class="text-left border-r-secondary">Remind At</th>
-                        </tr>
-                    </thead>
-                </table>
-            </div>
-
-            <div ref="tableRef" class="overflow-y-auto max-h-[400px]">
-                <table class="w-full table-fixed">
-                    <tbody>
-                        <tr v-for="(task, i) in tasks" :key="i"
-                            :class="selectedIndex === i ? 'bg-secondary text-primary' : ''"
-                            :ref="el => (rowRefs[i] = el as HTMLElement)">
-                            <td>{{ task.name }}</td>
-                            <td>{{ task.desc || '-' }}</td>
-                            <td>{{ new Date(task.timestamp).toLocaleString() }}</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <!-- Body scrolls -->
+                <div class="flex-1 min-h-0 overflow-y-auto" ref="tableRef">
+                    <div v-for="(task, i) in tasks" :key="i" :class="[
+                        'grid grid-cols-3 border-t border-gray-500',
+                        selectedIndex === i ? 'bg-secondary text-primary' : ''
+                    ]" :ref="el => { if (el) rowRefs[i] = el as HTMLElement }">
+                        <div class="p-2">{{ task.name }}</div>
+                        <div class="p-2">{{ task.desc || '-' }}</div>
+                        <div class="p-2">{{ new Date(task.timestamp).toLocaleString() }}</div>
+                    </div>
+                </div>
             </div>
         </div>
+
     </main>
     <PHotkeys screen-code="MAIN" />
 </template>
@@ -77,13 +72,30 @@ const tableRef = ref<HTMLElement | null>(null);
 const currentTask = ref({}) as Ref<ITask>;
 
 watch(selectedIndex, (newIndex) => {
-    const el = rowRefs.value[newIndex as number];
-    if (el) {
-        if (newIndex === 0 && tableRef.value) {
-            tableRef.value.scrollTo({ behavior: "smooth", top: 0 });
-            return
-        }
-        el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    if (newIndex === null || !tableRef.value) return;
+
+    const container = tableRef.value;
+    const rowElement = rowRefs.value[newIndex];
+
+    if (!rowElement) {
+        return;
+    }
+
+    const containerRect = container.getBoundingClientRect();
+    const rowRect = rowElement.getBoundingClientRect();
+
+    if (rowRect.top < containerRect.top) {
+        // Row is above visible area
+        container.scrollBy({
+            top: rowRect.top - containerRect.top - 10,
+            behavior: 'smooth'
+        });
+    } else if (rowRect.bottom > containerRect.bottom) {
+        // Row is below visible area
+        container.scrollBy({
+            top: rowRect.bottom - containerRect.bottom + 10,
+            behavior: 'smooth'
+        });
     }
 });
 
@@ -150,7 +162,6 @@ onMounted(async () => {
                         timestamp: toDatetimeLocalValue(tasks.value[selectedIndex.value].timestamp),
                     }
                     toggleConfirmationModal();
-                    // deleteTask(tasks.value[selectedIndex.value].id as string);
                 }
                 break;
 
