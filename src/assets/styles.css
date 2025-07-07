@@ -54,7 +54,7 @@
     }
   }
 
-  button {
+  button:not(.icon-button) {
     @apply rounded-md bg-secondary py-2 px-6 text-xl text-primary font-bold my-2 hover:cursor-pointer border-2 border-secondary hover:bg-primary hover:text-secondary active:bg-secondary active:text-primary;
   }
 

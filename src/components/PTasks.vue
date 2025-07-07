@@ -14,25 +14,33 @@
             <button tabindex="-1" @click="toggleTaskModal">New Task</button>
         </div>
 
-        <div v-if="tasks.length > 0"
+        <div v-if="tasks.length > 0" id="tasks-table"
             class="w-full mt-2 mb-10 rounded-lg overflow-hidden border border-gray-500 min-h-[200px]">
             <div class="flex flex-col h-full">
-                <!-- Header always visible -->
-                <div class="grid grid-cols-3 bg-secondary font-bold text-primary flex-shrink-0">
+                <div
+                    class="grid grid-cols-4 bg-secondary font-bold text-primary flex-shrink-0 border border-b-4 border-secondary">
                     <div class="p-2">Title</div>
                     <div class="p-2">Description</div>
                     <div class="p-2">Remind At</div>
+                    <div class="p-2"></div>
                 </div>
 
-                <!-- Body scrolls -->
                 <div class="flex-1 min-h-0 overflow-y-auto" ref="tableRef">
                     <div v-for="(task, i) in tasks" :key="i" :class="[
-                        'grid grid-cols-3 border-t border-gray-500',
-                        selectedIndex === i ? 'bg-secondary text-primary' : ''
+                        'grid grid-cols-4 border-t border-gray-500 custom-row',
+                        selectedIndex === i ? 'bg-secondary border-secondary text-primary font-bold' : ''
                     ]" :ref="el => { if (el) rowRefs[i] = el as HTMLElement }">
                         <div class="p-2">{{ task.name }}</div>
                         <div class="p-2">{{ task.desc || '-' }}</div>
                         <div class="p-2">{{ new Date(task.timestamp).toLocaleString() }}</div>
+                        <div class="p-2 flex flex-row gap-x-2 items-center justify-center">
+                            <PIcon :icon="'mingcute:edit-2-line'"
+                                class="hover:border-warning hover:border-2 border-2 border-[#ffffff00] p-1 active:bg-warning active:text-primary  text-warning rounded-md outline-none"
+                                @clicked="openEditModal(i)" />
+                            <PIcon :icon="'mingcute:delete-2-line'"
+                                class="hover:border-error hover:border-2 border-2 border-[#ffffff00] p-1 active:bg-error active:text-primary  text-error rounded-md outline-none"
+                                @clicked="openDeleteModal(i)" />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -51,6 +59,7 @@ import { useRowSelect } from "../composables/useRowSelect";
 import { toDatetimeLocalValue } from "../helpers/datetime";
 import { resetTask } from "../helpers/task";
 import ConfirmationModal from './ConfirmationModal.vue'
+import PIcon from "./PIcon.vue";
 
 const {
     tasks,
@@ -99,6 +108,32 @@ watch(selectedIndex, (newIndex) => {
     }
 });
 
+const openEditModal = (taskIndex: number | null) => {
+    if (taskIndex !== null) {
+        resetTask(currentTask);
+        currentTask.value = {
+            id: tasks.value[taskIndex].id,
+            name: tasks.value[taskIndex].name,
+            desc: tasks.value[taskIndex].desc,
+            timestamp: toDatetimeLocalValue(tasks.value[taskIndex].timestamp),
+        }
+        toggleTaskModal();
+    }
+}
+
+const openDeleteModal = (taskIndex: number | null) => {
+    if (taskIndex !== null) {
+        resetTask(currentTask);
+        currentTask.value = {
+            id: tasks.value[taskIndex].id,
+            name: tasks.value[taskIndex].name,
+            desc: tasks.value[taskIndex].desc,
+            timestamp: toDatetimeLocalValue(tasks.value[taskIndex].timestamp),
+        }
+        toggleConfirmationModal();
+    }
+}
+
 onMounted(async () => {
     await loadTasks();
 
@@ -136,32 +171,18 @@ onMounted(async () => {
                 break;
 
             case "Enter":
-                if (!displayTaskModal.value && !displayConfirmationModal.value && selectedIndex.value !== null) {
+                if (!displayTaskModal.value && !displayConfirmationModal.value) {
                     e.stopPropagation();
                     e.preventDefault();
-                    resetTask(currentTask);
-                    currentTask.value = {
-                        id: tasks.value[selectedIndex.value].id,
-                        name: tasks.value[selectedIndex.value].name,
-                        desc: tasks.value[selectedIndex.value].desc,
-                        timestamp: toDatetimeLocalValue(tasks.value[selectedIndex.value].timestamp),
-                    }
-                    toggleTaskModal();
+                    openEditModal(selectedIndex.value);
                 }
                 break;
 
             case "Backspace":
-                if (!displayTaskModal.value && !displayConfirmationModal.value && selectedIndex.value !== null) {
+                if (!displayTaskModal.value && !displayConfirmationModal.value) {
                     e.stopPropagation();
                     e.preventDefault();
-                    resetTask(currentTask);
-                    currentTask.value = {
-                        id: tasks.value[selectedIndex.value].id,
-                        name: tasks.value[selectedIndex.value].name,
-                        desc: tasks.value[selectedIndex.value].desc,
-                        timestamp: toDatetimeLocalValue(tasks.value[selectedIndex.value].timestamp),
-                    }
-                    toggleConfirmationModal();
+                    openDeleteModal(selectedIndex.value);
                 }
                 break;
 
