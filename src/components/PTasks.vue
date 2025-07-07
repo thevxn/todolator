@@ -152,7 +152,6 @@ onMounted(async () => {
     await loadTasks();
 
     const handler = async (e: KeyboardEvent) => {
-
         switch (e.key) {
             case "n":
                 if (!displayTaskModal.value && !displayConfirmationModal.value) {

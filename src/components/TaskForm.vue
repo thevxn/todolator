@@ -2,7 +2,8 @@
     <div v-if="display"
         class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-2  bg-primary rounded-md min-w-1/2">
         <div class="p-10">
-            <h1 class="text-center">New Task</h1>
+            <h1 class="text-center" v-if="!currentTask.id">New Task</h1>
+            <h1 class="text-center" v-else>Edit Task</h1>
 
             <div class="row flex flex-col justify-center items-center gap-2 mt-8"
                 @keydown.enter="$emit('submit', currentTask)">
@@ -20,7 +21,7 @@
                     class="w-full " tabindex="3" required />
                 <small class="text-left w-full mt-4"><span class="text-error ">*</span> = Required attribute</small>
                 <button class="mb-4" @click="$emit('submit', currentTask)" tabindex="4">{{ submitText
-                }}</button>
+                    }}</button>
                 <span class="text-error text-lg" v-if="errorText">{{ errorText }}</span>
             </div>
         </div>
