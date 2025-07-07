@@ -1,7 +1,7 @@
 <template>
     <!-- Modal overlay -->
     <div class="min-w-screen w-screen min-h-screen opacity-50 bg-black z-1 fixed "
-        v-if="displayTaskModal || displayConfirmationModal" @click="toggleTaskModal"></div>
+        v-if="displayTaskModal || displayConfirmationModal" @click="closeModals"></div>
 
     <!-- TODO: The submit and close events in ConfirmationModal will be used for clicking on yes/no buttons (instead of using hotkeys) -->
     <main class="flex flex-col items-center justify-center p-4">
@@ -30,9 +30,10 @@
                         'grid grid-cols-4 border-t border-gray-500 custom-row',
                         selectedIndex === i ? 'bg-secondary border-secondary text-primary font-bold' : ''
                     ]" :ref="el => { if (el) rowRefs[i] = el as HTMLElement }">
-                        <div class="p-2">{{ task.name }}</div>
-                        <div class="p-2">{{ task.desc || '-' }}</div>
-                        <div class="p-2">{{ new Date(task.timestamp).toLocaleString() }}</div>
+                        <div class="p-2 flex flex-row gap-x-2 items-center ">{{ task.name }}</div>
+                        <div class="p-2 flex flex-row gap-x-2 items-center ">{{ task.desc || '-' }}</div>
+                        <div class="p-2 flex flex-row gap-x-2 items-center ">{{ new
+                            Date(task.timestamp).toLocaleString() }}</div>
                         <div class="p-2 flex flex-row gap-x-2 items-center justify-center">
                             <PIcon :icon="'mingcute:edit-2-line'"
                                 class="hover:border-warning hover:border-2 border-2 border-[#ffffff00] p-1 active:bg-warning active:text-primary  text-warning rounded-md outline-none"
@@ -134,6 +135,19 @@ const openDeleteModal = (taskIndex: number | null) => {
     }
 }
 
+const closeModals = () => {
+    if (!displayConfirmationModal.value && !displayTaskModal.value) {
+        resetSelectedIndex();
+    }
+    if (displayTaskModal.value) {
+        toggleTaskModal();
+        resetTask(currentTask);
+    }
+    if (displayConfirmationModal.value) {
+        toggleConfirmationModal();
+    }
+}
+
 onMounted(async () => {
     await loadTasks();
 
@@ -158,16 +172,7 @@ onMounted(async () => {
             case "Escape":
                 e.stopPropagation();
                 e.preventDefault();
-                if (!displayConfirmationModal.value && !displayTaskModal.value) {
-                    resetSelectedIndex();
-                }
-                if (displayTaskModal.value) {
-                    toggleTaskModal();
-                    resetTask(currentTask);
-                }
-                if (displayConfirmationModal.value) {
-                    toggleConfirmationModal();
-                }
+                closeModals();
                 break;
 
             case "Enter":
