@@ -21,7 +21,7 @@
                     class="w-full " tabindex="3" required />
                 <small class="text-left w-full mt-4"><span class="text-error ">*</span> = Required attribute</small>
                 <button class="mb-4" @click="$emit('submit', currentTask)" tabindex="4">{{ submitText
-                }}</button>
+                    }}</button>
                 <span class="text-error text-lg" v-if="errorText">{{ errorText }}</span>
             </div>
         </div>

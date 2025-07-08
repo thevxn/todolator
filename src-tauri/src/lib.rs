@@ -1,6 +1,8 @@
 mod commands;
 mod tasks;
 
+use std::thread;
+
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, TrayIconBuilder, TrayIconEvent},
@@ -10,7 +12,7 @@ use tauri::{
 
 use crate::{
     commands::{close, create_task, delete_task, get_tasks, maximize, minimize, update_task},
-    tasks::load_tasks,
+    tasks::{load_tasks, TaskReminder},
 };
 
 fn setup_tray(app: &mut App) {
@@ -71,9 +73,15 @@ pub fn run() {
         .setup(|app| {
             setup_tray(app);
             // Spawn a new window for a pop-up reminder
-            // let handle = app.handle().clone();
-            // spawn_reminder(handle);
+            let handle = app.handle().clone();
+            spawn_reminder(handle);
             load_tasks();
+            thread::spawn(move || {
+                let mut reminder = TaskReminder {
+                    tasks: std::collections::BinaryHeap::new(),
+                };
+                reminder.run();
+            });
             Ok(())
         })
         .plugin(tauri_plugin_opener::init())
