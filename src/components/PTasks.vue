@@ -6,7 +6,7 @@
     <main class="flex flex-col items-center justify-center p-4">
         <ConfirmationModal :display="displayConfirmationModal" @submit="handleTaskDelete(currentTask.id)"
             @close="closeModals" :name="currentTask.name" :id="currentTask.id" />
-        <TaskForm submit-text="Save" :display="displayTaskModal" @submit="saveTask" @close="toggleTaskModal"
+        <TaskForm submit-text="Save" :display="displayTaskModal" @submit="handleSave" @close="toggleTaskModal"
             :error-text="taskCreationError" :current-task="currentTask" />
         <div class="flex flex-row w-full items-center mt-10"
             :class="tasks.length > 0 ? 'justify-end' : 'justify-center'">
@@ -149,6 +149,11 @@ const closeModals = () => {
     }
 }
 
+const handleSave = async (task: ITask) => {
+    await saveTask(task);
+    resetTask(currentTask);
+}
+
 const handleTaskDelete = async (id: string | undefined) => {
     if (!id) {
         return;
@@ -168,6 +173,7 @@ const handleTaskDelete = async (id: string | undefined) => {
 onMounted(async () => {
     await loadTasks();
 
+    // TODO: Move away
     const handler = async (e: KeyboardEvent) => {
         switch (e.key) {
             case "n":

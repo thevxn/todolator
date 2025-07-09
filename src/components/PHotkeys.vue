@@ -9,7 +9,7 @@
 </template>
 
 <script lang="ts" setup>
-type Screen = "MAIN" | "NEW_TASK_MODAL" | "CONFIRMATION_MODAL"
+type Screen = "MAIN" | "NEW_TASK_MODAL" | "CONFIRMATION_MODAL" | "REMINDER_POPUP"
 
 interface IHotkey {
     shortcut: string;
@@ -17,7 +17,7 @@ interface IHotkey {
     screens: Array<Screen>
 }
 
-const hotkeys: Array<IHotkey> = [
+const hotkeys = [
     {
         shortcut: "N",
         description: "New Task",
@@ -41,7 +41,7 @@ const hotkeys: Array<IHotkey> = [
     {
         shortcut: "ESC",
         description: "Close",
-        screens: ["NEW_TASK_MODAL"]
+        screens: ["NEW_TASK_MODAL", "REMINDER_POPUP"]
     },
     {
         shortcut: "⏎",
@@ -63,7 +63,7 @@ const hotkeys: Array<IHotkey> = [
         description: "No",
         screens: ["CONFIRMATION_MODAL"]
     }
-]
+] as const as Readonly<Array<IHotkey>>
 
 defineProps<{
     screenCode: Screen

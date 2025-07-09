@@ -4,16 +4,28 @@ use chrono::{DateTime, Utc};
 use tauri::State;
 use uuid::Uuid;
 
-use crate::tasks::{self, Task, TaskReminder};
+use crate::tasks::{self, TaskExt, TaskReminder};
 
 #[tauri::command]
-pub fn get_tasks(state: State<'_, Mutex<TaskReminder>>) -> Result<Vec<tasks::Task>, String> {
+pub fn get_tasks(state: State<'_, Mutex<TaskReminder>>) -> Result<Vec<tasks::TaskExt>, String> {
     let mut state = state.lock().unwrap();
 
     let tasks = state.get_tasks();
     println!("GET TASKS: {:?}", tasks);
-    // let tasks = tasks::TASKS.lock().map_err(|e| e.to_string())?;
+
     Ok(tasks)
+}
+
+#[tauri::command]
+pub fn get_next_task(state: State<'_, Mutex<TaskReminder>>) -> Result<TaskExt, String> {
+    let state = state.lock().unwrap();
+
+    if let Some(task) = state.get_next_task() {
+        println!("NEXT TASK: {:?}", task);
+        Ok(task)
+    } else {
+        Err("No tasks available".to_string())
+    }
 }
 
 #[tauri::command]
@@ -31,6 +43,7 @@ pub fn create_task(
         name,
         desc,
         timestamp,
+        reminded: false,
     };
 
     task_reminder.push(new_task);
@@ -39,7 +52,7 @@ pub fn create_task(
 }
 
 #[tauri::command]
-pub fn update_task(state: State<'_, Mutex<TaskReminder>>, task: Task) -> Result<(), String> {
+pub fn update_task(state: State<'_, Mutex<TaskReminder>>, task: TaskExt) -> Result<(), String> {
     let mut state = state.lock().unwrap();
     let task_reminder = &mut state;
 

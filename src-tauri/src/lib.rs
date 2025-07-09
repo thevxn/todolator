@@ -2,7 +2,6 @@ mod commands;
 mod tasks;
 
 use std::{
-    cmp::Reverse,
     sync::Mutex,
     thread::{self},
     time::Duration,
@@ -17,7 +16,9 @@ use tauri::{
 };
 
 use crate::{
-    commands::{close, create_task, delete_task, get_tasks, maximize, minimize, update_task},
+    commands::{
+        close, create_task, delete_task, get_next_task, get_tasks, maximize, minimize, update_task,
+    },
     tasks::TaskReminder,
 };
 
@@ -60,14 +61,20 @@ fn setup_tray(app: &mut App) {
         .unwrap();
 }
 
-fn spawn_reminder(handle: AppHandle) {
+fn spawn_reminder(handle: AppHandle, task_name: String, label: String) {
     std::thread::spawn(move || {
         WebviewWindowBuilder::new(
             &handle,
-            "reminder",
+            label,
             tauri::WebviewUrl::App("reminder.html".into()),
         )
-        .title("Todolator Reminder")
+        .title(task_name)
+        .decorations(false)
+        .resizable(true)
+        .center()
+        .focused(true)
+        .drag_and_drop(true)
+        .inner_size(500.00, 250.00)
         .build()
         .unwrap();
     });
@@ -80,8 +87,6 @@ pub fn run() {
             setup_tray(app);
             // Spawn a new window for a pop-up reminder
             let handle = app.handle().clone();
-            spawn_reminder(handle.clone());
-            // load_tasks();
 
             let mut reminder = TaskReminder {
                 tasks: std::collections::BinaryHeap::new(),
@@ -91,30 +96,50 @@ pub fn run() {
 
             app.manage(Mutex::new(reminder));
 
+            let mut window_counter = 0;
             thread::spawn(move || loop {
                 let sleep_duration = {
                     let state = handle.state::<Mutex<TaskReminder>>();
-                    let reminder = state.lock().unwrap();
+                    let mut reminder = state.lock().unwrap();
 
-                    // TODO: Make the tasks field private and add a method to get the next reminder
-                    if let Some(Reverse(next)) = reminder.tasks.peek() {
-                        let now = Utc::now();
+                    let should_remind = if let Some(next) = reminder.tasks.peek() {
+                        next.0.timestamp <= Utc::now()
+                    } else {
+                        false
+                    };
 
-                        if next.timestamp <= now {
-                            println!("Reminding task!!!: {:?}", next);
-                            // TODO: Remove fulfilled tasks or not?
+                    if should_remind {
+                        if let Some(mut next) = reminder.tasks.peek_mut() {
+                            if !next.0.reminded {
+                                println!("Reminding task!!!: {:?}", next);
+                                window_counter += 1;
+
+                                spawn_reminder(
+                                    handle.clone(),
+                                    next.0.name.clone(),
+                                    window_counter.to_string(),
+                                );
+
+                                next.0.reminded = true;
+                            }
+
+                            // TODO:
+                            // This does not remove the reminder from the JSON file. It will be needed to split this into 2 separate data sets ig.
+                            // 1 for the current reminder heap and 1 for the complete list of all tasks (including the already reminded ones),
+                            // unless the reminded ones should just be deleted, which is also an option..
                             // reminder.tasks.pop();
-                            Duration::from_millis(100)
-                        } else {
-                            let duration = (next.timestamp - now).to_std().unwrap();
-                            std::cmp::min(duration, Duration::from_secs(60))
                         }
+                        Duration::from_millis(100)
+                    } else if let Some(next) = reminder.tasks.peek() {
+                        let duration = (next.0.timestamp - Utc::now()).to_std().unwrap();
+                        std::cmp::min(duration, Duration::from_secs(60))
                     } else {
                         Duration::from_secs(1)
                     }
                 };
                 std::thread::sleep(sleep_duration);
             });
+
             Ok(())
         })
         .plugin(tauri_plugin_opener::init())
@@ -125,7 +150,8 @@ pub fn run() {
             minimize,
             close,
             update_task,
-            delete_task
+            delete_task,
+            get_next_task
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

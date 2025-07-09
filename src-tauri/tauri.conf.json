@@ -15,7 +15,8 @@
         "title": "Todolator",
         "width": 800,
         "height": 600,
-        "decorations": false
+        "decorations": false,
+        "zoomHotkeysEnabled": false
       }
     ],
     "security": {
@@ -23,7 +24,14 @@
       "assetProtocol": {
         "enable": true,
         "scope": ["*/**"]
-      }
+      },
+      "capabilities": [
+        {
+          "identifier": "draggable-window",
+          "windows": ["*"],
+          "permissions": ["core:window:allow-start-dragging"]
+        }
+      ]
     }
   },
   "bundle": {

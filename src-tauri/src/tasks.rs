@@ -13,6 +13,7 @@ pub struct Task {
     pub desc: Option<String>,
     pub timestamp: DateTime<Utc>,
     pub id: Uuid,
+    pub reminded: bool,
 }
 
 impl PartialEq for Task {
@@ -24,6 +25,25 @@ impl PartialEq for Task {
 impl Ord for Task {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         self.timestamp.cmp(&other.timestamp)
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct TaskExt {
+    pub name: String,
+    pub desc: Option<String>,
+    pub timestamp: DateTime<Utc>,
+    pub id: Uuid,
+}
+
+impl From<Task> for TaskExt {
+    fn from(task: Task) -> Self {
+        TaskExt {
+            name: task.name,
+            desc: task.desc,
+            timestamp: task.timestamp,
+            id: task.id,
+        }
     }
 }
 
@@ -61,18 +81,25 @@ impl TaskReminder {
         println!("loaded tasks {:?}", self.tasks)
     }
 
-    pub fn get_tasks(&mut self) -> Vec<Task> {
+    pub fn get_tasks(&mut self) -> Vec<TaskExt> {
         let mut tasks: Vec<Task> = self.tasks.iter().map(|t| t.0.clone()).collect();
-        tasks.sort_by(|a, b| a.timestamp.cmp(&b.timestamp));
+        tasks.sort();
 
-        tasks
+        tasks.into_iter().map(TaskExt::from).collect()
     }
 
-    pub fn get_next_task() {
-        // TODO
+    pub fn get_next_task(&self) -> Option<TaskExt> {
+        match self.tasks.peek() {
+            Some(reverse_task) => Some(reverse_task.0.clone().into()),
+            None => None,
+        }
     }
 
-    pub fn update_task(&mut self, task: Task) {
+    // pub fn mark_task_completed() {
+    //     // TODO: Implement
+    // }
+
+    pub fn update_task(&mut self, task: TaskExt) {
         let mut v = self.tasks.clone().into_vec();
         if let Some(t) = v.iter_mut().find(|el| el.0.id == task.id) {
             t.0.name = task.name;
