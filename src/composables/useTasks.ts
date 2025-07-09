@@ -44,7 +44,7 @@ export const useTasks = () => {
 
       if (taskToSave.id) {
         // If the task has an ID, it's an update
-        await invoke("update_task", taskToSave);
+        await invoke("update_task", { task: taskToSave });
         console.log("task updated!");
       } else {
         // If the task does not have an ID, it's a create

@@ -8,3 +8,4 @@
 - Add ellipsis to title & desc
   - Hovering over them should show a popup/popover with the full text
 - Solve current task not resetting after a new task is created
+- Fix title bar on Mac (<https://v2.tauri.app/learn/window-customization/#creating-a-custom-titlebar>)

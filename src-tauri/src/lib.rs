@@ -1,8 +1,14 @@
 mod commands;
 mod tasks;
 
-use std::thread;
+use std::{
+    cmp::Reverse,
+    sync::Mutex,
+    thread::{self},
+    time::Duration,
+};
 
+use chrono::Utc;
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, TrayIconBuilder, TrayIconEvent},
@@ -12,7 +18,7 @@ use tauri::{
 
 use crate::{
     commands::{close, create_task, delete_task, get_tasks, maximize, minimize, update_task},
-    tasks::{load_tasks, TaskReminder},
+    tasks::TaskReminder,
 };
 
 fn setup_tray(app: &mut App) {
@@ -74,13 +80,40 @@ pub fn run() {
             setup_tray(app);
             // Spawn a new window for a pop-up reminder
             let handle = app.handle().clone();
-            spawn_reminder(handle);
-            load_tasks();
-            thread::spawn(move || {
-                let mut reminder = TaskReminder {
-                    tasks: std::collections::BinaryHeap::new(),
+            spawn_reminder(handle.clone());
+            // load_tasks();
+
+            let mut reminder = TaskReminder {
+                tasks: std::collections::BinaryHeap::new(),
+            };
+
+            reminder.load_tasks();
+
+            app.manage(Mutex::new(reminder));
+
+            thread::spawn(move || loop {
+                let sleep_duration = {
+                    let state = handle.state::<Mutex<TaskReminder>>();
+                    let reminder = state.lock().unwrap();
+
+                    // TODO: Make the tasks field private and add a method to get the next reminder
+                    if let Some(Reverse(next)) = reminder.tasks.peek() {
+                        let now = Utc::now();
+
+                        if next.timestamp <= now {
+                            println!("Reminding task!!!: {:?}", next);
+                            // TODO: Remove fulfilled tasks or not?
+                            // reminder.tasks.pop();
+                            Duration::from_millis(100)
+                        } else {
+                            let duration = (next.timestamp - now).to_std().unwrap();
+                            std::cmp::min(duration, Duration::from_secs(60))
+                        }
+                    } else {
+                        Duration::from_secs(1)
+                    }
                 };
-                reminder.run();
+                std::thread::sleep(sleep_duration);
             });
             Ok(())
         })

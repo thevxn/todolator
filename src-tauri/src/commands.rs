@@ -1,81 +1,59 @@
-use std::fs;
+use std::sync::Mutex;
 
 use chrono::{DateTime, Utc};
+use tauri::State;
 use uuid::Uuid;
 
-use crate::tasks;
+use crate::tasks::{self, Task, TaskReminder};
 
 #[tauri::command]
-pub fn get_tasks() -> Result<Vec<tasks::Task>, String> {
-    let tasks = tasks::TASKS.lock().map_err(|e| e.to_string())?;
-    Ok(tasks.clone())
+pub fn get_tasks(state: State<'_, Mutex<TaskReminder>>) -> Result<Vec<tasks::Task>, String> {
+    let mut state = state.lock().unwrap();
+
+    let tasks = state.get_tasks();
+    println!("GET TASKS: {:?}", tasks);
+    // let tasks = tasks::TASKS.lock().map_err(|e| e.to_string())?;
+    Ok(tasks)
 }
 
 #[tauri::command]
 pub fn create_task(
+    state: State<'_, Mutex<TaskReminder>>,
     name: String,
     desc: Option<String>,
     timestamp: DateTime<Utc>,
 ) -> Result<(), String> {
-    let mut tasks = tasks::TASKS.lock().map_err(|e| e.to_string())?;
+    let mut state = state.lock().unwrap();
+    let task_reminder = &mut state;
 
     let new_task = tasks::Task {
         id: Uuid::new_v4(),
-        name: name.to_string(),
-        desc: match desc {
-            Some(d) => Some(d.to_string()),
-            None => None,
-        },
-        timestamp: timestamp,
+        name,
+        desc,
+        timestamp,
     };
 
-    tasks.push(new_task);
-
-    let json_string = serde_json::to_string(&*tasks).map_err(|e| e.to_string())?;
-    fs::write("./tasks.json", json_string).map_err(|e| e.to_string())?;
+    task_reminder.push(new_task);
 
     Ok(())
 }
 
 #[tauri::command]
-pub fn update_task(
-    id: Uuid,
-    name: String,
-    desc: Option<String>,
-    timestamp: DateTime<Utc>,
-) -> Result<(), String> {
-    let mut tasks = tasks::TASKS.lock().map_err(|e| e.to_string())?;
+pub fn update_task(state: State<'_, Mutex<TaskReminder>>, task: Task) -> Result<(), String> {
+    let mut state = state.lock().unwrap();
+    let task_reminder = &mut state;
 
-    let task = tasks.iter_mut().find(|el| el.id == id);
-
-    if let Some(t) = task {
-        t.name = name;
-        if let Some(d) = desc {
-            t.desc = Some(d);
-        };
-        t.timestamp = timestamp;
-    }
-
-    // TODO: Refactor this into its own fn (in all places where its used)
-    let json_string = serde_json::to_string(&*tasks).map_err(|e| e.to_string())?;
-    fs::write("./tasks.json", json_string).map_err(|e| e.to_string())?;
+    task_reminder.update_task(task);
 
     Ok(())
 }
 
 #[tauri::command]
-pub fn delete_task(id: Uuid) -> Result<(), String> {
-    let mut tasks = tasks::TASKS.lock().map_err(|e| e.to_string())?;
+pub fn delete_task(state: State<'_, Mutex<TaskReminder>>, id: Uuid) -> Result<(), String> {
+    let mut state = state.lock().unwrap();
+    let task_reminder = &mut state;
 
-    let task_index = tasks.iter_mut().position(|el| el.id == id);
-
-    if let Some(t) = task_index {
-        tasks.remove(t);
-    }
-
-    // TODO: Refactor this into its own fn (in all places where its used)
-    let json_string = serde_json::to_string(&*tasks).map_err(|e| e.to_string())?;
-    fs::write("./tasks.json", json_string).map_err(|e| e.to_string())?;
+    task_reminder.delete_task(id);
 
     Ok(())
 }
