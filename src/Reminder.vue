@@ -22,7 +22,7 @@
   </div>
   <main>
     <Suspense>
-      <ReminderPopup />
+      <ReminderPopup @close="closeWindow" />
     </Suspense>
   </main>
 </template>
@@ -31,14 +31,6 @@
 import logoUrl from './assets/logo.png'
 import { invoke } from "@tauri-apps/api/core";
 import ReminderPopup from './components/ReminderPopup.vue';
-
-async function maximizeWindow() {
-  try {
-    await invoke("maximize");
-  } catch (e) {
-    console.error("Failed to maximize window:", e);
-  }
-}
 
 async function minimizeWindow() {
   try {
@@ -49,6 +41,13 @@ async function minimizeWindow() {
 }
 
 async function closeWindow() {
+  try {
+    await invoke("complete_task");
+  }
+  catch (e) {
+    console.log("Failed to complete task: ", e);
+  }
+
   try {
     await invoke("close");
   } catch (e) {

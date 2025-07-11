@@ -17,7 +17,8 @@ use tauri::{
 
 use crate::{
     commands::{
-        close, create_task, delete_task, get_next_task, get_tasks, maximize, minimize, update_task,
+        close, complete_task, create_task, delete_task, get_next_task, get_tasks, maximize,
+        minimize, update_task,
     },
     tasks::TaskReminder,
 };
@@ -85,7 +86,6 @@ pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
             setup_tray(app);
-            // Spawn a new window for a pop-up reminder
             let handle = app.handle().clone();
 
             let mut reminder = TaskReminder {
@@ -122,12 +122,6 @@ pub fn run() {
 
                                 next.0.reminded = true;
                             }
-
-                            // TODO:
-                            // This does not remove the reminder from the JSON file. It will be needed to split this into 2 separate data sets ig.
-                            // 1 for the current reminder heap and 1 for the complete list of all tasks (including the already reminded ones),
-                            // unless the reminded ones should just be deleted, which is also an option..
-                            // reminder.tasks.pop();
                         }
                         Duration::from_millis(100)
                     } else if let Some(next) = reminder.tasks.peek() {
@@ -151,7 +145,8 @@ pub fn run() {
             close,
             update_task,
             delete_task,
-            get_next_task
+            get_next_task,
+            complete_task
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -18,7 +18,7 @@ pub fn get_tasks(state: State<'_, Mutex<TaskReminder>>) -> Result<Vec<tasks::Tas
 
 #[tauri::command]
 pub fn get_next_task(state: State<'_, Mutex<TaskReminder>>) -> Result<TaskExt, String> {
-    let state = state.lock().unwrap();
+    let mut state = state.lock().unwrap();
 
     if let Some(task) = state.get_next_task() {
         println!("NEXT TASK: {:?}", task);
@@ -67,6 +67,16 @@ pub fn delete_task(state: State<'_, Mutex<TaskReminder>>, id: Uuid) -> Result<()
     let task_reminder = &mut state;
 
     task_reminder.delete_task(id);
+
+    Ok(())
+}
+
+#[tauri::command]
+pub fn complete_task(state: State<'_, Mutex<TaskReminder>>) -> Result<(), String> {
+    let mut state = state.lock().unwrap();
+    let task_reminder = &mut state;
+
+    task_reminder.mark_task_completed();
 
     Ok(())
 }

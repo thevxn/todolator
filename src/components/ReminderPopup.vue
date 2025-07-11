@@ -6,6 +6,7 @@
             <p>
                 <span class="text-lg">{{ task?.desc }}</span>
             </p>
+            <button @click="$emit('close')">Done</button>
         </div>
         <PHotkeys screen-code="REMINDER_POPUP" />
     </div>
@@ -15,6 +16,7 @@
 import { ref } from 'vue';
 import { ITask } from '../composables/useTasks';
 import { invoke } from '@tauri-apps/api/core';
+import PHotkeys from './PHotkeys.vue';
 
 const task = ref<ITask>()
 
@@ -24,6 +26,9 @@ try {
     console.log("Failed to load task: ", e)
     console.log(e)
 }
+
+defineEmits(["close"]);
+
 </script>
 
 <style></style>

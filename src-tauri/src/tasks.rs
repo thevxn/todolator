@@ -58,9 +58,13 @@ impl TaskReminder {
     }
 
     fn save_tasks(&mut self) -> Result<(), Box<dyn std::error::Error>> {
-        let tasks: Vec<Task> = self.tasks.iter().map(|t| t.0.clone()).collect();
-        let json_string = serde_json::to_string(&tasks).unwrap();
-        fs::write("./tasks.json", json_string).unwrap();
+        let tasks: Vec<TaskExt> = self
+            .tasks
+            .iter()
+            .map(|t| TaskExt::from(t.0.clone()))
+            .collect();
+        let json_string = serde_json::to_string(&tasks)?;
+        fs::write("./tasks.json", json_string)?;
 
         Ok(())
     }
@@ -72,10 +76,16 @@ impl TaskReminder {
         }
 
         let data = fs::read_to_string("./tasks.json").unwrap();
-        let parsed = serde_json::from_str::<Vec<Task>>(&data).unwrap();
+        let parsed = serde_json::from_str::<Vec<TaskExt>>(&data).unwrap();
 
-        parsed.iter().for_each(|el| {
-            self.push(el.clone());
+        parsed.iter().for_each(|t| {
+            self.push(Task {
+                id: t.id,
+                name: t.name.clone(),
+                desc: t.desc.clone(),
+                timestamp: t.timestamp,
+                reminded: false,
+            });
         });
 
         println!("loaded tasks {:?}", self.tasks)
@@ -88,16 +98,20 @@ impl TaskReminder {
         tasks.into_iter().map(TaskExt::from).collect()
     }
 
-    pub fn get_next_task(&self) -> Option<TaskExt> {
+    pub fn get_next_task(&mut self) -> Option<TaskExt> {
         match self.tasks.peek() {
             Some(reverse_task) => Some(reverse_task.0.clone().into()),
             None => None,
         }
     }
 
-    // pub fn mark_task_completed() {
-    //     // TODO: Implement
-    // }
+    pub fn mark_task_completed(&mut self) {
+        self.tasks.pop();
+        println!(
+            "Task marked as completed. Remaining tasks: {:?}",
+            self.tasks
+        )
+    }
 
     pub fn update_task(&mut self, task: TaskExt) {
         let mut v = self.tasks.clone().into_vec();
