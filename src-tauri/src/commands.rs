@@ -38,7 +38,7 @@ pub fn create_task(
     let mut state = state.lock().unwrap();
     let task_reminder = &mut state;
 
-    let new_task = tasks::Task {
+    let new_task = tasks::TaskDefinition {
         id: Uuid::new_v4(),
         name,
         desc,
@@ -46,7 +46,7 @@ pub fn create_task(
         reminded: false,
     };
 
-    task_reminder.push(new_task);
+    task_reminder.push_task_instance(new_task);
 
     Ok(())
 }

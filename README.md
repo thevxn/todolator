@@ -10,3 +10,9 @@
 - Solve current task not resetting after a new task is created
 - Fix title bar on Mac (<https://v2.tauri.app/learn/window-customization/#creating-a-custom-titlebar>)
 - Decide how to handle recurrence (on demand calculation of recurrences vs pre-calculated instances)
+
+## Design
+
+- Lazily calculate recurrences?
+- Binary heap for the actual scheduled reminders (instances)
+- Templates/definitions

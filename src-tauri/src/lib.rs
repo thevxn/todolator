@@ -89,10 +89,10 @@ pub fn run() {
             let handle = app.handle().clone();
 
             let mut reminder = TaskReminder {
-                tasks: std::collections::BinaryHeap::new(),
+                task_instances: std::collections::BinaryHeap::new(),
             };
 
-            reminder.load_tasks();
+            reminder.load_task_definitions();
 
             app.manage(Mutex::new(reminder));
 
@@ -102,14 +102,14 @@ pub fn run() {
                     let state = handle.state::<Mutex<TaskReminder>>();
                     let mut reminder = state.lock().unwrap();
 
-                    let should_remind = if let Some(next) = reminder.tasks.peek() {
+                    let should_remind = if let Some(next) = reminder.task_instances.peek() {
                         next.0.timestamp <= Utc::now()
                     } else {
                         false
                     };
 
                     if should_remind {
-                        if let Some(mut next) = reminder.tasks.peek_mut() {
+                        if let Some(mut next) = reminder.task_instances.peek_mut() {
                             if !next.0.reminded {
                                 println!("Reminding task!!!: {:?}", next);
                                 window_counter += 1;
@@ -124,7 +124,7 @@ pub fn run() {
                             }
                         }
                         Duration::from_millis(100)
-                    } else if let Some(next) = reminder.tasks.peek() {
+                    } else if let Some(next) = reminder.task_instances.peek() {
                         let duration = (next.0.timestamp - Utc::now()).to_std().unwrap();
                         std::cmp::min(duration, Duration::from_secs(60))
                     } else {
