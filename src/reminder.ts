@@ -1,5 +1,5 @@
-import { createApp } from "vue";
-import App from "./Reminder.vue";
-import "./assets/styles.css";
+import { createApp } from 'vue'
+import App from './PReminder.vue'
+import './assets/styles.css'
 
-createApp(App).mount("#app");
+createApp(App).mount('#app')

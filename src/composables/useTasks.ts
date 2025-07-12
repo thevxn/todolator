@@ -1,85 +1,85 @@
-import { invoke } from "@tauri-apps/api/core";
-import { Ref, ref } from "vue";
+import { invoke } from '@tauri-apps/api/core'
+import { Ref, ref } from 'vue'
 
-type DateTimeString = string;
+type DateTimeString = string
 
 export interface ITask {
-  id?: string;
-  name: string;
-  desc?: string;
-  timestamp: DateTimeString;
+  id?: string
+  name: string
+  desc?: string
+  timestamp: DateTimeString
 }
 
 export const useTasks = () => {
-  const tasks = ref([]) as Ref<Array<ITask>>;
-  const displayTaskModal = ref(false);
-  const taskCreationError = ref(undefined) as Ref<string | undefined>;
-  const displayConfirmationModal = ref(false);
+  const tasks = ref([]) as Ref<Array<ITask>>
+  const displayTaskModal = ref(false)
+  const taskCreationError = ref(undefined) as Ref<string | undefined>
+  const displayConfirmationModal = ref(false)
 
   const loadTasks = async () => {
     try {
-      tasks.value = await invoke("get_tasks");
-      console.log("tasks loaded");
+      tasks.value = await invoke('get_tasks')
+      console.log('tasks loaded')
 
-      console.log(tasks.value);
+      console.log(tasks.value)
     } catch (e) {
-      console.log(e);
+      console.log(e)
     }
-  };
+  }
 
   const saveTask = async (task: ITask) => {
     if (!task.name || !task.timestamp) {
-      console.log("missing required attributes");
-      taskCreationError.value = "Missing required attributes!";
-      return;
+      console.log('missing required attributes')
+      taskCreationError.value = 'Missing required attributes!'
+      return
     }
     try {
       const taskToSave = {
         id: task.id,
         name: task.name,
         desc: task.desc,
-        timestamp: new Date(task.timestamp).toISOString()
-      };
-      console.log("Adding task: ", taskToSave);
+        timestamp: new Date(task.timestamp).toISOString(),
+      }
+      console.log('Adding task: ', taskToSave)
 
       if (taskToSave.id) {
         // If the task has an ID, it's an update
-        await invoke("update_task", { task: taskToSave });
-        console.log("task updated!");
+        await invoke('update_task', { task: taskToSave })
+        console.log('task updated!')
       } else {
         // If the task does not have an ID, it's a create
-        await invoke("create_task", taskToSave);
-        console.log("task created!");
+        await invoke('create_task', taskToSave)
+        console.log('task created!')
       }
 
-      tasks.value.push(task);
+      tasks.value.push(task)
 
-      toggleTaskModal();
-      await loadTasks();
+      toggleTaskModal()
+      await loadTasks()
     } catch (e) {
-      console.log(e);
+      console.log(e)
     }
-  };
+  }
 
   const deleteTask = async (id: string) => {
     try {
-      console.log("Deleting task with ID ", id);
-      await invoke("delete_task", { id });
-      await loadTasks();
+      console.log('Deleting task with ID ', id)
+      await invoke('delete_task', { id })
+      await loadTasks()
     } catch (e) {
-      console.log(e);
+      console.log(e)
     }
-  };
+  }
 
   const toggleTaskModal = () => {
-    taskCreationError.value = undefined;
-    displayTaskModal.value = !displayTaskModal.value;
-  };
+    taskCreationError.value = undefined
+    displayTaskModal.value = !displayTaskModal.value
+  }
 
   const toggleConfirmationModal = () => {
     // taskCreationError.value = undefined;
-    displayConfirmationModal.value = !displayConfirmationModal.value;
-  };
+    displayConfirmationModal.value = !displayConfirmationModal.value
+  }
 
   return {
     tasks,
@@ -90,6 +90,6 @@ export const useTasks = () => {
     saveTask,
     toggleTaskModal,
     toggleConfirmationModal,
-    deleteTask
-  };
-};
+    deleteTask,
+  }
+}

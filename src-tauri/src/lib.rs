@@ -75,7 +75,7 @@ fn spawn_reminder(handle: AppHandle, task_name: String, label: String) {
         .center()
         .focused(true)
         .drag_and_drop(true)
-        .inner_size(500.00, 250.00)
+        .inner_size(648.00, 250.00)
         .build()
         .unwrap();
     });
