@@ -50,7 +50,7 @@ watch(
   },
 )
 
-const emit = defineEmits(['submit', 'close'])
+defineEmits(['submit', 'close'])
 </script>
 
 <style></style>

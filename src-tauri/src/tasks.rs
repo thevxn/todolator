@@ -7,33 +7,22 @@ use std::fs;
 use std::path::Path;
 use uuid::Uuid;
 
-#[derive(Serialize, Deserialize, Clone, Debug, Copy)]
-enum RECURRENCE {
-    // TODO: Take into acount calendar days/months/leap years/...
-    NONE,
-    HOURLY = 1,
-    DAILY = 24,
-    WEEKLY = 24 * 7,
-    MONTHLY = 24 * 30,
-    YEARLY = 24 * 30 * 12,
-}
-
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct TaskDefinition {
     pub id: Uuid,
     pub name: String,
     pub desc: Option<String>,
     pub first_recurrence: DateTime<Utc>,
-    pub recurrence_type: RECURRENCE,
+    pub recurrence_minutes: Option<i64>,
 }
 
-#[derive(Debug, Clone, PartialOrd, Eq)]
+#[derive(Debug, Clone, PartialOrd, Eq, Serialize, Deserialize)]
 pub struct TaskInstance {
     pub definition_id: Uuid,
     pub name: String,
     pub desc: Option<String>,
     pub timestamp: DateTime<Utc>,
-    pub reminded: bool,
+    pub window_spawned: bool,
 }
 
 impl PartialEq for TaskInstance {
@@ -48,22 +37,21 @@ impl Ord for TaskInstance {
     }
 }
 
-// #[derive(Serialize, Deserialize, Debug)]
-// pub struct TaskExt {
-//     pub name: String,
-//     pub desc: Option<String>,
-//     pub timestamp: DateTime<Utc>,
-// }
-
 static PAGE_SIZE: i32 = 30;
 pub struct TaskReminder {
     pub task_definitions: Vec<TaskDefinition>,
     pub task_instances: BinaryHeap<std::cmp::Reverse<TaskInstance>>,
+    pub calculated_instances: usize,
 }
 
 impl TaskReminder {
-    pub fn push_task_definition(&mut self, definition: TaskDefinition) {
+    fn push_task_definition(&mut self, definition: TaskDefinition) {
         self.task_definitions.push(definition);
+    }
+
+    pub fn create_task_definition(&mut self, definition: TaskDefinition) {
+        self.push_task_definition(definition);
+        self.save_task_definitions().unwrap();
     }
 
     pub fn push_task_instance(&mut self, instance: TaskInstance) {
@@ -87,59 +75,95 @@ impl TaskReminder {
         let data = fs::read_to_string("./tasks.json").unwrap();
         let parsed = serde_json::from_str::<Vec<TaskDefinition>>(&data).unwrap();
 
-        // TODO: Create a new method to iterate over the task definitions and calculate the first 30(?) recurrences (instances) for each one to hold in memory
         parsed.iter().for_each(|t| {
             self.push_task_definition(t.clone());
         });
 
-        println!("loaded tasks {:?}", self.task_instances)
+        // self.save_task_definitions().unwrap();
+        // self.generate_task_instances(0);
+
+        println!("Loaded task definitions: {:?}", self.task_definitions)
+    }
+
+    fn get_task_definition(&self, id: Uuid) -> Option<TaskDefinition> {
+        let definitions = &self.task_definitions;
+        if let Some(def) = definitions.iter().find(|d| d.id == id) {
+            Some(def.clone())
+        } else {
+            None
+        }
+
+        // self.task_definitions = definitions;
+        // self.save_task_definitions().unwrap();
+        // self.generate_task_instances(0);
     }
 
     /// Calculates task instances from definitions on demand.
-    pub fn get_task_instances(self, page: i32) -> Vec<TaskInstance> {
-        let definitions = self.task_definitions;
-        let mut instances = Vec::new();
+    pub fn generate_task_instances(&mut self, page: i32) {
+        let definitions = self.task_definitions.clone();
 
-        // For each definition:
-        // Create 30(?) instances, where each instance has a timestamp of first start + current recurrence number offset
-        definitions.iter().for_each(|d| {
-            // Calculate the first 30 recurrences
-            for i in 0..29 {
-                let interval_hours = match d.recurrence_type {
-                    RECURRENCE::NONE => 0,
-                    _ => d.recurrence_type as i64,
-                };
+        // Iterate over definitions - generate one instance for each definition on each iteration (if recurring - if not, only the first iteration generates an instance). Break once the total generated instances are at (page + 1) * PAGE_SIZE.
+        //
+        // These generated instances are held in memory, so with each page the size of the tasks stored in memory grows.
+        let instances_required = ((page + 1) * PAGE_SIZE) as i64;
 
-                instances.push(TaskInstance {
-                    definition_id: d.id,
-                    name: d.name.clone(),
-                    desc: d.desc.clone(),
-                    timestamp: d.first_recurrence + Duration::hours(i * interval_hours),
-                    reminded: false,
-                });
-
-                match d.recurrence_type {
-                    RECURRENCE::NONE => break,
-                    _ => continue,
+        for i in 0..instances_required {
+            definitions.iter().for_each(|d| {
+                if i == 0 {
+                    println!("Pushing instance of a non-recurring definition");
+                    self.push_task_instance(TaskInstance {
+                        definition_id: d.id,
+                        name: d.name.clone(),
+                        desc: d.desc.clone(),
+                        timestamp: d.first_recurrence,
+                        window_spawned: false,
+                    });
+                } else {
+                    if let Some(interval_minutes) = d.recurrence_minutes {
+                        println!("Pushing instance of a recurring definition");
+                        self.push_task_instance(TaskInstance {
+                            definition_id: d.id,
+                            name: d.name.clone(),
+                            desc: d.desc.clone(),
+                            timestamp: d.first_recurrence + Duration::minutes(i * interval_minutes),
+                            window_spawned: false,
+                        });
+                    }
                 }
-            }
-        });
+            });
+        }
+
+        // let item_from = (page * PAGE_SIZE) as usize;
+        // let item_to = item_from + PAGE_SIZE as usize;
+        print!("Calculated instances: {:?}", self.task_instances);
+        self.calculated_instances = self.task_instances.len();
+    }
+
+    pub fn get_tasks(&mut self, page: i32) -> Vec<TaskInstance> {
+        if (page + 1) * PAGE_SIZE > self.calculated_instances as i32 {
+            println!("Loading definitions from JSON file...");
+            self.task_definitions.clear();
+            self.load_task_definitions();
+            println!("Generating instances...");
+            self.task_instances.clear();
+            self.generate_task_instances(page);
+        }
 
         let item_from = (page * PAGE_SIZE) as usize;
         let item_to = item_from + PAGE_SIZE as usize;
+        let item_to = item_to.min(self.task_instances.len());
 
-        instances[item_from..item_to].to_vec()
+        if self.calculated_instances > 0 && item_from < self.task_instances.len() {
+            let tasks: Vec<TaskInstance> =
+                self.task_instances.iter().map(|t| t.0.clone()).collect();
+            // tasks.sort();
+
+            return tasks[item_from..item_to].to_vec();
+        }
+        std::vec::Vec::new()
     }
 
-    // TODO: Is this needed to be kept?
-    // pub fn get_tasks(&mut self) -> Vec<TaskExt> {
-    //     let mut tasks: Vec<TaskDefinition> =
-    //         self.task_instances.iter().map(|t| t.0.clone()).collect();
-    //     tasks.sort();
-
-    //     tasks.into_iter().map(TaskExt::from).collect()
-    // }
-
+    // TODO: Once an instance is reminded, if its parent definition is not recurring, delete the definition along with the instance.
     pub fn get_next_task(&mut self) -> Option<TaskInstance> {
         match self.task_instances.peek() {
             Some(reverse_task) => Some(reverse_task.0.clone().into()),
@@ -147,12 +171,22 @@ impl TaskReminder {
         }
     }
 
-    pub fn mark_task_completed(&mut self) {
-        self.task_instances.pop();
+    // TODO: Get definition ID as a param and call delete on it as well if not recurring
+    pub fn mark_task_completed(&mut self, definition_id: Uuid) {
+        let instances = &mut self.task_instances;
+        instances.pop();
+
         println!(
             "Task marked as completed. Remaining tasks: {:?}",
             self.task_instances
-        )
+        );
+
+        if let Some(definition) = self.get_task_definition(definition_id) {
+            if let None = definition.recurrence_minutes {
+                self.delete_task_definition(definition_id);
+            }
+        }
+        // TODO: Check here if the definition needs to be deleted as well (does not have any future recurrences)
     }
 
     pub fn update_task(&mut self, definition: TaskDefinition) {
@@ -168,13 +202,14 @@ impl TaskReminder {
         // self.save_task_definitions().unwrap();
     }
 
-    pub fn delete_task(&mut self, id: Uuid) {
-        let mut definitions = self.task_definitions.clone();
+    pub fn delete_task_definition(&mut self, id: Uuid) {
+        let definitions = &mut self.task_definitions;
         if let Some(t) = definitions.iter_mut().position(|d| d.id == id) {
             definitions.remove(t);
         };
 
-        self.task_definitions = definitions;
         self.save_task_definitions().unwrap();
+        // TODO: Is this needed here? Probably not?
+        // self.generate_task_instances(0);
     }
 }

@@ -50,6 +50,7 @@ async function minimizeWindow() {
 
 async function closeWindow() {
   try {
+    // TODO: Provide the Definition ID here (update the data model in the GUI to match the updated BE model - TaskInstance)
     await invoke('complete_task')
   } catch (e) {
     console.log('Failed to complete task: ', e)

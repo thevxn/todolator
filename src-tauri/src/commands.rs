@@ -1,23 +1,26 @@
 use std::sync::Mutex;
 
 use chrono::{DateTime, Utc};
+// use chrono::{DateTime, Utc};
 use tauri::State;
 use uuid::Uuid;
+// use uuid::Uuid;
 
-use crate::tasks::{self, TaskExt, TaskReminder};
+use crate::tasks::{TaskDefinition, TaskInstance, TaskReminder};
 
+// TODO: Add paging here for listing in the GUI
 #[tauri::command]
-pub fn get_tasks(state: State<'_, Mutex<TaskReminder>>) -> Result<Vec<tasks::TaskExt>, String> {
+pub fn get_tasks(state: State<'_, Mutex<TaskReminder>>) -> Result<Vec<TaskInstance>, String> {
     let mut state = state.lock().unwrap();
 
-    let tasks = state.get_tasks();
+    let tasks = state.get_tasks(0);
     println!("GET TASKS: {:?}", tasks);
 
     Ok(tasks)
 }
 
 #[tauri::command]
-pub fn get_next_task(state: State<'_, Mutex<TaskReminder>>) -> Result<TaskExt, String> {
+pub fn get_next_task(state: State<'_, Mutex<TaskReminder>>) -> Result<TaskInstance, String> {
     let mut state = state.lock().unwrap();
 
     if let Some(task) = state.get_next_task() {
@@ -34,49 +37,54 @@ pub fn create_task(
     name: String,
     desc: Option<String>,
     timestamp: DateTime<Utc>,
+    recurrence_minutes: Option<i64>,
 ) -> Result<(), String> {
     let mut state = state.lock().unwrap();
     let task_reminder = &mut state;
 
-    let new_task = tasks::TaskDefinition {
+    let new_task = TaskDefinition {
         id: Uuid::new_v4(),
         name,
         desc,
-        timestamp,
-        reminded: false,
+        first_recurrence: timestamp,
+        recurrence_minutes,
     };
 
-    task_reminder.push_task_instance(new_task);
+    task_reminder.create_task_definition(new_task);
 
     Ok(())
 }
 
+// #[tauri::command]
+// pub fn update_task(state: State<'_, Mutex<TaskReminder>>, task: TaskExt) -> Result<(), String> {
+//     let mut state = state.lock().unwrap();
+//     let task_reminder = &mut state;
+
+//     task_reminder.update_task(task);
+
+//     Ok(())
+// }
+
+// #[tauri::command]
+// pub fn delete_task(state: State<'_, Mutex<TaskReminder>>, id: Uuid) -> Result<(), String> {
+//     let mut state = state.lock().unwrap();
+//     let task_reminder = &mut state;
+
+//     task_reminder.delete_task(id);
+
+//     Ok(())
+// }
+
+// TODO: Provide the Definition ID from the GUI
 #[tauri::command]
-pub fn update_task(state: State<'_, Mutex<TaskReminder>>, task: TaskExt) -> Result<(), String> {
+pub fn complete_task(
+    state: State<'_, Mutex<TaskReminder>>,
+    definition_id: Uuid,
+) -> Result<(), String> {
     let mut state = state.lock().unwrap();
     let task_reminder = &mut state;
 
-    task_reminder.update_task(task);
-
-    Ok(())
-}
-
-#[tauri::command]
-pub fn delete_task(state: State<'_, Mutex<TaskReminder>>, id: Uuid) -> Result<(), String> {
-    let mut state = state.lock().unwrap();
-    let task_reminder = &mut state;
-
-    task_reminder.delete_task(id);
-
-    Ok(())
-}
-
-#[tauri::command]
-pub fn complete_task(state: State<'_, Mutex<TaskReminder>>) -> Result<(), String> {
-    let mut state = state.lock().unwrap();
-    let task_reminder = &mut state;
-
-    task_reminder.mark_task_completed();
+    task_reminder.mark_task_completed(definition_id);
 
     Ok(())
 }

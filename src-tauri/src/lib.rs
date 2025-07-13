@@ -16,10 +16,7 @@ use tauri::{
 };
 
 use crate::{
-    commands::{
-        close, complete_task, create_task, delete_task, get_next_task, get_tasks, maximize,
-        minimize, update_task,
-    },
+    commands::{close, complete_task, create_task, get_next_task, get_tasks, maximize, minimize},
     tasks::TaskReminder,
 };
 
@@ -89,7 +86,9 @@ pub fn run() {
             let handle = app.handle().clone();
 
             let mut reminder = TaskReminder {
+                task_definitions: std::vec::Vec::new(),
                 task_instances: std::collections::BinaryHeap::new(),
+                calculated_instances: 0,
             };
 
             reminder.load_task_definitions();
@@ -110,7 +109,7 @@ pub fn run() {
 
                     if should_remind {
                         if let Some(mut next) = reminder.task_instances.peek_mut() {
-                            if !next.0.reminded {
+                            if !next.0.window_spawned {
                                 println!("Reminding task!!!: {:?}", next);
                                 window_counter += 1;
 
@@ -120,7 +119,7 @@ pub fn run() {
                                     window_counter.to_string(),
                                 );
 
-                                next.0.reminded = true;
+                                next.0.window_spawned = true;
                             }
                         }
                         Duration::from_millis(100)
@@ -143,10 +142,10 @@ pub fn run() {
             maximize,
             minimize,
             close,
-            update_task,
-            delete_task,
+            // update_task,
+            // delete_task,
             get_next_task,
-            complete_task
+            complete_task,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
