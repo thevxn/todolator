@@ -1,12 +1,10 @@
 use std::sync::Mutex;
 
 use chrono::{DateTime, Utc};
-// use chrono::{DateTime, Utc};
 use tauri::State;
 use uuid::Uuid;
-// use uuid::Uuid;
 
-use crate::tasks::{TaskDefinition, TaskInstance, TaskReminder};
+use crate::tasks::{Recurrence, TaskDefinition, TaskInstance, TaskReminder};
 
 // TODO: Add paging here for listing in the GUI
 #[tauri::command]
@@ -46,8 +44,14 @@ pub fn create_task(
         id: Uuid::new_v4(),
         name,
         desc,
-        first_recurrence: timestamp,
-        recurrence_minutes,
+        start: timestamp,
+        recurrence: match recurrence_minutes {
+            Some(minutes) => Recurrence::Recurring {
+                last_recurrence: timestamp,
+                minutes,
+            },
+            None => Recurrence::None,
+        },
     };
 
     task_reminder.create_task_definition(new_task);

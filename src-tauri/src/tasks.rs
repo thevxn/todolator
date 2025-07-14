@@ -8,12 +8,21 @@ use std::path::Path;
 use uuid::Uuid;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
+pub enum Recurrence {
+    None,
+    Recurring {
+        last_recurrence: DateTime<Utc>,
+        minutes: i64,
+    },
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct TaskDefinition {
     pub id: Uuid,
     pub name: String,
     pub desc: Option<String>,
-    pub first_recurrence: DateTime<Utc>,
-    pub recurrence_minutes: Option<i64>,
+    pub recurrence: Recurrence,
+    pub start: DateTime<Utc>,
 }
 
 #[derive(Debug, Clone, PartialOrd, Eq, Serialize, Deserialize)]
@@ -115,17 +124,21 @@ impl TaskReminder {
                         definition_id: d.id,
                         name: d.name.clone(),
                         desc: d.desc.clone(),
-                        timestamp: d.first_recurrence,
+                        timestamp: d.start,
                         window_spawned: false,
                     });
                 } else {
-                    if let Some(interval_minutes) = d.recurrence_minutes {
+                    if let Recurrence::Recurring {
+                        minutes,
+                        last_recurrence,
+                    } = d.recurrence
+                    {
                         println!("Pushing instance of a recurring definition");
                         self.push_task_instance(TaskInstance {
                             definition_id: d.id,
                             name: d.name.clone(),
                             desc: d.desc.clone(),
-                            timestamp: d.first_recurrence + Duration::minutes(i * interval_minutes),
+                            timestamp: last_recurrence + Duration::minutes(i * minutes),
                             window_spawned: false,
                         });
                     }
@@ -176,7 +189,6 @@ impl TaskReminder {
         }
     }
 
-    // TODO: Get definition ID as a param and call delete on it as well if not recurring
     pub fn mark_task_completed(&mut self, definition_id: Uuid) {
         let instances = &mut self.task_instances;
         instances.pop();
@@ -187,11 +199,10 @@ impl TaskReminder {
         );
 
         if let Some(definition) = self.get_task_definition(definition_id) {
-            if let None = definition.recurrence_minutes {
+            if let Recurrence::None = definition.recurrence {
                 self.delete_task_definition(definition_id);
             }
         }
-        // TODO: Check here if the definition needs to be deleted as well (does not have any future recurrences)
     }
 
     pub fn update_task(&mut self, definition: TaskDefinition) {
