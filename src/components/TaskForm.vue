@@ -62,10 +62,10 @@
 <script lang="ts" setup>
 import { nextTick, ref, watch } from 'vue'
 import PHotkeys from './PHotkeys.vue'
-import { ITask } from '../composables/useTasks'
+import { Task } from '../composables/useTasks'
 
 const props = defineProps<{
-  currentTask: ITask
+  currentTask: Task
   display: boolean
   submitText?: string
   errorText?: string

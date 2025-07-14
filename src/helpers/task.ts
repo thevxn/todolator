@@ -1,12 +1,12 @@
 import { Ref } from 'vue'
-import { ITask } from '../composables/useTasks'
+import { DateTimeString, INewTask } from '../composables/useTasks'
 
-export const resetTask = (task: Ref<ITask | undefined>) => {
+export const resetTask = (task: Ref<INewTask | undefined>) => {
   if (task) {
     task.value = {
       name: '',
       desc: undefined,
-      timestamp: '',
+      timestamp: '' as DateTimeString,
     }
   }
 }

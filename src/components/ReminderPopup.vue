@@ -5,7 +5,7 @@
       <p>
         <span class="text-lg">{{ task?.desc }}</span>
       </p>
-      <button @click="$emit('close')">Done</button>
+      <button @click="$emit('close', task?.definition_id)">Done</button>
     </div>
     <PHotkeys screen-code="REMINDER_POPUP" />
   </div>
@@ -13,11 +13,11 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { ITask } from '../composables/useTasks'
+import { Task } from '../composables/useTasks'
 import { invoke } from '@tauri-apps/api/core'
 import PHotkeys from './PHotkeys.vue'
 
-const task = ref<ITask>()
+const task = ref<Task>()
 
 try {
   task.value = await invoke('get_next_task')

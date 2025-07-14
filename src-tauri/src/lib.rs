@@ -12,7 +12,7 @@ use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, TrayIconBuilder, TrayIconEvent},
     webview::WebviewWindowBuilder,
-    App, AppHandle, Manager,
+    App, AppHandle, Emitter, Listener, Manager,
 };
 
 use crate::{
@@ -72,7 +72,7 @@ fn spawn_reminder(handle: AppHandle, task_name: String, label: String) {
         .center()
         .focused(true)
         .drag_and_drop(true)
-        .inner_size(648.00, 250.00)
+        .inner_size(640.00, 250.00)
         .build()
         .unwrap();
     });
@@ -84,6 +84,10 @@ pub fn run() {
         .setup(|app| {
             setup_tray(app);
             let handle = app.handle().clone();
+            app.listen("state-changed", move |e| {
+                println!("Received a state-changed event, re-emitting");
+                handle.emit("state-changed", e.payload()).unwrap();
+            });
 
             let mut reminder = TaskReminder {
                 task_definitions: std::vec::Vec::new(),
@@ -95,6 +99,7 @@ pub fn run() {
 
             app.manage(Mutex::new(reminder));
 
+            let handle = app.handle().clone();
             let mut window_counter = 0;
             thread::spawn(move || loop {
                 let sleep_duration = {

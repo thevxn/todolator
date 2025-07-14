@@ -9,10 +9,10 @@
   <main class="flex flex-col items-center justify-center p-4">
     <ConfirmationModal
       :display="displayConfirmationModal"
-      @submit="handleTaskDelete(currentTask.id)"
+      @submit="handleTaskDelete(currentTask.definition_id)"
       @close="closeModals"
       :name="currentTask.name"
-      :id="currentTask.id"
+      :id="currentTask.definition_id"
     />
     <TaskForm
       submit-text="Save"
@@ -87,19 +87,20 @@
 import { onMounted, onUnmounted, Ref, ref, watch } from 'vue'
 import TaskForm from './TaskForm.vue'
 import PHotkeys from './PHotkeys.vue'
-import { ITask, useTasks } from '../composables/useTasks'
+import { DateTimeString, Task, useTasks } from '../composables/useTasks'
 import { useRowSelect } from '../composables/useRowSelect'
 import { toDatetimeLocalValue } from '../helpers/datetime'
 import { resetTask } from '../helpers/task'
 import ConfirmationModal from './ConfirmationModal.vue'
 import PIcon from './PIcon.vue'
+import { listen } from '@tauri-apps/api/event'
 
 const {
   tasks,
   displayTaskModal,
   taskCreationError,
   loadTasks,
-  saveTask,
+  createTask,
   deleteTask,
   toggleTaskModal,
   toggleConfirmationModal,
@@ -114,7 +115,7 @@ const { selectedIndex, resetSelectedIndex } = useRowSelect(
 const rowRefs = ref<HTMLElement[]>([])
 const tableRef = ref<HTMLElement | null>(null)
 
-const currentTask = ref({}) as Ref<ITask>
+const currentTask = ref({}) as Ref<Task>
 
 watch(selectedIndex, (newIndex) => {
   if (newIndex === null || !tableRef.value) return
@@ -148,10 +149,10 @@ const openEditModal = (taskIndex: number | null) => {
   if (taskIndex !== null) {
     resetTask(currentTask)
     currentTask.value = {
-      id: tasks.value[taskIndex].id,
+      definition_id: tasks.value[taskIndex].definition_id,
       name: tasks.value[taskIndex].name,
       desc: tasks.value[taskIndex].desc,
-      timestamp: toDatetimeLocalValue(tasks.value[taskIndex].timestamp),
+      timestamp: toDatetimeLocalValue(tasks.value[taskIndex].timestamp) as DateTimeString,
     }
     toggleTaskModal()
   }
@@ -161,10 +162,10 @@ const openDeleteModal = (taskIndex: number | null) => {
   if (taskIndex !== null) {
     resetTask(currentTask)
     currentTask.value = {
-      id: tasks.value[taskIndex].id,
+      definition_id: tasks.value[taskIndex].definition_id,
       name: tasks.value[taskIndex].name,
       desc: tasks.value[taskIndex].desc,
-      timestamp: toDatetimeLocalValue(tasks.value[taskIndex].timestamp),
+      timestamp: toDatetimeLocalValue(tasks.value[taskIndex].timestamp) as DateTimeString,
     }
 
     console.log(currentTask)
@@ -185,8 +186,9 @@ const closeModals = () => {
   }
 }
 
-const handleSave = async (task: ITask) => {
-  await saveTask(task)
+const handleSave = async (task: Task) => {
+  console.log('Saving task: ', task)
+  await createTask(task)
   resetTask(currentTask)
 }
 
@@ -253,7 +255,7 @@ onMounted(async () => {
           e.stopPropagation()
           e.preventDefault()
           try {
-            await deleteTask(tasks.value[selectedIndex.value].id as string)
+            await deleteTask(tasks.value[selectedIndex.value].definition_id as string)
           } catch (e) {
             console.log(`Failed to delete task: ${e}`)
           }
@@ -269,6 +271,22 @@ onMounted(async () => {
   window.addEventListener('keydown', handler)
   onUnmounted(() => window.removeEventListener('keydown', handler))
 })
+
+type Payload = {
+  url: string
+}
+
+// const l = await listen<Payload>('state-changed', (event) => {
+//   console.log(`Received event: ${event}`)
+// })
+
+listen<Payload>('state-changed', (event) => {
+  console.log(`Received event: ${event}`)
+})
+
+// onUnmounted(() => {
+//   l()
+// })
 </script>
 
 <style>

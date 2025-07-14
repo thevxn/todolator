@@ -1,17 +1,20 @@
 import { invoke } from '@tauri-apps/api/core'
 import { Ref, ref } from 'vue'
 
-type DateTimeString = string
+export type DateTimeString = Branded<string, 'DateTimeString'>
 
-export interface ITask {
-  id?: string
+export interface INewTask {
   name: string
   desc?: string
   timestamp: DateTimeString
+  recurrence_minutes?: DateTimeString
+}
+export type Task = INewTask & {
+  definition_id: string
 }
 
 export const useTasks = () => {
-  const tasks = ref([]) as Ref<Array<ITask>>
+  const tasks = ref([]) as Ref<Array<Task>>
   const displayTaskModal = ref(false)
   const taskCreationError = ref(undefined) as Ref<string | undefined>
   const displayConfirmationModal = ref(false)
@@ -27,7 +30,34 @@ export const useTasks = () => {
     }
   }
 
-  const saveTask = async (task: ITask) => {
+  const createTask = async (task: INewTask) => {
+    if (!task.name || !task.timestamp) {
+      console.log('missing required attributes')
+      taskCreationError.value = 'Missing required attributes!'
+      return
+    }
+
+    try {
+      const taskToSave: INewTask = {
+        name: task.name,
+        desc: task.desc,
+        timestamp: new Date(task.timestamp).toISOString() as DateTimeString,
+        recurrence_minutes: task.recurrence_minutes,
+      }
+      console.log('Adding task: ', taskToSave)
+
+      // If the task does not have an ID, it's a create
+      await invoke('create_task', { ...taskToSave })
+      console.log('task created!')
+
+      toggleTaskModal()
+      await loadTasks()
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  const updateTask = async (task: Task) => {
     if (!task.name || !task.timestamp) {
       console.log('missing required attributes')
       taskCreationError.value = 'Missing required attributes!'
@@ -35,24 +65,15 @@ export const useTasks = () => {
     }
     try {
       const taskToSave = {
-        id: task.id,
+        definition_id: task.hasOwnProperty('definition_id') ? task.definition_id : undefined,
         name: task.name,
         desc: task.desc,
         timestamp: new Date(task.timestamp).toISOString(),
       }
       console.log('Adding task: ', taskToSave)
 
-      if (taskToSave.id) {
-        // If the task has an ID, it's an update
-        await invoke('update_task', { task: taskToSave })
-        console.log('task updated!')
-      } else {
-        // If the task does not have an ID, it's a create
-        await invoke('create_task', taskToSave)
-        console.log('task created!')
-      }
-
-      tasks.value.push(task)
+      await invoke('update_task', { task: taskToSave })
+      console.log('task updated!')
 
       toggleTaskModal()
       await loadTasks()
@@ -87,9 +108,10 @@ export const useTasks = () => {
     taskCreationError,
     displayConfirmationModal,
     loadTasks,
-    saveTask,
+    saveTask: updateTask,
     toggleTaskModal,
     toggleConfirmationModal,
     deleteTask,
+    createTask,
   }
 }

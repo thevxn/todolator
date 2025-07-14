@@ -30,7 +30,7 @@
   </div>
   <main>
     <Suspense>
-      <ReminderPopup @close="closeWindow" />
+      <ReminderPopup @close="completeTask" />
     </Suspense>
   </main>
 </template>
@@ -39,6 +39,7 @@
 import logoUrl from './assets/logo.png'
 import { invoke } from '@tauri-apps/api/core'
 import ReminderPopup from './components/ReminderPopup.vue'
+import { emit } from '@tauri-apps/api/event'
 
 async function minimizeWindow() {
   try {
@@ -48,14 +49,20 @@ async function minimizeWindow() {
   }
 }
 
-async function closeWindow() {
+async function completeTask(id: string) {
   try {
-    // TODO: Provide the Definition ID here (update the data model in the GUI to match the updated BE model - TaskInstance)
-    await invoke('complete_task')
+    await invoke('complete_task', { definitionId: id })
   } catch (e) {
     console.log('Failed to complete task: ', e)
   }
 
+  emit('state-changed', { url: '' })
+  console.log('emitted')
+
+  // await closeWindow()
+}
+
+async function closeWindow() {
   try {
     await invoke('close')
   } catch (e) {
