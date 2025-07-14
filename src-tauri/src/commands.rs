@@ -46,11 +46,11 @@ pub fn create_task(
         desc,
         start: timestamp,
         recurrence: match recurrence_minutes {
-            Some(minutes) => Recurrence::Recurring {
+            Some(minutes) => Some(Recurrence::Recurring {
                 last_recurrence: timestamp,
                 minutes,
-            },
-            None => Recurrence::None,
+            }),
+            None => None,
         },
     };
 

@@ -21,7 +21,8 @@ pub struct TaskDefinition {
     pub id: Uuid,
     pub name: String,
     pub desc: Option<String>,
-    pub recurrence: Recurrence,
+    // #[serde(skip_serializing_if = "Option::is_none")]
+    pub recurrence: Option<Recurrence>,
     pub start: DateTime<Utc>,
 }
 
@@ -128,10 +129,10 @@ impl TaskReminder {
                         window_spawned: false,
                     });
                 } else {
-                    if let Recurrence::Recurring {
+                    if let Some(Recurrence::Recurring {
                         minutes,
                         last_recurrence,
-                    } = d.recurrence
+                    }) = d.recurrence
                     {
                         println!("Pushing instance of a recurring definition");
                         self.push_task_instance(TaskInstance {
@@ -199,7 +200,7 @@ impl TaskReminder {
         );
 
         if let Some(definition) = self.get_task_definition(definition_id) {
-            if let Recurrence::None = definition.recurrence {
+            if let None = definition.recurrence {
                 self.delete_task_definition(definition_id);
             }
         }
