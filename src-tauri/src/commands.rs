@@ -75,7 +75,6 @@ pub fn create_task(
 //     Ok(())
 // }
 
-// TODO: Provide the Definition ID from the GUI
 #[tauri::command]
 pub fn complete_task(
     state: State<'_, Mutex<TaskReminder>>,

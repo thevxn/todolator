@@ -57,7 +57,7 @@ async function completeTask(id: string) {
   }
 
   try {
-    await emit('state-changed', { url: '' })
+    await emit('state-changed')
     console.log('emitted')
   } catch (e) {
     console.log('Failed to emit state-changed event: ', e)

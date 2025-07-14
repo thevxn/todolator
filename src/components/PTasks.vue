@@ -276,8 +276,8 @@ type Payload = {
   url: string
 }
 
-const l = await listen<Payload>('state-changed', async (event) => {
-  console.log('Received event:', event)
+const l = await listen<Payload>('state-changed', async () => {
+  console.log('Received state-changed event, reloading tasks')
   await loadTasks()
 })
 

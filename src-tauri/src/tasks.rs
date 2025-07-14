@@ -110,7 +110,7 @@ impl TaskReminder {
         for i in 0..instances_required {
             definitions.iter().for_each(|d| {
                 if i == 0 {
-                    println!("Pushing instance of a non-recurring definition");
+                    println!("Pushing first instance of a definition (recurrence does not matter)");
                     self.push_task_instance(TaskInstance {
                         definition_id: d.id,
                         name: d.name.clone(),
@@ -129,22 +129,27 @@ impl TaskReminder {
                             window_spawned: false,
                         });
                     }
+                    //  else {
+                    //     println!("2nd+ iteration: non-recurring definition or not enough definitions to generate a full page, nothing will be pushed")
+                    // }
                 }
             });
         }
 
         // let item_from = (page * PAGE_SIZE) as usize;
         // let item_to = item_from + PAGE_SIZE as usize;
-        print!("Calculated instances: {:?}", self.task_instances);
+        println!("Calculated instances: {:?}", self.task_instances.len());
         self.calculated_instances = self.task_instances.len();
     }
 
     pub fn get_tasks(&mut self, page: i32) -> Vec<TaskInstance> {
         if (page + 1) * PAGE_SIZE > self.calculated_instances as i32 {
-            println!("Loading definitions from JSON file...");
-            self.task_definitions.clear();
-            self.load_task_definitions();
-            println!("Generating instances...");
+            // I think this is not necessary anymore at this point.
+            // The latest definitions will always be loaded in memory and saved to JSON when creating/updating/deleting.
+            // println!("Loading definitions from JSON file...");
+            // self.task_definitions.clear();
+            // self.load_task_definitions();
+            println!("Generating task instances...");
             self.task_instances.clear();
             self.generate_task_instances(page);
         }

@@ -9,10 +9,4 @@
   - Hovering over them should show a popup/popover with the full text
 - Solve current task not resetting after a new task is created
 - Fix title bar on Mac (<https://v2.tauri.app/learn/window-customization/#creating-a-custom-titlebar>)
-- Decide how to handle recurrence (on demand calculation of recurrences vs pre-calculated instances)
-
-## Design
-
-- Lazily calculate recurrences?
-- Binary heap for the actual scheduled reminders (instances)
-- Templates/definitions
+- Add a way to track the last succesful reminder of a Task Definition so that instances are spawned from the last reminded time instead of starting at the first ocurrence every time
