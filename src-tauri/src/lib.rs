@@ -12,7 +12,7 @@ use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, TrayIconBuilder, TrayIconEvent},
     webview::WebviewWindowBuilder,
-    App, AppHandle, Emitter, Listener, Manager,
+    App, AppHandle, Manager,
 };
 
 use crate::{
@@ -125,7 +125,7 @@ pub fn run() {
                         Duration::from_millis(100)
                     } else if let Some(next) = reminder.task_instances.peek() {
                         let duration = (next.0.timestamp - Utc::now()).to_std().unwrap();
-                        std::cmp::min(duration, Duration::from_secs(60))
+                        std::cmp::min(duration, Duration::from_secs(5))
                     } else {
                         Duration::from_secs(1)
                     }
