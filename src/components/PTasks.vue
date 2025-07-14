@@ -276,17 +276,14 @@ type Payload = {
   url: string
 }
 
-// const l = await listen<Payload>('state-changed', (event) => {
-//   console.log(`Received event: ${event}`)
-// })
-
-listen<Payload>('state-changed', (event) => {
-  console.log(`Received event: ${event}`)
+const l = await listen<Payload>('state-changed', async (event) => {
+  console.log('Received event:', event)
+  await loadTasks()
 })
 
-// onUnmounted(() => {
-//   l()
-// })
+onUnmounted(() => {
+  l()
+})
 </script>
 
 <style>

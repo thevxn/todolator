@@ -56,10 +56,18 @@ async function completeTask(id: string) {
     console.log('Failed to complete task: ', e)
   }
 
-  emit('state-changed', { url: '' })
-  console.log('emitted')
+  try {
+    await emit('state-changed', { url: '' })
+    console.log('emitted')
+  } catch (e) {
+    console.log('Failed to emit state-changed event: ', e)
+  }
 
-  // await closeWindow()
+  try {
+    await closeWindow()
+  } catch (e) {
+    console.log('Failed to close window: ', e)
+  }
 }
 
 async function closeWindow() {

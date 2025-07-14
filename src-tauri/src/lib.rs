@@ -83,11 +83,6 @@ pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
             setup_tray(app);
-            let handle = app.handle().clone();
-            app.listen("state-changed", move |e| {
-                println!("Received a state-changed event, re-emitting");
-                handle.emit("state-changed", e.payload()).unwrap();
-            });
 
             let mut reminder = TaskReminder {
                 task_definitions: std::vec::Vec::new(),

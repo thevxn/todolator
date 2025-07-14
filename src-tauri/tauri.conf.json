@@ -29,7 +29,13 @@
         {
           "identifier": "draggable-window",
           "windows": ["*"],
-          "permissions": ["core:window:allow-start-dragging"]
+          "permissions": [
+            "core:window:allow-start-dragging",
+            "core:event:allow-listen",
+            "core:event:allow-unlisten",
+            "core:event:allow-emit",
+            "core:event:default"
+          ]
         }
       ]
     }
