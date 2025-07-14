@@ -21,7 +21,6 @@ pub struct TaskDefinition {
     pub id: Uuid,
     pub name: String,
     pub desc: Option<String>,
-    // #[serde(skip_serializing_if = "Option::is_none")]
     pub recurrence: Option<Recurrence>,
     pub start: DateTime<Utc>,
 }
@@ -112,12 +111,16 @@ impl TaskReminder {
     pub fn generate_task_instances(&mut self, page: i32) {
         let definitions = self.task_definitions.clone();
 
+        self.task_instances.clear();
+
         // Iterate over definitions - generate one instance for each definition on each iteration (if recurring - if not, only the first iteration generates an instance). Break once the total generated instances are at (page + 1) * PAGE_SIZE.
         //
         // These generated instances are held in memory, so with each page the size of the tasks stored in memory grows.
         let instances_required = ((page + 1) * PAGE_SIZE) as i64;
 
         for i in 0..instances_required {
+            // TODO: Add a check at the end of each iteration to see if the required amount of instances has already been achieved.
+            // For example, in case there's a lot of definitions or a frequently recurring one, one run may be enough.
             definitions.iter().for_each(|d| {
                 if i == 0 {
                     println!("Pushing first instance of a definition (recurrence does not matter)");
@@ -157,32 +160,30 @@ impl TaskReminder {
     }
 
     pub fn get_tasks(&mut self, page: i32) -> Vec<TaskInstance> {
-        if (page + 1) * PAGE_SIZE > self.calculated_instances as i32 {
-            // I think this is not necessary anymore at this point.
-            // The latest definitions will always be loaded in memory and saved to JSON when creating/updating/deleting.
-            // println!("Loading definitions from JSON file...");
-            // self.task_definitions.clear();
-            // self.load_task_definitions();
-            println!("Generating task instances...");
-            self.task_instances.clear();
-            self.generate_task_instances(page);
-        }
+        // if (page + 1) * PAGE_SIZE > self.calculated_instances as i32 {
+        //     // I think this is not necessary anymore at this point.
+        //     // The latest definitions will always be loaded in memory and saved to JSON when creating/updating/deleting.
+        //     // println!("Loading definitions from JSON file...");
+        //     // self.task_definitions.clear();
+        //     // self.load_task_definitions();
+        // }
+        println!("Generating task instances...");
+        self.generate_task_instances(page);
 
         let item_from = (page * PAGE_SIZE) as usize;
         let item_to = item_from + PAGE_SIZE as usize;
         let item_to = item_to.min(self.task_instances.len());
 
         if self.calculated_instances > 0 && item_from < self.task_instances.len() {
-            let tasks: Vec<TaskInstance> =
+            let mut tasks: Vec<TaskInstance> =
                 self.task_instances.iter().map(|t| t.0.clone()).collect();
-            // tasks.sort();
+            tasks.sort();
 
             return tasks[item_from..item_to].to_vec();
         }
         std::vec::Vec::new()
     }
 
-    // TODO: Once an instance is reminded, if its parent definition is not recurring, delete the definition along with the instance.
     pub fn get_next_task(&mut self) -> Option<TaskInstance> {
         match self.task_instances.peek() {
             Some(reverse_task) => Some(reverse_task.0.clone().into()),
@@ -226,7 +227,6 @@ impl TaskReminder {
         };
 
         self.save_task_definitions().unwrap();
-        // TODO: Is this needed here? Probably not?
-        // self.generate_task_instances(0);
+        self.generate_task_instances(0);
     }
 }
