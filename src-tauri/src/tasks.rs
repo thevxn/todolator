@@ -25,7 +25,7 @@ pub struct TaskDefinition {
     pub start: DateTime<Utc>,
 }
 
-#[derive(Debug, Clone, PartialOrd, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Eq, Serialize, Deserialize)]
 pub struct TaskInstance {
     pub definition_id: Uuid,
     pub name: String,
@@ -43,6 +43,12 @@ impl PartialEq for TaskInstance {
 impl Ord for TaskInstance {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         self.timestamp.cmp(&other.timestamp)
+    }
+}
+
+impl PartialOrd for TaskInstance {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.timestamp.cmp(&other.timestamp))
     }
 }
 
@@ -109,11 +115,13 @@ impl TaskReminder {
         // These generated instances are held in memory, so with each page the size of the tasks stored in memory grows.
         let instances_required = ((page + 1) * PAGE_SIZE) as i64;
 
-        for i in 0..instances_required {
-            definitions.iter().for_each(|d| {
+        let mut instances: Vec<TaskInstance> = Vec::new();
+
+        definitions.iter().for_each(|d| {
+            for i in 0..instances_required {
                 if i == 0 {
                     println!("Pushing first instance of a definition (recurrence does not matter)");
-                    self.push_task_instance(TaskInstance {
+                    instances.push(TaskInstance {
                         definition_id: d.id,
                         name: d.name.clone(),
                         desc: d.desc.clone(),
@@ -127,26 +135,36 @@ impl TaskReminder {
                     }) = d.recurrence
                     {
                         println!("Pushing instance of a recurring definition");
-                        self.push_task_instance(TaskInstance {
+                        instances.push(TaskInstance {
                             definition_id: d.id,
                             name: d.name.clone(),
                             desc: d.desc.clone(),
                             timestamp: last_recurrence + Duration::minutes(i * minutes),
                             window_spawned: false,
                         });
+                    } else {
+                        println!("Non-recurring instance, breaking");
+                        break;
                     }
                 }
-            });
-            self.calculated_instances = self.task_instances.len();
-            if self.calculated_instances >= (instances_required as usize) {
-                println!(
-                    "Sufficient number of instances generated, breaking ({})",
-                    self.calculated_instances
-                );
-                break;
             }
-        }
+        });
 
+        instances.sort_by_key(|i| i.timestamp);
+        instances
+            .iter()
+            .take(PAGE_SIZE as usize)
+            .for_each(|i| self.push_task_instance(i.clone()));
+
+        // self.task_instances = BinaryHeap::from(
+        //     instances
+        //         .into_iter()
+        //         .take(instances_required as usize)
+        //         .map(Reverse)
+        //         .collect::<Vec<_>>(),
+        // );
+
+        self.calculated_instances = self.task_instances.len();
         println!("Calculated instances: {:?}", self.task_instances.len());
     }
 
@@ -161,7 +179,8 @@ impl TaskReminder {
         if self.calculated_instances > 0 && item_from < self.task_instances.len() {
             let mut tasks: Vec<TaskInstance> =
                 self.task_instances.iter().map(|t| t.0.clone()).collect();
-            tasks.sort();
+
+            tasks.sort_by_key(|i| i.timestamp);
 
             return tasks[item_from..item_to].to_vec();
         }
@@ -169,10 +188,9 @@ impl TaskReminder {
     }
 
     pub fn get_next_task(&mut self) -> Option<TaskInstance> {
-        match self.task_instances.peek() {
-            Some(reverse_task) => Some(reverse_task.0.clone().into()),
-            None => None,
-        }
+        self.task_instances
+            .peek()
+            .map(|reverse_task| reverse_task.0.clone())
     }
 
     pub fn mark_task_completed(&mut self, task: TaskInstance) {

@@ -101,6 +101,8 @@ pub fn run() {
                     let state = handle.state::<Mutex<TaskReminder>>();
                     let mut reminder = state.lock().unwrap();
 
+                    println!("Next up: {:?}", reminder.task_instances.peek());
+
                     let should_remind = if let Some(next) = reminder.task_instances.peek() {
                         next.0.timestamp <= Utc::now()
                     } else {
