@@ -12,7 +12,7 @@ pub fn get_tasks(state: State<'_, Mutex<TaskReminder>>) -> Result<Vec<TaskInstan
     let mut state = state.lock().unwrap();
 
     let tasks = state.get_tasks(0);
-    println!("GET TASKS: {:?}", tasks);
+    // println!("GET TASKS: {:?}", tasks);
 
     Ok(tasks)
 }
@@ -82,12 +82,12 @@ pub fn create_task(
 #[tauri::command]
 pub fn complete_task(
     state: State<'_, Mutex<TaskReminder>>,
-    definition_id: Uuid,
+    task: TaskInstance,
 ) -> Result<(), String> {
     let mut state = state.lock().unwrap();
     let task_reminder = &mut state;
 
-    task_reminder.mark_task_completed(definition_id);
+    task_reminder.mark_task_completed(task);
 
     Ok(())
 }
@@ -114,6 +114,6 @@ pub fn minimize(window: tauri::Window) -> Result<(), String> {
 
 #[tauri::command]
 pub fn close(window: tauri::Window) -> Result<(), String> {
-    window.close().unwrap();
+    window.hide().unwrap();
     Ok(())
 }

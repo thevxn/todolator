@@ -3,5 +3,11 @@
   "identifier": "default",
   "description": "Capability for the main window",
   "windows": ["main", "*"],
-  "permissions": ["core:default", "opener:default", "core:window:default", "core:event:default"]
+  "permissions": [
+    "core:default",
+    "opener:default",
+    "core:window:default",
+    "core:event:default",
+    "core:app:allow-app-hide"
+  ]
 }

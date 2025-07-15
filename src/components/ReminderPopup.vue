@@ -5,7 +5,7 @@
       <p>
         <span class="text-lg">{{ task?.desc }}</span>
       </p>
-      <button @click="$emit('close', task?.definition_id)">Done</button>
+      <button @click="$emit('close', task)">Done</button>
     </div>
     <PHotkeys screen-code="REMINDER_POPUP" />
   </div>

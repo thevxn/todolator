@@ -40,6 +40,7 @@ import logoUrl from './assets/logo.png'
 import { invoke } from '@tauri-apps/api/core'
 import ReminderPopup from './components/ReminderPopup.vue'
 import { emit } from '@tauri-apps/api/event'
+import { Task } from './composables/useTasks'
 
 async function minimizeWindow() {
   try {
@@ -49,9 +50,9 @@ async function minimizeWindow() {
   }
 }
 
-async function completeTask(id: string) {
+async function completeTask(task: Task) {
   try {
-    await invoke('complete_task', { definitionId: id })
+    await invoke('complete_task', { task })
   } catch (e) {
     console.log('Failed to complete task: ', e)
   }

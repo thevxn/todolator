@@ -34,7 +34,8 @@
             "core:event:allow-listen",
             "core:event:allow-unlisten",
             "core:event:allow-emit",
-            "core:event:default"
+            "core:event:default",
+            "core:app:allow-app-hide"
           ]
         }
       ]
