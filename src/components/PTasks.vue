@@ -116,6 +116,7 @@ const rowRefs = ref<HTMLElement[]>([])
 const tableRef = ref<HTMLElement | null>(null)
 
 const currentTask = ref({}) as Ref<Task>
+resetTask(currentTask)
 
 watch(selectedIndex, (newIndex) => {
   if (newIndex === null || !tableRef.value) return

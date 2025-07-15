@@ -4,7 +4,7 @@
     class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-2 bg-primary rounded-md min-w-1/2"
   >
     <div class="p-10">
-      <h1 class="text-center" v-if="!currentTask.id">New Task</h1>
+      <h1 class="text-center" v-if="!currentTask.definition_id">New Task</h1>
       <h1 class="text-center text-warning" v-else>Edit Task</h1>
 
       <div
@@ -39,7 +39,6 @@
         >
         <input
           v-model="currentTask.timestamp"
-          placeholder="Timestamp"
           name="timestamp"
           type="datetime-local"
           class="w-full"
@@ -64,12 +63,23 @@ import { nextTick, ref, watch } from 'vue'
 import PHotkeys from './PHotkeys.vue'
 import { Task } from '../composables/useTasks'
 
-const props = defineProps<{
-  currentTask: Task
-  display: boolean
-  submitText?: string
-  errorText?: string
-}>()
+const props = withDefaults(
+  defineProps<{
+    currentTask: Task
+    display: boolean
+    submitText?: string
+    errorText?: string
+  }>(),
+  // TODO: Fix up types
+  {
+    currentTask: {
+      definition_id: '',
+      name: '',
+      timestamp: Date.now() as unknown as string,
+    } as any,
+    display: false,
+  },
+)
 
 const focusInput = ref<HTMLInputElement | null>(null)
 watch(
@@ -84,7 +94,7 @@ watch(
   },
 )
 
-const emit = defineEmits(['submit', 'close'])
+defineEmits(['submit', 'close'])
 </script>
 
 <style></style>
