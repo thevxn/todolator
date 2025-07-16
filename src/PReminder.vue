@@ -42,14 +42,6 @@ import ReminderPopup from './components/ReminderPopup.vue'
 import { emit } from '@tauri-apps/api/event'
 import { Task } from './composables/useTasks'
 
-async function minimizeWindow() {
-  try {
-    await invoke('minimize')
-  } catch (e) {
-    console.error('Failed to minimize window:', e)
-  }
-}
-
 async function completeTask(task: Task) {
   try {
     await invoke('complete_task', { task })
@@ -68,6 +60,14 @@ async function completeTask(task: Task) {
     await closeWindow()
   } catch (e) {
     console.log('Failed to close window: ', e)
+  }
+}
+
+async function minimizeWindow() {
+  try {
+    await invoke('minimize')
+  } catch (e) {
+    console.error('Failed to minimize window:', e)
   }
 }
 

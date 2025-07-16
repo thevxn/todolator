@@ -26,7 +26,7 @@
       class="flex flex-row w-full items-center mt-10"
       :class="tasks.length > 0 ? 'justify-end' : 'justify-center'"
     >
-      <button tabindex="-1" @click="toggleTaskModal">New Task</button>
+      <button tabindex="-1" @click="handleModal(null)">New Task</button>
     </div>
 
     <div
@@ -67,12 +67,12 @@
               <PIcon
                 :icon="'mingcute:edit-2-line'"
                 class="hover:border-warning hover:border-2 border-2 border-[#ffffff00] p-1 active:bg-warning active:text-primary text-warning rounded-md outline-none"
-                @clicked="openEditModal(i)"
+                @clicked="handleModal(i)"
               />
               <PIcon
                 :icon="'mingcute:delete-2-line'"
                 class="hover:border-error hover:border-2 border-2 border-[#ffffff00] p-1 active:bg-error active:text-primary text-error rounded-md outline-none"
-                @clicked="openDeleteModal(i)"
+                @clicked="openDeleteConfirmation(i)"
               />
             </div>
           </div>
@@ -90,7 +90,7 @@ import PHotkeys from './PHotkeys.vue'
 import { DateTimeString, Task, useTasks } from '../composables/useTasks'
 import { useRowSelect } from '../composables/useRowSelect'
 import { toDatetimeLocalValue } from '../helpers/datetime'
-import { resetTask } from '../helpers/task'
+import { getDefaultTask, resetTask } from '../helpers/task'
 import ConfirmationModal from './ConfirmationModal.vue'
 import PIcon from './PIcon.vue'
 import { listen } from '@tauri-apps/api/event'
@@ -115,8 +115,7 @@ const { selectedIndex, resetSelectedIndex } = useRowSelect(
 const rowRefs = ref<HTMLElement[]>([])
 const tableRef = ref<HTMLElement | null>(null)
 
-const currentTask = ref({}) as Ref<Task>
-resetTask(currentTask)
+const currentTask = ref(getDefaultTask()) as Ref<Task>
 
 watch(selectedIndex, (newIndex) => {
   if (newIndex === null || !tableRef.value) return
@@ -146,20 +145,20 @@ watch(selectedIndex, (newIndex) => {
   }
 })
 
-const openEditModal = (taskIndex: number | null) => {
+const handleModal = (taskIndex: number | null) => {
+  resetTask(currentTask)
   if (taskIndex !== null) {
-    resetTask(currentTask)
     currentTask.value = {
       definition_id: tasks.value[taskIndex].definition_id,
       name: tasks.value[taskIndex].name,
       desc: tasks.value[taskIndex].desc,
       timestamp: toDatetimeLocalValue(tasks.value[taskIndex].timestamp) as DateTimeString,
     }
-    toggleTaskModal()
   }
+  toggleTaskModal()
 }
 
-const openDeleteModal = (taskIndex: number | null) => {
+const openDeleteConfirmation = (taskIndex: number | null) => {
   if (taskIndex !== null) {
     resetTask(currentTask)
     currentTask.value = {
@@ -216,16 +215,14 @@ onMounted(async () => {
     switch (e.key) {
       case 'n':
         if (!displayTaskModal.value && !displayConfirmationModal.value) {
-          resetTask(currentTask)
-          toggleTaskModal()
+          handleModal(null)
           e.stopPropagation()
           e.preventDefault()
         }
         if (displayConfirmationModal.value && selectedIndex.value !== null) {
+          handleModal(selectedIndex.value)
           e.stopPropagation()
           e.preventDefault()
-          // resetTask(currentTask);
-          toggleConfirmationModal()
         }
         break
 
@@ -239,7 +236,7 @@ onMounted(async () => {
         if (!displayTaskModal.value && !displayConfirmationModal.value) {
           e.stopPropagation()
           e.preventDefault()
-          openEditModal(selectedIndex.value)
+          handleModal(selectedIndex.value)
         }
         break
 
@@ -247,7 +244,7 @@ onMounted(async () => {
         if (!displayTaskModal.value && !displayConfirmationModal.value) {
           e.stopPropagation()
           e.preventDefault()
-          openDeleteModal(selectedIndex.value)
+          openDeleteConfirmation(selectedIndex.value)
         }
         break
 
