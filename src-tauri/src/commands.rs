@@ -47,7 +47,7 @@ pub fn create_task(
         start: timestamp.parse::<DateTime<Utc>>().unwrap(),
         recurrence: match recurrence_minutes {
             Some(minutes) => Some(Recurrence::Recurring {
-                last_recurrence: timestamp.parse::<DateTime<Utc>>().unwrap(),
+                last_recurrence: Some(timestamp.parse::<DateTime<Utc>>().unwrap()),
                 minutes,
             }),
             None => None,

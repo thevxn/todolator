@@ -11,7 +11,7 @@ use uuid::Uuid;
 pub enum Recurrence {
     None,
     Recurring {
-        last_recurrence: DateTime<Utc>,
+        last_recurrence: Option<DateTime<Utc>>,
         minutes: i64,
     },
 }
@@ -119,34 +119,68 @@ impl TaskReminder {
 
         definitions.iter().for_each(|d| {
             for i in 0..instances_required {
-                if i == 0 {
-                    println!("Pushing first instance of a definition (recurrence does not matter)");
-                    instances.push(TaskInstance {
-                        definition_id: d.id,
-                        name: d.name.clone(),
-                        desc: d.desc.clone(),
-                        timestamp: d.start,
-                        window_spawned: false,
-                    });
-                } else {
-                    if let Some(Recurrence::Recurring {
-                        minutes,
+                let timestamp = match d.recurrence {
+                    Some(Recurrence::Recurring {
                         last_recurrence,
-                    }) = d.recurrence
-                    {
-                        println!("Pushing instance of a recurring definition");
-                        instances.push(TaskInstance {
-                            definition_id: d.id,
-                            name: d.name.clone(),
-                            desc: d.desc.clone(),
-                            timestamp: last_recurrence + Duration::minutes(i * minutes),
-                            window_spawned: false,
-                        });
-                    } else {
-                        println!("Non-recurring instance, breaking");
-                        break;
-                    }
-                }
+                        minutes,
+                    }) => match last_recurrence {
+                        Some(last) => last + Duration::minutes((i + 1) * minutes),
+
+                        None => d.start,
+                    },
+                    _ => d.start,
+                };
+
+                instances.push(TaskInstance {
+                    definition_id: d.id,
+                    name: d.name.clone(),
+                    desc: d.desc.clone(),
+                    timestamp,
+                    window_spawned: false,
+                });
+
+                // if i == 0 {
+                //     println!("Pushing first instance of a definition (recurrence does not matter)");
+                //     instances.push(TaskInstance {
+                //         definition_id: d.id,
+                //         name: d.name.clone(),
+                //         desc: d.desc.clone(),
+                //         // d.start if non-recurring
+                //         // last_recurrence (if present, else fill 0) + minutes offset if recurring
+                //         timestamp: if let Some(Recurrence::Recurring {
+                //             last_recurrence,
+                //             minutes,
+                //         }) = d.recurrence
+                //         {
+                //             if last_recurrence.is_some() {
+                //                 last_recurrence.unwrap() + Duration::minutes(i * minutes)
+                //             } else {
+                //                 d.start
+                //             }
+                //         } else {
+                //             d.start
+                //         },
+                //         window_spawned: false,
+                //     });
+                // } else {
+                //     if let Some(Recurrence::Recurring {
+                //         minutes,
+                //         last_recurrence,
+                //     }) = d.recurrence
+                //     {
+                //         println!("Pushing instance of a recurring definition");
+                //         instances.push(TaskInstance {
+                //             definition_id: d.id,
+                //             name: d.name.clone(),
+                //             desc: d.desc.clone(),
+                //             timestamp: Result(last_recurrence) + Duration::minutes(i * minutes),
+                //             window_spawned: false,
+                //         });
+                //     } else {
+                //         println!("Non-recurring instance, breaking");
+                //         break;
+                //     }
+                // }
             }
         });
 
@@ -208,7 +242,7 @@ impl TaskReminder {
                 minutes: _,
             }) = &mut definition.recurrence
             {
-                *last_recurrence = task.timestamp;
+                *last_recurrence = Some(task.timestamp);
                 self.save_task_definitions().unwrap();
             } else {
                 self.delete_task_definition(task.definition_id);
