@@ -2,7 +2,7 @@ import { Ref } from 'vue'
 import { DateTimeString, INewTask } from '../composables/useTasks'
 import { toDatetimeLocalValue } from './datetime'
 
-export const getDefaultTask = () => {
+export const getDefaultTask = (): INewTask => {
   return {
     name: '',
     desc: undefined,

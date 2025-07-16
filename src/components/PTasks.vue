@@ -9,15 +9,16 @@
   <main class="flex flex-col items-center justify-center p-4">
     <ConfirmationModal
       :display="displayConfirmationModal"
-      @submit="handleTaskDelete(currentTask.definition_id)"
+      @submit="handleTaskDelete(currentTask.id)"
       @close="closeModals"
       :name="currentTask.name"
-      :id="currentTask.definition_id"
+      :id="currentTask.id"
     />
     <TaskForm
       submit-text="Save"
       :display="displayTaskModal"
-      @submit="handleSave"
+      @create="handleCreate"
+      @update="handleUpdate"
       @close="toggleTaskModal"
       :error-text="taskCreationError"
       :current-task="currentTask"
@@ -87,7 +88,7 @@
 import { onMounted, onUnmounted, Ref, ref, watch } from 'vue'
 import TaskForm from './TaskForm.vue'
 import PHotkeys from './PHotkeys.vue'
-import { DateTimeString, Task, useTasks } from '../composables/useTasks'
+import { DateTimeString, INewTask, Task, useTasks } from '../composables/useTasks'
 import { useRowSelect } from '../composables/useRowSelect'
 import { toDatetimeLocalValue } from '../helpers/datetime'
 import { getDefaultTask, resetTask } from '../helpers/task'
@@ -101,6 +102,7 @@ const {
   taskCreationError,
   loadTasks,
   createTask,
+  updateTask,
   deleteTask,
   toggleTaskModal,
   toggleConfirmationModal,
@@ -149,7 +151,7 @@ const handleModal = (taskIndex: number | null) => {
   resetTask(currentTask)
   if (taskIndex !== null) {
     currentTask.value = {
-      definition_id: tasks.value[taskIndex].definition_id,
+      id: tasks.value[taskIndex].id,
       name: tasks.value[taskIndex].name,
       desc: tasks.value[taskIndex].desc,
       timestamp: toDatetimeLocalValue(tasks.value[taskIndex].timestamp) as DateTimeString,
@@ -162,7 +164,7 @@ const openDeleteConfirmation = (taskIndex: number | null) => {
   if (taskIndex !== null) {
     resetTask(currentTask)
     currentTask.value = {
-      definition_id: tasks.value[taskIndex].definition_id,
+      id: tasks.value[taskIndex].id,
       name: tasks.value[taskIndex].name,
       desc: tasks.value[taskIndex].desc,
       timestamp: toDatetimeLocalValue(tasks.value[taskIndex].timestamp) as DateTimeString,
@@ -186,9 +188,17 @@ const closeModals = () => {
   }
 }
 
-const handleSave = async (task: Task) => {
-  console.log('Saving task: ', task)
+const handleCreate = async (task: INewTask) => {
+  console.log('Creating task: ', task)
   await createTask(task)
+
+  resetTask(currentTask)
+}
+
+const handleUpdate = async (task: Task) => {
+  console.log('Updating task: ', task)
+  await updateTask(task)
+
   resetTask(currentTask)
 }
 
@@ -253,7 +263,7 @@ onMounted(async () => {
           e.stopPropagation()
           e.preventDefault()
           try {
-            await deleteTask(tasks.value[selectedIndex.value].definition_id as string)
+            await deleteTask(tasks.value[selectedIndex.value].id as string)
           } catch (e) {
             console.log(`Failed to delete task: ${e}`)
           }

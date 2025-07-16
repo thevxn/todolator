@@ -10,7 +10,7 @@ export interface INewTask {
   recurrence_minutes?: DateTimeString
 }
 export type Task = INewTask & {
-  definition_id: string
+  id: string
 }
 
 export const useTasks = () => {
@@ -65,12 +65,12 @@ export const useTasks = () => {
     }
     try {
       const taskToSave = {
-        definition_id: task.hasOwnProperty('definition_id') ? task.definition_id : undefined,
+        id: task.id,
         name: task.name,
         desc: task.desc,
         timestamp: new Date(task.timestamp).toISOString(),
       }
-      console.log('Adding task: ', taskToSave)
+      console.log('Updating task: ', taskToSave)
 
       await invoke('update_task', { task: taskToSave })
       console.log('task updated!')
@@ -108,10 +108,10 @@ export const useTasks = () => {
     taskCreationError,
     displayConfirmationModal,
     loadTasks,
-    saveTask: updateTask,
     toggleTaskModal,
     toggleConfirmationModal,
-    deleteTask,
     createTask,
+    updateTask,
+    deleteTask,
   }
 }

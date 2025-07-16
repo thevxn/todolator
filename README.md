@@ -11,4 +11,4 @@
   - Hovering over them should show a popup/popover with the full text
 - Solve current task not resetting after a new task is created
 - Fix title bar on Mac (<https://v2.tauri.app/learn/window-customization/#creating-a-custom-titlebar>)
-- Add a way to track the last succesful reminder of a Task Definition so that instances are spawned from the last reminded time instead of starting at the first ocurrence every time
+- Enable deleting all recurrences (delete the definition) or just one single instance (add to exceptions on the definition)

@@ -49,6 +49,7 @@ pub fn create_task(
             Some(minutes) => Some(Recurrence::Recurring {
                 last_recurrence: Some(timestamp.parse::<DateTime<Utc>>().unwrap()),
                 minutes,
+                exceptions: None,
             }),
             None => None,
         },
@@ -59,25 +60,28 @@ pub fn create_task(
     Ok(())
 }
 
-// #[tauri::command]
-// pub fn update_task(state: State<'_, Mutex<TaskReminder>>, task: TaskExt) -> Result<(), String> {
-//     let mut state = state.lock().unwrap();
-//     let task_reminder = &mut state;
+#[tauri::command]
+pub fn update_task(
+    state: State<'_, Mutex<TaskReminder>>,
+    task: TaskDefinition,
+) -> Result<(), String> {
+    let mut state = state.lock().unwrap();
+    let task_reminder = &mut state;
 
-//     task_reminder.update_task(task);
+    task_reminder.update_task_definition(task);
 
-//     Ok(())
-// }
+    Ok(())
+}
 
-// #[tauri::command]
-// pub fn delete_task(state: State<'_, Mutex<TaskReminder>>, id: Uuid) -> Result<(), String> {
-//     let mut state = state.lock().unwrap();
-//     let task_reminder = &mut state;
+#[tauri::command]
+pub fn delete_task(state: State<'_, Mutex<TaskReminder>>, id: Uuid) -> Result<(), String> {
+    let mut state = state.lock().unwrap();
+    let task_reminder = &mut state;
 
-//     task_reminder.delete_task(id);
+    task_reminder.delete_task_definition(id);
 
-//     Ok(())
-// }
+    Ok(())
+}
 
 #[tauri::command]
 pub fn complete_task(

@@ -13,6 +13,7 @@ pub enum Recurrence {
     Recurring {
         last_recurrence: Option<DateTime<Utc>>,
         minutes: i64,
+        exceptions: Option<Vec<DateTime<Utc>>>,
     },
 }
 
@@ -119,11 +120,24 @@ impl TaskReminder {
 
         definitions.iter().for_each(|d| {
             for i in 0..instances_required {
-                let timestamp = match d.recurrence {
-                    Some(Recurrence::Recurring {
-                        last_recurrence,
-                        minutes,
-                    }) => match last_recurrence {
+                let recurrence_info = if let Some(Recurrence::Recurring {
+                    last_recurrence,
+                    minutes,
+                    exceptions,
+                }) = &d.recurrence
+                {
+                    Some((last_recurrence, minutes, exceptions))
+                } else {
+                    None
+                };
+
+                // If the task is not recurring and the first instance has already been spawned, break
+                if recurrence_info.is_none() && i > 0 {
+                    break;
+                }
+
+                let timestamp = match recurrence_info {
+                    Some((last_recurrence, minutes, _exceptions)) => match *last_recurrence {
                         Some(last) => last + Duration::minutes((i + 1) * minutes),
 
                         None => d.start,
@@ -131,56 +145,25 @@ impl TaskReminder {
                     _ => d.start,
                 };
 
-                instances.push(TaskInstance {
-                    definition_id: d.id,
-                    name: d.name.clone(),
-                    desc: d.desc.clone(),
-                    timestamp,
-                    window_spawned: false,
-                });
+                let exceptions = if let Some(recurrence) = recurrence_info {
+                    recurrence.2.clone()
+                } else {
+                    None
+                };
 
-                // if i == 0 {
-                //     println!("Pushing first instance of a definition (recurrence does not matter)");
-                //     instances.push(TaskInstance {
-                //         definition_id: d.id,
-                //         name: d.name.clone(),
-                //         desc: d.desc.clone(),
-                //         // d.start if non-recurring
-                //         // last_recurrence (if present, else fill 0) + minutes offset if recurring
-                //         timestamp: if let Some(Recurrence::Recurring {
-                //             last_recurrence,
-                //             minutes,
-                //         }) = d.recurrence
-                //         {
-                //             if last_recurrence.is_some() {
-                //                 last_recurrence.unwrap() + Duration::minutes(i * minutes)
-                //             } else {
-                //                 d.start
-                //             }
-                //         } else {
-                //             d.start
-                //         },
-                //         window_spawned: false,
-                //     });
-                // } else {
-                //     if let Some(Recurrence::Recurring {
-                //         minutes,
-                //         last_recurrence,
-                //     }) = d.recurrence
-                //     {
-                //         println!("Pushing instance of a recurring definition");
-                //         instances.push(TaskInstance {
-                //             definition_id: d.id,
-                //             name: d.name.clone(),
-                //             desc: d.desc.clone(),
-                //             timestamp: Result(last_recurrence) + Duration::minutes(i * minutes),
-                //             window_spawned: false,
-                //         });
-                //     } else {
-                //         println!("Non-recurring instance, breaking");
-                //         break;
-                //     }
-                // }
+                let should_skip = match exceptions {
+                    Some(list) => list.iter().any(|e| e == &timestamp),
+                    None => false,
+                };
+                if !should_skip {
+                    instances.push(TaskInstance {
+                        definition_id: d.id,
+                        name: d.name.clone(),
+                        desc: d.desc.clone(),
+                        timestamp,
+                        window_spawned: false,
+                    });
+                }
             }
         });
 
@@ -190,16 +173,9 @@ impl TaskReminder {
             .take(PAGE_SIZE as usize)
             .for_each(|i| self.push_task_instance(i.clone()));
 
-        // self.task_instances = BinaryHeap::from(
-        //     instances
-        //         .into_iter()
-        //         .take(instances_required as usize)
-        //         .map(Reverse)
-        //         .collect::<Vec<_>>(),
-        // );
-
         self.calculated_instances = self.task_instances.len();
         println!("Calculated instances: {:?}", self.task_instances.len());
+        println!("{:?}", self.task_instances)
     }
 
     pub fn get_tasks(&mut self, page: i32) -> Vec<TaskInstance> {
@@ -240,6 +216,7 @@ impl TaskReminder {
             if let Some(Recurrence::Recurring {
                 last_recurrence,
                 minutes: _,
+                exceptions: _,
             }) = &mut definition.recurrence
             {
                 *last_recurrence = Some(task.timestamp);
@@ -250,11 +227,12 @@ impl TaskReminder {
         }
     }
 
-    pub fn update_task(&mut self, definition: TaskDefinition) {
-        let mut definitions = self.task_definitions.clone();
-        if let Some(task) = definitions.iter_mut().find(|d| d.id == definition.id) {
-            // TODO: Why am I only updating the name here??
-            task.name = definition.name;
+    pub fn update_task_definition(&mut self, updated: TaskDefinition) {
+        let definitions = &mut self.task_definitions;
+        if let Some(task) = definitions.iter_mut().find(|d| d.id == updated.id) {
+            *task = updated;
+
+            print!("Updated task definition: {:?}", task)
         };
 
         // TODO: If updating all recurrences, just update the underlying definition and recalculate the task instance list.
