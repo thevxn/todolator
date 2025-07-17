@@ -17,8 +17,5 @@ export const getDefaultTaskDefinition = (): TaskDefinition => {
 export const resetTask = (task: Ref<TaskInstance | undefined>) => {
   if (task) {
     task.value = undefined
-    console.log('Task reset: ', task.value)
-  } else {
-    console.log('No task')
   }
 }

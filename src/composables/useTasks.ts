@@ -76,33 +76,26 @@ export const useTasks = () => {
       taskCreationError.value = 'Missing required attributes!'
       return
     }
-    try {
-      const taskToSave = {
-        id: task.definition_id,
-        name: task.name,
-        desc: task.desc,
-        timestamp: new Date(task.timestamp).toISOString(),
-      }
-      console.log('Updating task: ', taskToSave)
-
-      await invoke('update_task', { task: taskToSave })
-      console.log('task updated!')
-
-      toggleTaskModal()
-      await loadTasks()
-    } catch (e) {
-      console.log(e)
+    const taskToSave = {
+      id: task.definition_id,
+      name: task.name,
+      desc: task.desc,
+      timestamp: new Date(task.timestamp).toISOString(),
     }
+    console.log('Updating task: ', taskToSave)
+
+    await invoke('update_task', { task: taskToSave })
+    console.log('task updated!')
+
+    toggleTaskModal()
+    await loadTasks()
   }
 
   const deleteTask = async (id: string) => {
-    try {
-      console.log('Deleting task with ID ', id)
-      await invoke('delete_task', { id })
-      await loadTasks()
-    } catch (e) {
-      console.log(e)
-    }
+    console.log('Deleting task with ID ', id)
+    await invoke('delete_task', { id })
+    console.log('Task deleted')
+    await loadTasks()
   }
 
   const toggleTaskModal = () => {

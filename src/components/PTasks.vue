@@ -17,8 +17,8 @@
     <TaskForm
       submit-text="Save"
       :display="displayTaskModal"
-      @create="handleCreate"
-      @update="handleUpdate"
+      @create="handleTaskCreate"
+      @update="handleTaskUpdate"
       @close="toggleTaskModal"
       :error-text="taskCreationError"
       :current-task="currentTask"
@@ -119,6 +119,7 @@ const tableRef = ref<HTMLElement | null>(null)
 
 const currentTask = ref() as Ref<TaskInstance>
 
+// Watcher for selected task index to enable visual task select using hotkeys
 watch(selectedIndex, (newIndex) => {
   if (newIndex === null || !tableRef.value) return
 
@@ -162,7 +163,6 @@ const handleModal = (taskIndex: number | null) => {
 
 const openDeleteConfirmation = (taskIndex: number | null) => {
   if (taskIndex !== null) {
-    resetTask(currentTask)
     currentTask.value = {
       definition_id: tasks.value[taskIndex].definition_id,
       name: tasks.value[taskIndex].name,
@@ -170,35 +170,36 @@ const openDeleteConfirmation = (taskIndex: number | null) => {
       timestamp: toDatetimeLocalValue(tasks.value[taskIndex].timestamp) as DateTimeString,
     }
 
-    console.log(currentTask)
     toggleConfirmationModal()
   }
 }
 
 const closeModals = () => {
+  resetTask(currentTask)
   if (!displayConfirmationModal.value && !displayTaskModal.value) {
     resetSelectedIndex()
   }
   if (displayTaskModal.value) {
     toggleTaskModal()
-    resetTask(currentTask)
   }
   if (displayConfirmationModal.value) {
     toggleConfirmationModal()
   }
 }
 
-const handleCreate = async (task: TaskDefinition) => {
+const handleTaskCreate = async (task: TaskDefinition) => {
   console.log('Creating task: ', task)
   await createTask(task)
 
   resetTask(currentTask)
 }
 
-const handleUpdate = async (task: TaskInstance) => {
-  console.log('Updating task: ', task)
-  await updateTask(task)
-
+const handleTaskUpdate = async (task: TaskInstance) => {
+  try {
+    await updateTask(task)
+  } catch (e) {
+    throw new Error(`Failed to update task: ${e}`)
+  }
   resetTask(currentTask)
 }
 
@@ -213,8 +214,8 @@ const handleTaskDelete = async (id: string | undefined) => {
     console.log(`Failed to delete task: ${e}`)
   }
 
-  resetTask(currentTask)
   toggleConfirmationModal()
+  resetTask(currentTask)
 }
 
 onMounted(async () => {

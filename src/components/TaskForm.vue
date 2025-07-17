@@ -39,6 +39,7 @@
         <label for="timestamp" class="text-left w-full font-bold"
           >Remind At<span class="text-error">*</span></label
         >
+
         <input
           v-model="localTask.start"
           name="timestamp"
@@ -48,6 +49,16 @@
           required
           v-if="!isTaskInstance(localTask)"
         />
+        <input
+          v-model="localTask.timestamp"
+          name="timestamp"
+          type="datetime-local"
+          class="w-full"
+          tabindex="3"
+          required
+          v-if="isTaskInstance(localTask)"
+        />
+
         <small class="text-left w-full mt-4"
           ><span class="text-error">*</span> = Required attribute</small
         >
@@ -91,10 +102,24 @@ const props = withDefaults(
 
 const localTask = ref(props.currentTask)
 
-const mode = computed(() => (isTaskInstance(localTask.value) ? Mode.UPDATE : Mode.CREATE))
-watch(mode, (newVal) => {
-  console.log(`Mode changed to: ${newVal}`)
+const mode = computed(() => {
+  return isTaskInstance(localTask.value) ? Mode.UPDATE : Mode.CREATE
 })
+watch(
+  () => props.currentTask,
+  (newVal) => {
+    console.log('Task changed to ', newVal)
+    localTask.value = newVal
+  },
+)
+watch(
+  () => props.display,
+  (shown) => {
+    if (!shown) {
+      localTask.value = getDefaultTaskDefinition()
+    }
+  },
+)
 
 const focusInput = ref<HTMLInputElement | null>(null)
 watch(
@@ -107,6 +132,7 @@ watch(
       })
     }
   },
+  { immediate: true },
 )
 
 defineEmits(['create', 'update', 'close'])
