@@ -77,10 +77,11 @@ export const useTasks = () => {
       return
     }
     const taskToSave = {
-      id: task.definition_id,
+      definition_id: task.definition_id,
       name: task.name,
       desc: task.desc,
       timestamp: new Date(task.timestamp).toISOString(),
+      window_spawned: false,
     }
     console.log('Updating task: ', taskToSave)
 

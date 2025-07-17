@@ -60,17 +60,72 @@ pub fn create_task(
     Ok(())
 }
 
+// #[tauri::command]
+// pub fn update_task(
+//     state: State<'_, Mutex<TaskReminder>>,
+//     task: TaskInstance,
+// ) -> Result<(), String> {
+//     let mut state = state.lock().unwrap();
+//     let task_reminder = &mut state;
+
+//     let definition = task_reminder
+//         .task_definitions
+//         .iter()
+//         .find(|d| d.id == task.definition_id);
+
+//     match definition {
+//         Some(definition) => {
+//             let new_definition = TaskDefinition {
+//                 id: task.definition_id,
+//                 name: task.name,
+//                 desc: task.desc,
+//                 start: task.timestamp,
+//                 recurrence: {
+//                     if definition.recurrence.is_some() {
+//                         definition.recurrence.clone()
+//                     } else {
+//                         None
+//                     }
+//                 },
+//             };
+
+//             task_reminder.update_task_definition(new_definition);
+//         }
+//         None => (),
+//     };
+
+//     if definition.is_some() {
+//         Ok(())
+//     } else {
+//         Err("Task definition not found".to_string())
+//     }
+// }
+
 #[tauri::command]
 pub fn update_task(
     state: State<'_, Mutex<TaskReminder>>,
-    task: TaskDefinition,
+    task: TaskInstance,
 ) -> Result<(), String> {
-    let mut state = state.lock().unwrap();
-    let task_reminder = &mut state;
+    let mut task_reminder = state.lock().unwrap();
 
-    task_reminder.update_task_definition(task);
+    if let Some(definition) = task_reminder
+        .task_definitions
+        .iter()
+        .find(|d| d.id == task.definition_id)
+    {
+        let new_definition = TaskDefinition {
+            id: task.definition_id,
+            name: task.name,
+            desc: task.desc,
+            start: task.timestamp,
+            recurrence: definition.recurrence.clone(),
+        };
 
-    Ok(())
+        task_reminder.update_task_definition(new_definition);
+        Ok(())
+    } else {
+        Err("Task definition not found".to_string())
+    }
 }
 
 #[tauri::command]
