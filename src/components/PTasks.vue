@@ -85,7 +85,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, Ref, ref, watch } from 'vue'
+import { nextTick, onMounted, onUnmounted, Ref, ref, watch } from 'vue'
 import TaskForm from './TaskForm.vue'
 import PHotkeys from './PHotkeys.vue'
 import { DateTimeString, TaskDefinition, TaskInstance, useTasks } from '../composables/useTasks'
@@ -176,15 +176,17 @@ const openDeleteConfirmation = (taskIndex: number | null) => {
 
 const closeModals = () => {
   resetTask(currentTask)
-  if (!displayConfirmationModal.value && !displayTaskModal.value) {
-    resetSelectedIndex()
-  }
-  if (displayTaskModal.value) {
-    toggleTaskModal()
-  }
-  if (displayConfirmationModal.value) {
-    toggleConfirmationModal()
-  }
+  nextTick(() => {
+    if (!displayConfirmationModal.value && !displayTaskModal.value) {
+      resetSelectedIndex()
+    }
+    if (displayTaskModal.value) {
+      toggleTaskModal()
+    }
+    if (displayConfirmationModal.value) {
+      toggleConfirmationModal()
+    }
+  })
 }
 
 const handleTaskCreate = async (task: TaskDefinition) => {
@@ -210,12 +212,10 @@ const handleTaskDelete = async (id: string | undefined) => {
 
   try {
     await deleteTask(id)
+    resetSelectedIndex()
   } catch (e) {
     console.log(`Failed to delete task: ${e}`)
   }
-
-  toggleConfirmationModal()
-  resetTask(currentTask)
 }
 
 onMounted(async () => {
