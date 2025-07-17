@@ -9,10 +9,10 @@
   <main class="flex flex-col items-center justify-center p-4">
     <ConfirmationModal
       :display="displayConfirmationModal"
-      @submit="handleTaskDelete(currentTask.id)"
+      @submit="handleTaskDelete(currentTask.definition_id)"
       @close="closeModals"
-      :name="currentTask.name"
-      :id="currentTask.id"
+      :name="currentTask?.name"
+      :id="currentTask?.definition_id"
     />
     <TaskForm
       submit-text="Save"
@@ -88,10 +88,10 @@
 import { onMounted, onUnmounted, Ref, ref, watch } from 'vue'
 import TaskForm from './TaskForm.vue'
 import PHotkeys from './PHotkeys.vue'
-import { DateTimeString, INewTask, Task, useTasks } from '../composables/useTasks'
+import { DateTimeString, TaskDefinition, TaskInstance, useTasks } from '../composables/useTasks'
 import { useRowSelect } from '../composables/useRowSelect'
 import { toDatetimeLocalValue } from '../helpers/datetime'
-import { getDefaultTask, resetTask } from '../helpers/task'
+import { resetTask } from '../helpers/task'
 import ConfirmationModal from './ConfirmationModal.vue'
 import PIcon from './PIcon.vue'
 import { listen } from '@tauri-apps/api/event'
@@ -117,7 +117,7 @@ const { selectedIndex, resetSelectedIndex } = useRowSelect(
 const rowRefs = ref<HTMLElement[]>([])
 const tableRef = ref<HTMLElement | null>(null)
 
-const currentTask = ref(getDefaultTask()) as Ref<Task>
+const currentTask = ref() as Ref<TaskInstance>
 
 watch(selectedIndex, (newIndex) => {
   if (newIndex === null || !tableRef.value) return
@@ -151,7 +151,7 @@ const handleModal = (taskIndex: number | null) => {
   resetTask(currentTask)
   if (taskIndex !== null) {
     currentTask.value = {
-      id: tasks.value[taskIndex].id,
+      definition_id: tasks.value[taskIndex].definition_id,
       name: tasks.value[taskIndex].name,
       desc: tasks.value[taskIndex].desc,
       timestamp: toDatetimeLocalValue(tasks.value[taskIndex].timestamp) as DateTimeString,
@@ -164,7 +164,7 @@ const openDeleteConfirmation = (taskIndex: number | null) => {
   if (taskIndex !== null) {
     resetTask(currentTask)
     currentTask.value = {
-      id: tasks.value[taskIndex].id,
+      definition_id: tasks.value[taskIndex].definition_id,
       name: tasks.value[taskIndex].name,
       desc: tasks.value[taskIndex].desc,
       timestamp: toDatetimeLocalValue(tasks.value[taskIndex].timestamp) as DateTimeString,
@@ -188,14 +188,14 @@ const closeModals = () => {
   }
 }
 
-const handleCreate = async (task: INewTask) => {
+const handleCreate = async (task: TaskDefinition) => {
   console.log('Creating task: ', task)
   await createTask(task)
 
   resetTask(currentTask)
 }
 
-const handleUpdate = async (task: Task) => {
+const handleUpdate = async (task: TaskInstance) => {
   console.log('Updating task: ', task)
   await updateTask(task)
 
@@ -263,7 +263,7 @@ onMounted(async () => {
           e.stopPropagation()
           e.preventDefault()
           try {
-            await deleteTask(tasks.value[selectedIndex.value].id as string)
+            await deleteTask(tasks.value[selectedIndex.value].definition_id as string)
           } catch (e) {
             console.log(`Failed to delete task: ${e}`)
           }

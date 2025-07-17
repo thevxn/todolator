@@ -40,9 +40,9 @@ import logoUrl from './assets/logo.png'
 import { invoke } from '@tauri-apps/api/core'
 import ReminderPopup from './components/ReminderPopup.vue'
 import { emit } from '@tauri-apps/api/event'
-import { Task } from './composables/useTasks'
+import { TaskInstance } from './composables/useTasks'
 
-async function completeTask(task: Task) {
+async function completeTask(task: TaskInstance) {
   try {
     await invoke('complete_task', { task })
   } catch (e) {

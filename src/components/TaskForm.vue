@@ -40,12 +40,13 @@
           >Remind At<span class="text-error">*</span></label
         >
         <input
-          v-model="localTask.timestamp"
+          v-model="localTask.start"
           name="timestamp"
           type="datetime-local"
           class="w-full"
           tabindex="3"
           required
+          v-if="!isTaskInstance(localTask)"
         />
         <small class="text-left w-full mt-4"
           ><span class="text-error">*</span> = Required attribute</small
@@ -65,46 +66,35 @@
 </template>
 
 <script lang="ts" setup>
-import { nextTick, reactive, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import PHotkeys from './PHotkeys.vue'
-import { INewTask, Task } from '../composables/useTasks'
-import { getDefaultTask } from '../helpers/task'
+import { TaskDefinition, TaskInstance } from '../composables/useTasks'
+import { getDefaultTaskDefinition, isTaskInstance } from '../helpers/task'
 
 enum Mode {
   CREATE,
   UPDATE,
 }
 
-const mode = ref<Mode>(Mode.CREATE)
-
 const props = withDefaults(
   defineProps<{
-    currentTask: INewTask | Task
+    currentTask?: TaskDefinition | TaskInstance
     display: boolean
     submitText?: string
     errorText?: string
   }>(),
   {
-    currentTask: () => getDefaultTask(),
+    currentTask: getDefaultTaskDefinition,
     display: false,
   },
 )
 
-const localTask = reactive({ ...props.currentTask })
-watch(
-  () => props.currentTask,
-  (newVal) => {
-    Object.assign(localTask, newVal)
-    if (newVal.hasOwnProperty('id')) {
-      console.log('Modal opened in update mode')
-      mode.value = Mode.UPDATE
-    } else {
-      mode.value = Mode.CREATE
-      console.log('Modal opened in create mode')
-    }
-  },
-  { immediate: true },
-)
+const localTask = ref(props.currentTask)
+
+const mode = computed(() => (isTaskInstance(localTask.value) ? Mode.UPDATE : Mode.CREATE))
+watch(mode, (newVal) => {
+  console.log(`Mode changed to: ${newVal}`)
+})
 
 const focusInput = ref<HTMLInputElement | null>(null)
 watch(

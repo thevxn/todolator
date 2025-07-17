@@ -16,11 +16,11 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { Task } from '../composables/useTasks'
+import { TaskInstance } from '../composables/useTasks'
 import { invoke } from '@tauri-apps/api/core'
 import PHotkeys from './PHotkeys.vue'
 
-const task = ref<Task>()
+const task = ref<TaskInstance>()
 const timestampDate = () => new Date(task.value?.timestamp as string)
 
 try {

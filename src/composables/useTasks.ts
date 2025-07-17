@@ -3,18 +3,25 @@ import { Ref, ref } from 'vue'
 
 export type DateTimeString = Branded<string, 'DateTimeString'>
 
-export interface INewTask {
+export interface TaskDefinition {
+  name: string
+  desc?: string
+  start: DateTimeString
+  recurrence?: {
+    last_recurrence?: DateTimeString
+    minutes: number
+    exceptions?: Array<DateTimeString>
+  }
+}
+export type TaskInstance = {
+  definition_id: string
   name: string
   desc?: string
   timestamp: DateTimeString
-  recurrence_minutes?: DateTimeString
-}
-export type Task = INewTask & {
-  id: string
 }
 
 export const useTasks = () => {
-  const tasks = ref([]) as Ref<Array<Task>>
+  const tasks = ref([]) as Ref<Array<TaskInstance>>
   const displayTaskModal = ref(false)
   const taskCreationError = ref(undefined) as Ref<string | undefined>
   const displayConfirmationModal = ref(false)
@@ -30,19 +37,25 @@ export const useTasks = () => {
     }
   }
 
-  const createTask = async (task: INewTask) => {
-    if (!task.name || !task.timestamp) {
+  const createTask = async (task: TaskDefinition) => {
+    if (!task.name || !task.start) {
       console.log('missing required attributes')
       taskCreationError.value = 'Missing required attributes!'
       return
     }
 
     try {
-      const taskToSave: INewTask = {
+      const taskToSave: TaskDefinition = {
         name: task.name,
         desc: task.desc,
-        timestamp: new Date(task.timestamp).toISOString() as DateTimeString,
-        recurrence_minutes: task.recurrence_minutes,
+        start: new Date(task.start).toISOString() as DateTimeString,
+        recurrence: task.recurrence
+          ? {
+              minutes: task.recurrence?.minutes,
+              exceptions: task.recurrence?.exceptions,
+              last_recurrence: task.recurrence?.last_recurrence,
+            }
+          : undefined,
       }
       console.log('Adding task: ', taskToSave)
 
@@ -57,7 +70,7 @@ export const useTasks = () => {
     }
   }
 
-  const updateTask = async (task: Task) => {
+  const updateTask = async (task: TaskInstance) => {
     if (!task.name || !task.timestamp) {
       console.log('missing required attributes')
       taskCreationError.value = 'Missing required attributes!'
@@ -65,7 +78,7 @@ export const useTasks = () => {
     }
     try {
       const taskToSave = {
-        id: task.id,
+        id: task.definition_id,
         name: task.name,
         desc: task.desc,
         timestamp: new Date(task.timestamp).toISOString(),

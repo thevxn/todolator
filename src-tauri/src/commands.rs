@@ -34,7 +34,7 @@ pub fn create_task(
     state: State<'_, Mutex<TaskReminder>>,
     name: String,
     desc: Option<String>,
-    timestamp: String,
+    start: String,
     recurrence_minutes: Option<i64>,
 ) -> Result<(), String> {
     let mut state = state.lock().unwrap();
@@ -44,10 +44,10 @@ pub fn create_task(
         id: Uuid::new_v4(),
         name,
         desc,
-        start: timestamp.parse::<DateTime<Utc>>().unwrap(),
+        start: start.parse::<DateTime<Utc>>().unwrap(),
         recurrence: match recurrence_minutes {
             Some(minutes) => Some(Recurrence::Recurring {
-                last_recurrence: Some(timestamp.parse::<DateTime<Utc>>().unwrap()),
+                last_recurrence: Some(start.parse::<DateTime<Utc>>().unwrap()),
                 minutes,
                 exceptions: None,
             }),
