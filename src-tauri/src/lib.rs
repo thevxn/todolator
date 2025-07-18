@@ -64,7 +64,7 @@ fn setup_tray(app: &mut App) {
 
 fn spawn_reminder(handle: AppHandle, task_name: String, label: String) {
     std::thread::spawn(move || {
-        WebviewWindowBuilder::new(
+        let mut builder = WebviewWindowBuilder::new(
             &handle,
             label,
             tauri::WebviewUrl::App("reminder.html".into()),
@@ -74,10 +74,14 @@ fn spawn_reminder(handle: AppHandle, task_name: String, label: String) {
         .resizable(true)
         .center()
         .focused(true)
-        .drag_and_drop(true)
-        .inner_size(640.00, 250.00)
-        .build()
-        .unwrap();
+        .inner_size(640.00, 250.00);
+
+        #[cfg(target_os = "windows")]
+        {
+            builder = builder.drag_and_drop(true);
+        }
+
+        builder.build().unwrap();
     });
 }
 
