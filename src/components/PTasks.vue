@@ -244,7 +244,11 @@ onMounted(async () => {
         break
 
       case 'Enter':
-        if (!displayTaskModal.value && !displayConfirmationModal.value) {
+        if (
+          !displayTaskModal.value &&
+          !displayConfirmationModal.value &&
+          selectedIndex.value !== null
+        ) {
           e.stopPropagation()
           e.preventDefault()
           handleModal(selectedIndex.value)
