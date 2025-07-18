@@ -149,6 +149,8 @@ watch(selectedIndex, (newIndex) => {
 })
 
 const handleModal = (taskIndex: number | null) => {
+  console.log('called with taskIndex: ', taskIndex)
+  // TODO: Check where the task is being reset, find all places, refactor to be unified..
   resetTask(currentTask)
   if (taskIndex !== null) {
     currentTask.value = {
@@ -221,17 +223,19 @@ const handleTaskDelete = async (id: string | undefined) => {
 onMounted(async () => {
   await loadTasks()
 
-  // TODO: Move away
+  // TODO: Move away?
   const handler = async (e: KeyboardEvent) => {
     switch (e.key) {
       case 'n':
+        // If no modal is active, open New Task modal
         if (!displayTaskModal.value && !displayConfirmationModal.value) {
           handleModal(null)
           e.stopPropagation()
           e.preventDefault()
         }
+        // If Delete Confirmation modal is active, close it without deleting
         if (displayConfirmationModal.value && selectedIndex.value !== null) {
-          handleModal(selectedIndex.value)
+          toggleConfirmationModal()
           e.stopPropagation()
           e.preventDefault()
         }
