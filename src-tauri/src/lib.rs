@@ -63,26 +63,28 @@ fn setup_tray(app: &mut App) {
 }
 
 fn spawn_reminder(handle: AppHandle, task_name: String, label: String) {
-    std::thread::spawn(move || {
-        let mut builder = WebviewWindowBuilder::new(
-            &handle,
-            label,
-            tauri::WebviewUrl::App("reminder.html".into()),
-        )
-        .title(task_name)
-        .decorations(false)
-        .resizable(true)
-        .center()
-        .focused(true)
-        .inner_size(640.00, 250.00);
+    // std::thread::spawn(move || {
+    println!("Beginning to spawn new window");
+    let mut builder = WebviewWindowBuilder::new(
+        &handle,
+        label,
+        tauri::WebviewUrl::App("reminder.html".into()),
+    )
+    .title(task_name)
+    .decorations(false)
+    .resizable(true)
+    .center()
+    .focused(true)
+    .inner_size(640.00, 250.00);
 
-        #[cfg(target_os = "windows")]
-        {
-            builder = builder.drag_and_drop(true);
-        }
+    #[cfg(target_os = "windows")]
+    {
+        builder = builder.drag_and_drop(true);
+    }
 
-        builder.build().unwrap();
-    });
+    builder.build().unwrap();
+    println!("Finished spawning new window");
+    // });
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -101,38 +103,39 @@ pub fn run() {
 
             app.manage(Mutex::new(reminder));
 
-            let handle = app.handle().clone();
             let mut window_counter = 0;
+            let handle = app.handle().clone();
             thread::spawn(move || loop {
                 let sleep_duration = {
                     let state = handle.state::<Mutex<TaskReminder>>();
                     let mut reminder = state.lock().unwrap();
 
-                    println!("Next up: {:?}", reminder.task_instances.peek());
+                    // println!("Next up: {:?}", reminder.task_instances.peek());
 
-                    let should_remind = if let Some(next) = reminder.task_instances.peek() {
+                    let task = reminder.task_instances.peek_mut();
+
+                    let should_remind = if let Some(next) = &task {
                         next.0.timestamp <= Utc::now()
                     } else {
                         false
                     };
 
                     if should_remind {
-                        if let Some(mut next) = reminder.task_instances.peek_mut() {
+                        if let Some(mut next) = task {
                             if !next.0.window_spawned {
-                                println!("Reminding task!!!: {:?}", next);
+                                println!("Reminding task!!!: {:?}", next.0.timestamp);
                                 window_counter += 1;
 
+                                next.0.window_spawned = true;
                                 spawn_reminder(
                                     handle.clone(),
                                     next.0.name.clone(),
                                     window_counter.to_string(),
                                 );
-
-                                next.0.window_spawned = true;
                             }
                         }
                         Duration::from_millis(100)
-                    } else if let Some(next) = reminder.task_instances.peek() {
+                    } else if let Some(next) = task {
                         let duration = (next.0.timestamp - Utc::now()).to_std().unwrap();
                         std::cmp::min(duration, Duration::from_secs(5))
                     } else {

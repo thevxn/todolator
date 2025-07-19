@@ -19,11 +19,11 @@ pub fn get_tasks(state: State<'_, Mutex<TaskReminder>>) -> Result<Vec<TaskInstan
 
 #[tauri::command]
 pub fn get_next_task(state: State<'_, Mutex<TaskReminder>>) -> Result<TaskInstance, String> {
-    let mut state = state.lock().unwrap();
+    let state = state.lock().unwrap();
 
     if let Some(task) = state.get_next_task() {
-        println!("NEXT TASK: {:?}", task);
-        Ok(task)
+        println!("Loaded next task for popup: {:?}", task);
+        Ok(task.clone())
     } else {
         Err("No tasks available".to_string())
     }
@@ -59,47 +59,6 @@ pub fn create_task(
 
     Ok(())
 }
-
-// #[tauri::command]
-// pub fn update_task(
-//     state: State<'_, Mutex<TaskReminder>>,
-//     task: TaskInstance,
-// ) -> Result<(), String> {
-//     let mut state = state.lock().unwrap();
-//     let task_reminder = &mut state;
-
-//     let definition = task_reminder
-//         .task_definitions
-//         .iter()
-//         .find(|d| d.id == task.definition_id);
-
-//     match definition {
-//         Some(definition) => {
-//             let new_definition = TaskDefinition {
-//                 id: task.definition_id,
-//                 name: task.name,
-//                 desc: task.desc,
-//                 start: task.timestamp,
-//                 recurrence: {
-//                     if definition.recurrence.is_some() {
-//                         definition.recurrence.clone()
-//                     } else {
-//                         None
-//                     }
-//                 },
-//             };
-
-//             task_reminder.update_task_definition(new_definition);
-//         }
-//         None => (),
-//     };
-
-//     if definition.is_some() {
-//         Ok(())
-//     } else {
-//         Err("Task definition not found".to_string())
-//     }
-// }
 
 #[tauri::command]
 pub fn update_task(

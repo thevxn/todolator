@@ -2,7 +2,7 @@ use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json;
 use std::cmp::Reverse;
-use std::collections::BinaryHeap;
+use std::collections::{BinaryHeap, HashMap};
 use std::fs;
 use std::path::Path;
 use uuid::Uuid;
@@ -107,7 +107,14 @@ impl TaskReminder {
 
     /// Calculates task instances from definitions on demand.
     pub fn generate_task_instances(&mut self, page: i32) {
+        println!("Beginning to recalculate new instances");
         let definitions = self.task_definitions.clone();
+
+        // If a task already has a window spawned, it must be set accordingly on the new instance
+        let mut window_spawned_map: HashMap<(Uuid, DateTime<Utc>), bool> = HashMap::new();
+        self.task_instances.iter().for_each(|t| {
+            window_spawned_map.insert((t.0.definition_id, t.0.timestamp), t.0.window_spawned);
+        });
 
         self.task_instances.clear();
 
@@ -168,14 +175,18 @@ impl TaskReminder {
         });
 
         instances.sort_by_key(|i| i.timestamp);
-        instances
-            .iter()
-            .take(PAGE_SIZE as usize)
-            .for_each(|i| self.push_task_instance(i.clone()));
+        instances.iter_mut().take(PAGE_SIZE as usize).for_each(|i| {
+            if window_spawned_map.contains_key(&(i.definition_id, i.timestamp)) {
+                i.window_spawned = *window_spawned_map
+                    .get(&(i.definition_id, i.timestamp))
+                    .unwrap_or(&false);
+            };
+            self.push_task_instance(i.clone());
+        });
 
         self.calculated_instances = self.task_instances.len();
         println!("Calculated instances: {:?}", self.task_instances.len());
-        println!("{:?}", self.task_instances)
+        // println!("{:?}", self.task_instances)
     }
 
     pub fn get_tasks(&mut self, page: i32) -> Vec<TaskInstance> {
@@ -197,19 +208,22 @@ impl TaskReminder {
         std::vec::Vec::new()
     }
 
-    pub fn get_next_task(&mut self) -> Option<TaskInstance> {
-        self.task_instances
-            .peek()
-            .map(|reverse_task| reverse_task.0.clone())
+    pub fn get_next_task(&self) -> Option<&TaskInstance> {
+        self.task_instances.peek().map(|task| &task.0)
     }
 
     pub fn mark_task_completed(&mut self, task: TaskInstance) {
         let instances = &mut self.task_instances;
         instances.pop();
 
+        // println!(
+        //     "Task marked as completed. Remaining tasks: {:?}",
+        //     self.task_instances
+        // );
+
         println!(
-            "Task marked as completed. Remaining tasks: {:?}",
-            self.task_instances
+            "Task marked as completed (popped off the instances heap). Timestamp: {:?}",
+            task.timestamp
         );
 
         if let Some(definition) = self.get_task_definition(task.definition_id) {
