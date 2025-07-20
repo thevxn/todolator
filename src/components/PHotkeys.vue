@@ -45,12 +45,17 @@ const hotkeys = [
   {
     shortcut: 'ESC',
     description: 'Close',
-    screens: ['NEW_TASK_MODAL', 'REMINDER_POPUP'],
+    screens: ['NEW_TASK_MODAL'],
   },
   {
     shortcut: '⏎',
     description: 'Save',
     screens: ['NEW_TASK_MODAL'],
+  },
+  {
+    shortcut: 'CTRL + ⏎',
+    description: 'Dismiss Reminder',
+    screens: ['REMINDER_POPUP'],
   },
   {
     shortcut: '⇥',

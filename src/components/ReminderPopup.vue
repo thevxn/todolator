@@ -15,7 +15,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { TaskInstance } from '../composables/useTasks'
 import { invoke } from '@tauri-apps/api/core'
 import PHotkeys from './PHotkeys.vue'
@@ -30,7 +30,17 @@ try {
   console.log(e)
 }
 
-defineEmits(['close'])
+onMounted(async () => {
+  const handler = async (e: KeyboardEvent) => {
+    if (e.ctrlKey && e.key === 'Enter') {
+      emit('close')
+    }
+  }
+  window.addEventListener('keydown', handler)
+  onUnmounted(() => window.removeEventListener('keydown', handler))
+})
+
+const emit = defineEmits(['close'])
 </script>
 
 <style></style>
