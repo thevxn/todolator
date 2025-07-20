@@ -33,7 +33,7 @@ try {
 onMounted(async () => {
   const handler = async (e: KeyboardEvent) => {
     if (e.ctrlKey && e.key === 'Enter') {
-      emit('close')
+      emit('close', task.value)
     }
   }
   window.addEventListener('keydown', handler)
