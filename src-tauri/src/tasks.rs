@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use serde_json;
 use std::cmp::Reverse;
 use std::collections::{BinaryHeap, HashMap};
+use std::error::Error;
 use std::fs;
 use std::path::Path;
 use uuid::Uuid;
@@ -65,16 +66,15 @@ impl TaskReminder {
         self.task_definitions.push(definition);
     }
 
-    pub fn create_task_definition(&mut self, definition: TaskDefinition) {
-        self.push_task_definition(definition);
-        self.save_task_definitions().unwrap();
-    }
-
-    pub fn push_task_instance(&mut self, instance: TaskInstance) {
+    fn push_task_instance(&mut self, instance: TaskInstance) {
         self.task_instances.push(Reverse(instance));
     }
 
-    fn save_task_definitions(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+    fn get_task_definition_mut(&mut self, id: Uuid) -> Option<&mut TaskDefinition> {
+        self.task_definitions.iter_mut().find(|d| d.id == id)
+    }
+
+    fn save_task_definitions(&self) -> Result<(), Box<dyn Error>> {
         let tasks: Vec<TaskDefinition> = self.task_definitions.iter().map(|t| t.clone()).collect();
         let json_string = serde_json::to_string(&tasks)?;
         fs::write("./tasks.json", json_string)?;
@@ -82,27 +82,31 @@ impl TaskReminder {
         Ok(())
     }
 
-    pub fn load_task_definitions(&mut self) {
+    pub fn create_task_definition(
+        &mut self,
+        definition: TaskDefinition,
+    ) -> Result<(), Box<dyn Error>> {
+        self.push_task_definition(definition);
+        self.save_task_definitions()?;
+        Ok(())
+    }
+
+    pub fn load_task_definitions(&mut self) -> Result<(), Box<dyn Error>> {
         let path = "tasks.json";
         if !Path::new(path).exists() {
             fs::write(path, "[]").expect("Failed to create tasks file")
         }
 
-        let data = fs::read_to_string("./tasks.json").unwrap();
-        let parsed = serde_json::from_str::<Vec<TaskDefinition>>(&data).unwrap();
+        let data = fs::read_to_string("./tasks.json")?;
+        let parsed = serde_json::from_str::<Vec<TaskDefinition>>(&data)?;
 
         parsed.iter().for_each(|t| {
             self.push_task_definition(t.clone());
         });
 
-        // self.save_task_definitions().unwrap();
-        // self.generate_task_instances(0);
+        println!("Loaded task definitions: {:?}", self.task_definitions);
 
-        println!("Loaded task definitions: {:?}", self.task_definitions)
-    }
-
-    fn get_task_definition(&mut self, id: Uuid) -> Option<&mut TaskDefinition> {
-        self.task_definitions.iter_mut().find(|d| d.id == id)
+        Ok(())
     }
 
     /// Calculates task instances from definitions on demand.
@@ -212,21 +216,16 @@ impl TaskReminder {
         self.task_instances.peek().map(|task| &task.0)
     }
 
-    pub fn mark_task_completed(&mut self, task: TaskInstance) {
+    pub fn mark_task_completed(&mut self, task: TaskInstance) -> Result<(), Box<dyn Error>> {
         let instances = &mut self.task_instances;
         instances.pop();
-
-        // println!(
-        //     "Task marked as completed. Remaining tasks: {:?}",
-        //     self.task_instances
-        // );
 
         println!(
             "Task marked as completed (popped off the instances heap). Timestamp: {:?}",
             task.timestamp
         );
 
-        if let Some(definition) = self.get_task_definition(task.definition_id) {
+        if let Some(definition) = self.get_task_definition_mut(task.definition_id) {
             if let Some(Recurrence::Recurring {
                 last_recurrence,
                 minutes: _,
@@ -234,11 +233,13 @@ impl TaskReminder {
             }) = &mut definition.recurrence
             {
                 *last_recurrence = Some(task.timestamp);
-                self.save_task_definitions().unwrap();
+                self.save_task_definitions()?;
             } else {
-                self.delete_task_definition(task.definition_id);
+                self.delete_task_definition(task.definition_id)?;
             }
         }
+
+        Ok(())
     }
 
     pub fn update_task_definition(&mut self, updated: TaskDefinition) {
@@ -255,13 +256,15 @@ impl TaskReminder {
         // self.save_task_definitions().unwrap();
     }
 
-    pub fn delete_task_definition(&mut self, id: Uuid) {
+    pub fn delete_task_definition(&mut self, id: Uuid) -> Result<(), Box<dyn Error>> {
         let definitions = &mut self.task_definitions;
         if let Some(t) = definitions.iter_mut().position(|d| d.id == id) {
             definitions.remove(t);
         };
 
-        self.save_task_definitions().unwrap();
+        self.save_task_definitions()?;
         self.generate_task_instances(0);
+
+        Ok(())
     }
 }

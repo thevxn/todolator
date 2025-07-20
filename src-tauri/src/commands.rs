@@ -55,7 +55,7 @@ pub fn create_task(
         },
     };
 
-    task_reminder.create_task_definition(new_task);
+    task_reminder.create_task_definition(new_task).unwrap();
 
     Ok(())
 }
