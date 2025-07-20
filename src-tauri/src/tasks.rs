@@ -252,7 +252,7 @@ impl TaskReminder {
         if let Some(task) = definitions.iter_mut().find(|d| d.id == updated.id) {
             *task = updated;
 
-            print!("Updated task definition: {:?}", task)
+            println!("Updated task definition: {:?}", task)
         };
 
         // TODO: If updating all recurrences, just update the underlying definition and recalculate the task instance list.
