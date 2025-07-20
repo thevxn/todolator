@@ -83,31 +83,26 @@ pub fn create_task(
 #[tauri::command]
 pub fn update_task(
     state: State<'_, Mutex<TaskReminder>>,
-    task: TaskInstance,
+    task: TaskDefinition,
 ) -> Result<(), String> {
     let mut task_reminder = state.lock().map_err(|e| e.to_string())?;
 
-    if let Some(definition) = task_reminder
-        .task_definitions
-        .iter()
-        .find(|d| d.id == task.definition_id)
-    {
-        let new_definition = TaskDefinition {
-            id: task.definition_id,
-            name: task.name,
-            desc: task.desc,
-            start: task.timestamp,
-            recurrence: definition.recurrence.clone(),
-        };
+    let new_definition = TaskDefinition {
+        id: task.id,
+        name: task.name,
+        desc: task.desc,
+        start: task.start,
+        recurrence: task.recurrence,
+    };
 
-        task_reminder
-            .update_task_definition(new_definition)
-            .map_err(|e| e.to_string())?;
+    task_reminder
+        .update_task_definition(new_definition)
+        .map_err(|e| e.to_string())?;
 
-        Ok(())
-    } else {
-        Err("Task definition not found".to_string())
-    }
+    Ok(())
+    //  else {
+    //     Err("Task definition not found".to_string())
+    // }
 }
 
 #[tauri::command]

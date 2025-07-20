@@ -1,23 +1,27 @@
 import { invoke } from '@tauri-apps/api/core'
 import { Ref, ref } from 'vue'
 
+export type UuidString = Branded<string, 'Uuidstring'>
 export type DateTimeString = Branded<string, 'DateTimeString'>
 
-export interface TaskDefinition {
+export interface CreatedTaskDefinition {
   name: string
-  desc?: string
+  desc: string | null
   start: DateTimeString
-  recurrence?: {
-    last_recurrence?: DateTimeString
+  recurrence: {
+    last_recurrence: DateTimeString | null
     minutes: number
-    exceptions?: Array<DateTimeString>
-  }
+    exceptions: Array<DateTimeString> | null
+  } | null
 }
+
+export type TaskDefinition = CreatedTaskDefinition & { id: UuidString }
 export type TaskInstance = {
-  definition_id: string
+  definition_id: UuidString
   name: string
   desc?: string
   timestamp: DateTimeString
+  // window_spawned?
 }
 
 export const useTasks = () => {
@@ -37,30 +41,30 @@ export const useTasks = () => {
     }
   }
 
-  const createTask = async (task: TaskDefinition) => {
-    if (!task.name || !task.start) {
+  const createTask = async (taskDefinition: CreatedTaskDefinition) => {
+    if (!taskDefinition.name || !taskDefinition.start) {
       console.log('missing required attributes')
       taskCreationError.value = 'Missing required attributes!'
       return
     }
 
     try {
-      const taskToSave: TaskDefinition = {
-        name: task.name,
-        desc: task.desc,
-        start: new Date(task.start).toISOString() as DateTimeString,
-        recurrence: task.recurrence
+      const taskDefinitionToSave: CreatedTaskDefinition = {
+        name: taskDefinition.name,
+        desc: taskDefinition.desc,
+        start: new Date(taskDefinition.start).toISOString() as DateTimeString,
+        recurrence: taskDefinition.recurrence
           ? {
-              minutes: task.recurrence?.minutes,
-              exceptions: task.recurrence?.exceptions,
-              last_recurrence: task.recurrence?.last_recurrence,
+              minutes: taskDefinition.recurrence.minutes,
+              exceptions: taskDefinition.recurrence.exceptions,
+              last_recurrence: taskDefinition.recurrence.last_recurrence,
             }
-          : undefined,
+          : null,
       }
-      console.log('Adding task: ', taskToSave)
+      console.log('Adding task: ', taskDefinitionToSave)
 
       // If the task does not have an ID, it's a create
-      await invoke('create_task', { ...taskToSave })
+      await invoke('create_task', { ...taskDefinitionToSave })
       console.log('task created!')
 
       toggleTaskModal()
@@ -70,29 +74,35 @@ export const useTasks = () => {
     }
   }
 
-  const updateTask = async (task: TaskInstance) => {
-    if (!task.name || !task.timestamp) {
+  const updateTask = async (taskDefinition: TaskDefinition) => {
+    if (!taskDefinition.name || !taskDefinition.start || !taskDefinition.id) {
       console.log('missing required attributes')
       taskCreationError.value = 'Missing required attributes!'
       return
     }
-    const taskToSave = {
-      definition_id: task.definition_id,
-      name: task.name,
-      desc: task.desc,
-      timestamp: new Date(task.timestamp).toISOString(),
-      window_spawned: false,
+    const taskDefinitionToSave: TaskDefinition = {
+      id: taskDefinition.id,
+      name: taskDefinition.name,
+      desc: taskDefinition.desc,
+      start: new Date(taskDefinition.start).toISOString() as DateTimeString,
+      recurrence: taskDefinition.recurrence
+        ? {
+            minutes: taskDefinition.recurrence.minutes,
+            exceptions: taskDefinition.recurrence.exceptions,
+            last_recurrence: taskDefinition.recurrence.last_recurrence,
+          }
+        : null,
     }
-    console.log('Updating task: ', taskToSave)
+    console.log('Updating task: ', taskDefinitionToSave)
 
-    await invoke('update_task', { task: taskToSave })
+    await invoke('update_task', { task: taskDefinitionToSave })
     console.log('task updated!')
 
     toggleTaskModal()
     await loadTasks()
   }
 
-  const deleteTask = async (id: string) => {
+  const deleteTask = async (id: UuidString) => {
     console.log('Deleting task with ID ', id)
     await invoke('delete_task', { id })
     console.log('Task deleted')

@@ -1,21 +1,23 @@
-import { Ref } from 'vue'
-import { DateTimeString, TaskDefinition, TaskInstance } from '../composables/useTasks'
+import {
+  CreatedTaskDefinition,
+  DateTimeString,
+  TaskDefinition,
+  UuidString,
+} from '../composables/useTasks'
 import { toDatetimeLocalValue } from './datetime'
 
-export function isTaskInstance(task: TaskDefinition | TaskInstance): task is TaskInstance {
-  return 'definition_id' in task
+export function isExistingDefinition(
+  task: TaskDefinition | CreatedTaskDefinition,
+): task is CreatedTaskDefinition {
+  return 'id' in task && task.id !== ''
 }
 
 export const getDefaultTaskDefinition = (): TaskDefinition => {
   return {
+    id: '' as UuidString,
     name: '',
-    desc: undefined,
+    desc: null,
     start: toDatetimeLocalValue(new Date(Date.now()).toISOString()) as DateTimeString,
-    recurrence: undefined,
-  }
-}
-export const resetTask = (task: Ref<TaskInstance | undefined>) => {
-  if (task) {
-    task.value = undefined
+    recurrence: null,
   }
 }

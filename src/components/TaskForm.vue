@@ -47,17 +47,16 @@
           class="w-full"
           tabindex="3"
           required
-          v-if="!isTaskInstance(localTask)"
         />
-        <input
+        <!-- <input
           v-model="localTask.timestamp"
           name="timestamp"
           type="datetime-local"
           class="w-full"
           tabindex="3"
           required
-          v-if="isTaskInstance(localTask)"
-        />
+          v-if="isExistingDefinition(localTask)"
+        /> -->
 
         <small class="text-left w-full mt-4"
           ><span class="text-error">*</span> = Required attribute</small
@@ -79,8 +78,8 @@
 <script lang="ts" setup>
 import { computed, nextTick, ref, watch } from 'vue'
 import PHotkeys from './PHotkeys.vue'
-import { TaskDefinition, TaskInstance } from '../composables/useTasks'
-import { getDefaultTaskDefinition, isTaskInstance } from '../helpers/task'
+import { TaskDefinition } from '../composables/useTasks'
+import { getDefaultTaskDefinition, isExistingDefinition } from '../helpers/task'
 
 enum Mode {
   CREATE,
@@ -89,7 +88,10 @@ enum Mode {
 
 const props = withDefaults(
   defineProps<{
-    currentTask?: TaskDefinition | TaskInstance
+    // Included if updating an existing definition
+    // Not included if creating a new one (undefined passed from the parent)
+    currentTask?: TaskDefinition
+
     display: boolean
     submitText?: string
     errorText?: string
@@ -103,7 +105,7 @@ const props = withDefaults(
 const localTask = ref(props.currentTask)
 
 const mode = computed(() => {
-  return isTaskInstance(localTask.value) ? Mode.UPDATE : Mode.CREATE
+  return isExistingDefinition(localTask.value) ? Mode.UPDATE : Mode.CREATE
 })
 watch(
   () => props.currentTask,
@@ -112,6 +114,8 @@ watch(
     localTask.value = newVal
   },
 )
+
+// TODO: Is this actually needed?
 watch(
   () => props.display,
   (shown) => {

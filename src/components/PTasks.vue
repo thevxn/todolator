@@ -9,10 +9,10 @@
   <main class="flex flex-col items-center justify-center p-4">
     <ConfirmationModal
       :display="displayConfirmationModal"
-      @submit="handleTaskDelete(currentTask.definition_id)"
+      @submit="handleTaskDelete(currentTaskDefinition?.id)"
       @close="closeModals"
-      :name="currentTask?.name"
-      :id="currentTask?.definition_id"
+      :name="currentTaskInstance?.name"
+      :id="currentTaskInstance?.definition_id"
     />
     <TaskForm
       submit-text="Save"
@@ -21,15 +21,18 @@
       @update="handleTaskUpdate"
       @close="toggleTaskModal"
       :error-text="taskCreationError"
-      :current-task="currentTask"
+      :current-task="currentTaskDefinition"
     />
+
     <div
       class="flex flex-row w-full items-center mt-10"
       :class="tasks.length > 0 ? 'justify-end' : 'justify-center'"
     >
-      <button tabindex="-1" @click="handleModal(null)">New Task</button>
+      <!-- New Task Button -->
+      <button tabindex="-1" @click="openCreateUpdateModal(null)">New Task</button>
     </div>
 
+    <!-- Main tasks table -->
     <div
       v-if="tasks.length > 0"
       id="tasks-table"
@@ -68,7 +71,7 @@
               <PIcon
                 :icon="'mingcute:edit-2-line'"
                 class="hover:border-warning hover:border-2 border-2 border-[#ffffff00] p-1 active:bg-warning active:text-primary text-warning rounded-md outline-none"
-                @clicked="handleModal(i)"
+                @clicked="openCreateUpdateModal(i)"
               />
               <PIcon
                 :icon="'mingcute:delete-2-line'"
@@ -85,16 +88,22 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, onUnmounted, Ref, ref, watch } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import TaskForm from './TaskForm.vue'
 import PHotkeys from './PHotkeys.vue'
-import { DateTimeString, TaskDefinition, TaskInstance, useTasks } from '../composables/useTasks'
+import {
+  DateTimeString,
+  TaskDefinition,
+  TaskInstance,
+  useTasks,
+  UuidString,
+} from '../composables/useTasks'
 import { useRowSelect } from '../composables/useRowSelect'
 import { toDatetimeLocalValue } from '../helpers/datetime'
-import { resetTask } from '../helpers/task'
 import ConfirmationModal from './ConfirmationModal.vue'
 import PIcon from './PIcon.vue'
 import { listen } from '@tauri-apps/api/event'
+import { invoke } from '@tauri-apps/api/core'
 
 const {
   tasks,
@@ -117,9 +126,28 @@ const { selectedIndex, resetSelectedIndex } = useRowSelect(
 const rowRefs = ref<HTMLElement[]>([])
 const tableRef = ref<HTMLElement | null>(null)
 
-const currentTask = ref() as Ref<TaskInstance>
+const currentTaskDefinition = ref<TaskDefinition | undefined>()
+const currentTaskInstance = ref<TaskInstance | undefined>()
+
+const setCurrentDefinitionAndInstance = async (taskIndex: number) => {
+  currentTaskInstance.value = {
+    definition_id: tasks.value[taskIndex].definition_id,
+    name: tasks.value[taskIndex].name,
+    desc: tasks.value[taskIndex].desc,
+    timestamp: toDatetimeLocalValue(tasks.value[taskIndex].timestamp) as DateTimeString,
+  }
+  currentTaskDefinition.value = await invoke('get_task_definition', {
+    id: currentTaskInstance.value.definition_id,
+  })
+}
+
+const resetCurrentDefinitionAndInstance = () => {
+  currentTaskDefinition.value = undefined
+  currentTaskInstance.value = undefined
+}
 
 // Watcher for selected task index to enable visual task select using hotkeys
+// TODO: Fix weird behavior after messing around in the GUI (view being dragged every time arrow up/down is pressed)
 watch(selectedIndex, (newIndex) => {
   if (newIndex === null || !tableRef.value) return
 
@@ -148,36 +176,26 @@ watch(selectedIndex, (newIndex) => {
   }
 })
 
-const handleModal = (taskIndex: number | null) => {
+const openCreateUpdateModal = async (taskIndex: number | null) => {
   console.log('called with taskIndex: ', taskIndex)
   // TODO: Check where the task is being reset, find all places, refactor to be unified..
-  resetTask(currentTask)
+  resetCurrentDefinitionAndInstance()
   if (taskIndex !== null) {
-    currentTask.value = {
-      definition_id: tasks.value[taskIndex].definition_id,
-      name: tasks.value[taskIndex].name,
-      desc: tasks.value[taskIndex].desc,
-      timestamp: toDatetimeLocalValue(tasks.value[taskIndex].timestamp) as DateTimeString,
-    }
+    await setCurrentDefinitionAndInstance(taskIndex)
   }
+
   toggleTaskModal()
 }
 
-const openDeleteConfirmation = (taskIndex: number | null) => {
+const openDeleteConfirmation = async (taskIndex: number | null) => {
   if (taskIndex !== null) {
-    currentTask.value = {
-      definition_id: tasks.value[taskIndex].definition_id,
-      name: tasks.value[taskIndex].name,
-      desc: tasks.value[taskIndex].desc,
-      timestamp: toDatetimeLocalValue(tasks.value[taskIndex].timestamp) as DateTimeString,
-    }
+    await setCurrentDefinitionAndInstance(taskIndex)
 
     toggleConfirmationModal()
   }
 }
 
 const closeModals = () => {
-  resetTask(currentTask)
   nextTick(() => {
     if (!displayConfirmationModal.value && !displayTaskModal.value) {
       resetSelectedIndex()
@@ -189,25 +207,26 @@ const closeModals = () => {
       toggleConfirmationModal()
     }
   })
+  resetCurrentDefinitionAndInstance()
 }
 
 const handleTaskCreate = async (task: TaskDefinition) => {
   console.log('Creating task: ', task)
   await createTask(task)
 
-  resetTask(currentTask)
+  resetCurrentDefinitionAndInstance()
 }
 
-const handleTaskUpdate = async (task: TaskInstance) => {
+const handleTaskUpdate = async (task: TaskDefinition) => {
   try {
     await updateTask(task)
   } catch (e) {
     throw new Error(`Failed to update task: ${e}`)
   }
-  resetTask(currentTask)
+  resetCurrentDefinitionAndInstance()
 }
 
-const handleTaskDelete = async (id: string | undefined) => {
+const handleTaskDelete = async (id: UuidString | undefined) => {
   if (!id) {
     return
   }
@@ -215,6 +234,8 @@ const handleTaskDelete = async (id: string | undefined) => {
   try {
     await deleteTask(id)
     resetSelectedIndex()
+    resetCurrentDefinitionAndInstance()
+    toggleConfirmationModal()
   } catch (e) {
     console.log(`Failed to delete task: ${e}`)
   }
@@ -223,13 +244,12 @@ const handleTaskDelete = async (id: string | undefined) => {
 onMounted(async () => {
   await loadTasks()
 
-  // TODO: Move away?
   const handler = async (e: KeyboardEvent) => {
     switch (e.key) {
       case 'n':
         // If no modal is active, open New Task modal
         if (!displayTaskModal.value && !displayConfirmationModal.value) {
-          handleModal(null)
+          openCreateUpdateModal(null)
           e.stopPropagation()
           e.preventDefault()
         }
@@ -255,7 +275,7 @@ onMounted(async () => {
         ) {
           e.stopPropagation()
           e.preventDefault()
-          handleModal(selectedIndex.value)
+          openCreateUpdateModal(selectedIndex.value)
         }
         break
 
@@ -271,13 +291,8 @@ onMounted(async () => {
         if (displayConfirmationModal.value && selectedIndex.value !== null) {
           e.stopPropagation()
           e.preventDefault()
-          try {
-            await deleteTask(tasks.value[selectedIndex.value].definition_id as string)
-          } catch (e) {
-            console.log(`Failed to delete task: ${e}`)
-          }
-          resetTask(currentTask)
-          toggleConfirmationModal()
+
+          await handleTaskDelete(tasks.value[selectedIndex.value].definition_id as UuidString)
         }
         break
 
