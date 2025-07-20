@@ -122,9 +122,14 @@ impl TaskReminder {
 
         self.task_instances.clear();
 
-        // Iterate over definitions - generate one instance for each definition on each iteration (if recurring - if not, only the first iteration generates an instance). Break once the total generated instances are at (page + 1) * PAGE_SIZE.
+        // Iterate over definitions - generate one instance for each definition on the first iteration.
         //
-        // These generated instances are held in memory, so with each page the size of the tasks stored in memory grows.
+        // If the definition is not recurring, no further instances are generated.
+        // Otherwise, instances keep being generated on each iteration up to the size of `instances_required`, taking into account exceptions.
+        //
+        // Break once the total generated instances are at (page + 1) * PAGE_SIZE.
+        //
+        // These generated instances are held in memory, so with each page the size of the tasks stored in memory grows along with the number of instances required to construct the page.
         let instances_required = ((page + 1) * PAGE_SIZE) as i64;
 
         let mut instances: Vec<TaskInstance> = Vec::new();
