@@ -136,9 +136,21 @@ const setCurrentDefinitionAndInstance = async (taskIndex: number) => {
     desc: tasks.value[taskIndex].desc,
     timestamp: toDatetimeLocalValue(tasks.value[taskIndex].timestamp) as DateTimeString,
   }
-  currentTaskDefinition.value = await invoke('get_task_definition', {
+
+  // TODO: Could be moved
+  currentTaskDefinition.value = (await invoke('get_task_definition', {
     id: currentTaskInstance.value.definition_id,
-  })
+  })) as TaskDefinition
+
+  // Convert timestamps to client's local time zone
+  currentTaskDefinition.value.start = toDatetimeLocalValue(
+    currentTaskDefinition.value.start as DateTimeString,
+  ) as DateTimeString
+  if (currentTaskDefinition.value.recurrence) {
+    currentTaskDefinition.value.recurrence.last_recurrence = toDatetimeLocalValue(
+      currentTaskDefinition.value.recurrence?.last_recurrence as DateTimeString,
+    ) as DateTimeString
+  }
 }
 
 const resetCurrentDefinitionAndInstance = () => {

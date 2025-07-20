@@ -24,6 +24,7 @@
           tabindex="1"
           ref="focusInput"
           name="title"
+          id="title"
           required
         />
 
@@ -32,6 +33,7 @@
           v-model="localTask.desc"
           placeholder="Description"
           name="desc"
+          id="desc"
           class="w-full"
           tabindex="2"
         ></textarea>
@@ -39,15 +41,43 @@
         <label for="timestamp" class="text-left w-full font-bold"
           >Remind At<span class="text-error">*</span></label
         >
-
         <input
           v-model="localTask.start"
           name="timestamp"
+          id="timestamp"
           type="datetime-local"
           class="w-full"
           tabindex="3"
           required
         />
+
+        <div class="flex flex-row w-full gap-x-2 items-center mt-2">
+          <label for="recurring" class="text-left font-bold">Recurring?</label>
+          <input
+            v-model="isRecurring"
+            type="checkbox"
+            class="w-5 h-5 rounded-md appearance-auto"
+            name="recurring"
+            id="recurring"
+            tabindex="4"
+            :checked="isRecurring"
+          />
+        </div>
+
+        <div v-if="isRecurring">
+          <span class="disabled" v-if="localTask.recurrence?.last_recurrence"
+            >Last Recurrence: {{ localTask.recurrence?.last_recurrence }}</span
+          >
+          <input
+            v-if="localTask.recurrence?.last_recurrence"
+            v-model="localTask.recurrence.last_recurrence"
+            name="last-recurrence"
+            id="last-recurrence"
+            type="datetime-local"
+            class="w-full"
+            disabled
+          />
+        </div>
         <!-- <input
           v-model="localTask.timestamp"
           name="timestamp"
@@ -79,7 +109,11 @@
 import { computed, nextTick, ref, watch } from 'vue'
 import PHotkeys from './PHotkeys.vue'
 import { TaskDefinition } from '../composables/useTasks'
-import { getDefaultTaskDefinition, isExistingDefinition } from '../helpers/task'
+import {
+  getDefaultTaskDefinition,
+  isExistingDefinition,
+  isRecurringDefinition,
+} from '../helpers/task'
 
 enum Mode {
   CREATE,
@@ -91,7 +125,6 @@ const props = withDefaults(
     // Included if updating an existing definition
     // Not included if creating a new one (undefined passed from the parent)
     currentTask?: TaskDefinition
-
     display: boolean
     submitText?: string
     errorText?: string
@@ -107,11 +140,15 @@ const localTask = ref(props.currentTask)
 const mode = computed(() => {
   return isExistingDefinition(localTask.value) ? Mode.UPDATE : Mode.CREATE
 })
+
+const isRecurring = ref(isRecurringDefinition(localTask.value))
+
 watch(
   () => props.currentTask,
   (newVal) => {
     console.log('Task changed to ', newVal)
     localTask.value = newVal
+    isRecurring.value = isRecurringDefinition(localTask.value)
   },
 )
 
