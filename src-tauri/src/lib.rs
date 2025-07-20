@@ -99,7 +99,7 @@ pub fn run() {
                 calculated_instances: 0,
             };
 
-            reminder.load_task_definitions();
+            reminder.load_task_definitions()?;
 
             app.manage(Mutex::new(reminder));
 
