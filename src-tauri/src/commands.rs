@@ -9,7 +9,7 @@ use crate::tasks::{Recurrence, TaskDefinition, TaskInstance, TaskReminder};
 // TODO: Add paging here for listing in the GUI
 #[tauri::command]
 pub fn get_tasks(state: State<'_, Mutex<TaskReminder>>) -> Result<Vec<TaskInstance>, String> {
-    let mut state = state.lock().unwrap();
+    let mut state = state.lock().map_err(|e| e.to_string())?;
 
     let tasks = state.get_tasks(0);
     // println!("GET TASKS: {:?}", tasks);
@@ -19,7 +19,7 @@ pub fn get_tasks(state: State<'_, Mutex<TaskReminder>>) -> Result<Vec<TaskInstan
 
 #[tauri::command]
 pub fn get_next_task(state: State<'_, Mutex<TaskReminder>>) -> Result<TaskInstance, String> {
-    let state = state.lock().unwrap();
+    let state = state.lock().map_err(|e| e.to_string())?;
 
     if let Some(task) = state.get_next_task() {
         println!("Loaded next task for popup: {:?}", task);
@@ -37,17 +37,21 @@ pub fn create_task(
     start: String,
     recurrence_minutes: Option<i64>,
 ) -> Result<(), String> {
-    let mut state = state.lock().unwrap();
+    let mut state = state.lock().map_err(|e| e.to_string())?;
     let task_reminder = &mut state;
+
+    let parsed_start = start
+        .parse::<DateTime<Utc>>()
+        .map_err(|e| format!("Invalid start datetime: {}", e))?;
 
     let new_task = TaskDefinition {
         id: Uuid::new_v4(),
         name,
         desc,
-        start: start.parse::<DateTime<Utc>>().unwrap(),
+        start: parsed_start,
         recurrence: match recurrence_minutes {
             Some(minutes) => Some(Recurrence::Recurring {
-                last_recurrence: Some(start.parse::<DateTime<Utc>>().unwrap()),
+                last_recurrence: Some(parsed_start),
                 minutes,
                 exceptions: None,
             }),
@@ -55,7 +59,9 @@ pub fn create_task(
         },
     };
 
-    task_reminder.create_task_definition(new_task).unwrap();
+    task_reminder
+        .create_task_definition(new_task)
+        .map_err(|e| e.to_string())?;
 
     Ok(())
 }
@@ -65,7 +71,7 @@ pub fn update_task(
     state: State<'_, Mutex<TaskReminder>>,
     task: TaskInstance,
 ) -> Result<(), String> {
-    let mut task_reminder = state.lock().unwrap();
+    let mut task_reminder = state.lock().map_err(|e| e.to_string())?;
 
     if let Some(definition) = task_reminder
         .task_definitions
@@ -89,10 +95,12 @@ pub fn update_task(
 
 #[tauri::command]
 pub fn delete_task(state: State<'_, Mutex<TaskReminder>>, id: Uuid) -> Result<(), String> {
-    let mut state = state.lock().unwrap();
+    let mut state = state.lock().map_err(|e| e.to_string())?;
     let task_reminder = &mut state;
 
-    task_reminder.delete_task_definition(id);
+    task_reminder
+        .delete_task_definition(id)
+        .map_err(|e| e.to_string())?;
 
     Ok(())
 }
@@ -102,10 +110,13 @@ pub fn complete_task(
     state: State<'_, Mutex<TaskReminder>>,
     task: TaskInstance,
 ) -> Result<(), String> {
-    let mut state = state.lock().unwrap();
+    let mut state = state.lock().map_err(|e| e.to_string())?;
+
     let task_reminder = &mut state;
 
-    task_reminder.mark_task_completed(task);
+    task_reminder
+        .mark_task_completed(task)
+        .map_err(|e| e.to_string())?;
 
     Ok(())
 }
