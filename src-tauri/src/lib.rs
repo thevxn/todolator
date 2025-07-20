@@ -17,8 +17,8 @@ use tauri::{
 
 use crate::{
     commands::{
-        close, complete_task, create_task, delete_task, get_next_task, get_tasks, maximize,
-        minimize, update_task,
+        close, complete_task, create_task, delete_task, get_next_task, get_task_definition,
+        get_tasks, maximize, minimize, update_task,
     },
     tasks::TaskReminder,
 };
@@ -158,6 +158,7 @@ pub fn run() {
             delete_task,
             get_next_task,
             complete_task,
+            get_task_definition
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

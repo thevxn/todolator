@@ -83,6 +83,10 @@ impl TaskReminder {
         Ok(())
     }
 
+    pub fn get_task_definition(&self, id: Uuid) -> Option<&TaskDefinition> {
+        self.task_definitions.iter().find(|d| d.id == id)
+    }
+
     pub fn create_task_definition(
         &mut self,
         definition: TaskDefinition,
@@ -111,11 +115,14 @@ impl TaskReminder {
     }
 
     /// Calculates task instances from definitions on demand.
+    /// Generates enough instances to provide the requested page.
+    ///
+    /// E.g., for page 0 with `PAGE_SIZE=30`, up to 30 instances are generated. For page 2 with the same `PAGE_SIZE`, up to 90 instances are returned.
     pub fn generate_task_instances(&mut self, page: i32) {
         println!("Beginning to recalculate new instances");
         let definitions = self.task_definitions.clone();
 
-        // If a task already has a window spawned, it must be set accordingly on the new instance
+        // If any tasks already have a window spawned, the state must be kept and set accordingly on the new set of instances
         let mut window_spawned_map: HashMap<(Uuid, DateTime<Utc>), bool> = HashMap::new();
         self.task_instances.iter().for_each(|t| {
             window_spawned_map.insert((t.0.definition_id, t.0.timestamp), t.0.window_spawned);

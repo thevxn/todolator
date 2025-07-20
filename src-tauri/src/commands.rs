@@ -6,6 +6,20 @@ use uuid::Uuid;
 
 use crate::tasks::{Recurrence, TaskDefinition, TaskInstance, TaskReminder};
 
+#[tauri::command]
+pub fn get_task_definition(
+    state: State<'_, Mutex<TaskReminder>>,
+    id: Uuid,
+) -> Result<Option<TaskDefinition>, String> {
+    let reminder = state.lock().map_err(|e| e.to_string())?;
+
+    if let Some(reminder) = reminder.get_task_definition(id) {
+        Ok(Some(reminder.clone()))
+    } else {
+        Ok(None)
+    }
+}
+
 // TODO: Add paging here for listing in the GUI
 #[tauri::command]
 pub fn get_tasks(state: State<'_, Mutex<TaskReminder>>) -> Result<Vec<TaskInstance>, String> {
