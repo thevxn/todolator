@@ -86,7 +86,10 @@ pub fn update_task(
             recurrence: definition.recurrence.clone(),
         };
 
-        task_reminder.update_task_definition(new_definition);
+        task_reminder
+            .update_task_definition(new_definition)
+            .map_err(|e| e.to_string())?;
+
         Ok(())
     } else {
         Err("Task definition not found".to_string())

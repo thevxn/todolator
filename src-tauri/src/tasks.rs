@@ -9,6 +9,7 @@ use std::path::Path;
 use uuid::Uuid;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(untagged)]
 pub enum Recurrence {
     None,
     Recurring {
@@ -247,13 +248,20 @@ impl TaskReminder {
         Ok(())
     }
 
-    pub fn update_task_definition(&mut self, updated: TaskDefinition) {
+    pub fn update_task_definition(
+        &mut self,
+        updated: TaskDefinition,
+    ) -> Result<(), Box<dyn Error>> {
         let definitions = &mut self.task_definitions;
         if let Some(task) = definitions.iter_mut().find(|d| d.id == updated.id) {
             *task = updated;
 
             println!("Updated task definition: {:?}", task)
         };
+
+        self.save_task_definitions()?;
+
+        Ok(())
 
         // TODO: If updating all recurrences, just update the underlying definition and recalculate the task instance list.
         // If updating a specific recurrence or from a specific recurrence onward, split the current definition into two.
