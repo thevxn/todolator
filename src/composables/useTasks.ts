@@ -57,9 +57,11 @@ export const useTasks = () => {
           ? {
               minutes: taskDefinition.recurrence.minutes,
               exceptions: taskDefinition.recurrence.exceptions,
-              last_recurrence: new Date(
-                taskDefinition.recurrence.last_recurrence as DateTimeString,
-              ).toISOString() as DateTimeString,
+              last_recurrence: taskDefinition.recurrence.last_recurrence
+                ? (new Date(
+                    taskDefinition.recurrence.last_recurrence as DateTimeString,
+                  ).toISOString() as DateTimeString)
+                : null,
             }
           : null,
       }

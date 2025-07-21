@@ -64,11 +64,12 @@ pub struct TaskReminder {
 
 impl TaskReminder {
     fn push_task_definition(&mut self, definition: TaskDefinition) {
-        self.task_definitions.push(definition);
+        println!("Pushing def: {:?}", definition);
+        self.task_definitions.push(definition)
     }
 
     fn push_task_instance(&mut self, instance: TaskInstance) {
-        self.task_instances.push(Reverse(instance));
+        self.task_instances.push(Reverse(instance))
     }
 
     fn get_task_definition_mut(&mut self, id: Uuid) -> Option<&mut TaskDefinition> {
@@ -164,7 +165,7 @@ impl TaskReminder {
                     Some((last_recurrence, minutes, _exceptions)) => match *last_recurrence {
                         Some(last) => last + Duration::minutes((i + 1) * minutes),
 
-                        None => d.start,
+                        None => d.start + Duration::minutes(i * minutes),
                     },
                     _ => d.start,
                 };

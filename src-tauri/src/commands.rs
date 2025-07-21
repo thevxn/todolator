@@ -49,7 +49,7 @@ pub fn create_task(
     name: String,
     desc: Option<String>,
     start: String,
-    recurrence_minutes: Option<i64>,
+    recurrence: Option<Recurrence>,
 ) -> Result<(), String> {
     let mut state = state.lock().map_err(|e| e.to_string())?;
     let task_reminder = &mut state;
@@ -63,14 +63,7 @@ pub fn create_task(
         name,
         desc,
         start: parsed_start,
-        recurrence: match recurrence_minutes {
-            Some(minutes) => Some(Recurrence::Recurring {
-                last_recurrence: Some(parsed_start),
-                minutes,
-                exceptions: None,
-            }),
-            None => None,
-        },
+        recurrence,
     };
 
     task_reminder
