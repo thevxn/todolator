@@ -47,7 +47,7 @@ watch(
         modal.value?.focus()
       })
     }
-  },
+  }
 )
 
 defineEmits(['submit', 'close'])

@@ -120,7 +120,7 @@ const {
 
 const { selectedIndex, resetSelectedIndex } = useRowSelect(
   () => tasks.value.length,
-  () => displayTaskModal.value,
+  () => displayTaskModal.value
 )
 
 const rowRefs = ref<HTMLElement[]>([])
@@ -144,11 +144,11 @@ const setCurrentDefinitionAndInstance = async (taskIndex: number) => {
 
   // Convert timestamps to client's local time zone
   currentTaskDefinition.value.start = toDatetimeLocalValue(
-    currentTaskDefinition.value.start as DateTimeString,
+    currentTaskDefinition.value.start as DateTimeString
   ) as DateTimeString
   if (currentTaskDefinition.value.recurrence) {
     currentTaskDefinition.value.recurrence.last_recurrence = toDatetimeLocalValue(
-      currentTaskDefinition.value.recurrence?.last_recurrence as DateTimeString,
+      currentTaskDefinition.value.recurrence?.last_recurrence as DateTimeString
     ) as DateTimeString
   }
 }

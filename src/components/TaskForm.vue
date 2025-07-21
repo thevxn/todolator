@@ -72,7 +72,8 @@
         <div class="flex flex-row w-full" v-if="isRecurring && mode === Mode.UPDATE">
           <small
             >Repeat every
-            <span class="text-secondary">{{ localTask.recurrence?.minutes }}</span> minutes</small
+            <span class="text-secondary">{{ localTask.recurrence?.minutes }}</span> minutes -
+            {{ recurrenceInterval }}</small
           >
         </div>
 
@@ -118,6 +119,7 @@ import {
   isExistingDefinition,
   isRecurringDefinition,
 } from '../helpers/task'
+import { convertMinutesToHighestUnit } from '../helpers/datetime'
 
 enum Mode {
   CREATE,
@@ -136,14 +138,16 @@ const props = withDefaults(
   {
     currentTask: getDefaultTaskDefinition,
     display: false,
-  },
+  }
 )
 
 const localTask = ref(props.currentTask)
 
 const mode = computed(() => (isExistingDefinition(localTask.value) ? Mode.UPDATE : Mode.CREATE))
-
 const isRecurring = computed(() => isRecurringDefinition(localTask.value))
+const recurrenceInterval = computed(() =>
+  convertMinutesToHighestUnit(localTask.value.recurrence?.minutes)
+)
 
 watch(
   () => props.currentTask,
@@ -155,7 +159,7 @@ watch(
     // if (isRecurring.value) {
     //   localTask.value.recurrence = getDefaultRecurrence()
     // }
-  },
+  }
 )
 
 // watch(
@@ -173,7 +177,7 @@ watch(
     if (!shown) {
       localTask.value = getDefaultTaskDefinition()
     }
-  },
+  }
 )
 
 const focusInput = ref<HTMLInputElement | null>(null)
@@ -187,7 +191,7 @@ watch(
       })
     }
   },
-  { immediate: true },
+  { immediate: true }
 )
 
 defineEmits(['create', 'update', 'close'])

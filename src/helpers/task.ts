@@ -7,7 +7,7 @@ export function isRecurringDefinition(task: TaskDefinition | CreatedTaskDefiniti
 }
 
 export function isExistingDefinition(
-  task: TaskDefinition | CreatedTaskDefinition,
+  task: TaskDefinition | CreatedTaskDefinition
 ): task is CreatedTaskDefinition {
   return 'id' in task && task.id !== ''
 }
