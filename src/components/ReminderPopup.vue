@@ -9,7 +9,7 @@
     <p class="mb-2" v-if="task?.desc">
       <span class="text-lg">{{ task?.desc }}</span>
     </p>
-    <button @click="$emit('close', task)">Done</button>
+    <button @click="$emit('close', task)">Dismiss</button>
     <PHotkeys screen-code="REMINDER_POPUP" />
   </div>
 </template>

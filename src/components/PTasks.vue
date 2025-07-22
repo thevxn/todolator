@@ -62,7 +62,9 @@
               }
             "
           >
-            <div class="p-2 flex flex-row gap-x-2 items-center">{{ task.name }}</div>
+            <div class="p-2 flex flex-row gap-x-2 items-center">
+              {{ task.name }}
+            </div>
             <div class="p-2 flex flex-row gap-x-2 items-center">{{ task.desc || '-' }}</div>
             <div class="p-2 flex flex-row gap-x-2 items-center">
               {{ new Date(task.timestamp).toLocaleString() }}

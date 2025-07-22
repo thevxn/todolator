@@ -10,28 +10,34 @@ export const toDatetimeLocalValue = (timestamp: string) => {
 
 export const convertMinutesToHighestUnit = (minutes: number | undefined) => {
   if (!minutes) return
-  enum UnitMinutes {
-    HOUR = 60,
-    DAY = HOUR * 24,
-    WEEK = DAY * 7,
-    MONTH = WEEK * 4,
-    YEAR = MONTH * 12,
+
+  interface TimeUnit {
+    name: string
+    minutes: number
   }
 
-  let foundUnit = 'minutes'
-  let foundAmount = minutes
-  for (const unit in UnitMinutes) {
-    const unitMinutes = UnitMinutes[unit as keyof typeof UnitMinutes]
-    if (minutes % unitMinutes === 0) {
-      foundUnit = unit
-      foundAmount = minutes / unitMinutes
+  const hour: TimeUnit = { name: 'hour', minutes: 60 }
+  const day: TimeUnit = { name: 'day', minutes: hour.minutes * 24 }
+  const week: TimeUnit = { name: 'week', minutes: day.minutes * 7 }
+  const month: TimeUnit = { name: 'month', minutes: week.minutes * 4 }
+  const year: TimeUnit = { name: 'year', minutes: month.minutes * 12 }
 
-      if (foundAmount > 1) {
-        foundUnit += 's'
-      }
+  const timeUnits: TimeUnit[] = [year, month, week, day, hour]
+
+  let foundUnit = 'minute'
+  let foundAmount = minutes
+  for (const unit of timeUnits) {
+    const unitMinutes = unit.minutes
+    if (minutes % unitMinutes === 0) {
+      foundUnit = unit.name
+      foundAmount = minutes / unitMinutes
 
       break
     }
+  }
+
+  if (foundAmount > 1) {
+    foundUnit += 's'
   }
 
   console.log('Found unit: ', foundUnit)

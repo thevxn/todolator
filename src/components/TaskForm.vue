@@ -26,6 +26,7 @@
           name="title"
           id="title"
           required
+          autocomplete="off"
         />
 
         <label for="desc" class="text-left w-full font-bold">Description</label>
@@ -36,30 +37,58 @@
           id="desc"
           class="w-full"
           tabindex="2"
+          autocomplete="off"
         ></textarea>
 
-        <label for="timestamp" class="text-left w-full font-bold"
-          >Remind At<span class="text-error">*</span></label
+        <!-- Recurrence is editable only in create mode -->
+        <div
+          class="flex flex-col w-full"
+          v-if="mode === Mode.CREATE || (mode === Mode.UPDATE && !isRecurring)"
         >
-        <input
-          v-model="localTask.start"
-          name="timestamp"
-          id="timestamp"
-          type="datetime-local"
-          class="w-full"
-          tabindex="3"
-          required
-        />
+          <label for="timestamp" class="text-left w-full font-bold mb-2"
+            >Remind At<span class="text-error">*</span></label
+          >
+          <input
+            v-model="localTask.start"
+            name="timestamp"
+            id="timestamp"
+            type="datetime-local"
+            class="w-full"
+            tabindex="3"
+            required
+          />
+        </div>
 
-        <div class="flex flex-row w-full gap-x-2 items-center mt-2">
+        <div
+          class="flex flex-row items-center justify-start w-full border-t-1 border-t-gray-700 mt-2"
+          v-if="mode === Mode.UPDATE && isRecurring"
+        >
+          <!-- <div class="border-2 px-2 py-1 rounded-md border-[#11d6cc] text-[#11d6cc] font-bold">
+            Recurring
+          </div> -->
+          <div class="mt-2 text-sm text-gray-300" v-if="isRecurring && mode === Mode.UPDATE">
+            <span for="timestamp" class="text-left"
+              >First recurrence at
+              <b class="text-secondary">{{ new Date(localTask.start).toLocaleString() }}</b
+              >,</span
+            >
+            <br />
+            <span
+              >repeats every
+              <span class="text-secondary font-bold">{{ recurrence![Recurrence.AMOUNT] }}</span>
+              {{ recurrence![Recurrence.UNIT] }}</span
+            >
+          </div>
+        </div>
+
+        <div class="flex flex-row w-full gap-x-2 items-center" v-if="mode === Mode.CREATE">
           <label for="recurring" class="text-left font-bold">Recurring?</label>
           <input
             type="checkbox"
-            class="w-5 h-5 rounded-md appearance-auto"
+            class="w-5 h-5 rounded-md appearance-auto !mb-0"
             name="recurring"
             id="recurring"
             tabindex="4"
-            :disabled="mode === Mode.UPDATE"
             :checked="isRecurring"
             @click="
               isRecurring
@@ -67,14 +96,6 @@
                 : (localTask.recurrence = getDefaultRecurrence())
             "
           />
-        </div>
-
-        <div class="flex flex-row w-full" v-if="isRecurring && mode === Mode.UPDATE">
-          <small
-            >Repeat every
-            <span class="text-secondary">{{ localTask.recurrence?.minutes }}</span> minutes -
-            {{ recurrenceInterval }}</small
-          >
         </div>
 
         <div class="flex flex-row w-full" v-if="isRecurring && mode === Mode.CREATE">
@@ -88,6 +109,7 @@
             id="recurrence-minutes"
             tabindex="5"
             min="1"
+            autocomplete="off"
           />
           <span class="text-left">minutes</span>
         </div>
@@ -121,11 +143,6 @@ import {
 } from '../helpers/task'
 import { convertMinutesToHighestUnit } from '../helpers/datetime'
 
-enum Mode {
-  CREATE,
-  UPDATE,
-}
-
 const props = withDefaults(
   defineProps<{
     // Included if updating an existing definition
@@ -143,32 +160,27 @@ const props = withDefaults(
 
 const localTask = ref(props.currentTask)
 
+enum Mode {
+  CREATE,
+  UPDATE,
+}
 const mode = computed(() => (isExistingDefinition(localTask.value) ? Mode.UPDATE : Mode.CREATE))
+
 const isRecurring = computed(() => isRecurringDefinition(localTask.value))
-const recurrenceInterval = computed(() =>
-  convertMinutesToHighestUnit(localTask.value.recurrence?.minutes)
-)
+
+enum Recurrence {
+  AMOUNT,
+  UNIT,
+}
+const recurrence = computed(() => convertMinutesToHighestUnit(localTask.value.recurrence?.minutes))
 
 watch(
   () => props.currentTask,
   (newVal) => {
     console.log('Task changed to ', newVal)
     localTask.value = newVal
-    // isRecurring.value = isRecurringDefinition(localTask.value)
-
-    // if (isRecurring.value) {
-    //   localTask.value.recurrence = getDefaultRecurrence()
-    // }
   }
 )
-
-// watch(
-//   () => localTask.value,
-//   (newVal) => {
-//     isRecurring.value = isRecurringDefinition(newVal)
-//     console.log(isRecurring.value)
-//   },
-// )
 
 // TODO: Is this actually needed?
 watch(
