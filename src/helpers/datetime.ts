@@ -8,39 +8,55 @@ export const toDatetimeLocalValue = (timestamp: string) => {
   )}T${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 
+const minute = 1
+const hour = minute * 60
+const day = hour * 24
+const week = day * 7
+const month = week * 4
+const year = month * 12
+
+export enum TimeUnitEnum {
+  NAME,
+  MINUTES
+}
+export const timeUnitToMinutesMap = {
+  minute,
+  hour,
+  day,
+  week,
+  month,
+  year
+}
+
+export const timeUnits = [year, month, week, day, hour, minute]
 export const convertMinutesToHighestUnit = (minutes: number | undefined) => {
   if (!minutes) return
 
-  interface TimeUnit {
-    name: string
-    minutes: number
-  }
+  let foundUnit: keyof typeof timeUnitToMinutesMap | undefined
+  let foundAmount
+  for (const unitAmount of timeUnits) {
+    if (minutes % unitAmount === 0) {
+      const foundUnitObj = Object.entries(timeUnitToMinutesMap).find(
+        ({ 1: minutes }) => minutes === unitAmount
+      )
 
-  const hour: TimeUnit = { name: 'hour', minutes: 60 }
-  const day: TimeUnit = { name: 'day', minutes: hour.minutes * 24 }
-  const week: TimeUnit = { name: 'week', minutes: day.minutes * 7 }
-  const month: TimeUnit = { name: 'month', minutes: week.minutes * 4 }
-  const year: TimeUnit = { name: 'year', minutes: month.minutes * 12 }
+      if (foundUnitObj) {
+        foundUnit = foundUnitObj[TimeUnitEnum.NAME] as keyof typeof timeUnitToMinutesMap
+      }
 
-  const timeUnits: TimeUnit[] = [year, month, week, day, hour]
-
-  let foundUnit = 'minute'
-  let foundAmount = minutes
-  for (const unit of timeUnits) {
-    const unitMinutes = unit.minutes
-    if (minutes % unitMinutes === 0) {
-      foundUnit = unit.name
-      foundAmount = minutes / unitMinutes
+      foundAmount = minutes / unitAmount
 
       break
     }
   }
 
-  if (foundAmount > 1) {
-    foundUnit += 's'
+  if (foundUnit && foundAmount && foundAmount > 1) {
+    pluralizeUnit(foundUnit)
   }
 
   console.log('Found unit: ', foundUnit)
 
-  return [foundAmount, foundUnit.toLowerCase()]
+  return [foundAmount, foundUnit?.toLowerCase()]
 }
+
+export const pluralizeUnit = (unit: string) => unit + 's'

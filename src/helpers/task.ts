@@ -17,7 +17,7 @@ export const getDefaultTaskDefinition = (): CreatedTaskDefinition => {
     name: '',
     desc: null,
     start: toDatetimeLocalValue(new Date(Date.now()).toISOString()) as DateTimeString,
-    recurrence: null,
+    recurrence: null
   }
 }
 
@@ -25,6 +25,6 @@ export const getDefaultRecurrence = () => {
   return {
     exceptions: null,
     last_recurrence: null,
-    minutes: 1,
+    minutes: 1
   }
 }

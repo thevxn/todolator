@@ -54,7 +54,7 @@
             :key="i"
             :class="[
               'grid grid-cols-4 border-t border-gray-500 custom-row',
-              selectedIndex === i ? 'bg-secondary border-secondary text-primary font-bold' : '',
+              selectedIndex === i ? 'bg-secondary border-secondary text-primary font-bold' : ''
             ]"
             :ref="
               (el) => {
@@ -98,7 +98,7 @@ import {
   TaskDefinition,
   TaskInstance,
   useTasks,
-  UuidString,
+  UuidString
 } from '../composables/useTasks'
 import { useRowSelect } from '../composables/useRowSelect'
 import { toDatetimeLocalValue } from '../helpers/datetime'
@@ -117,7 +117,7 @@ const {
   deleteTask,
   toggleTaskModal,
   toggleConfirmationModal,
-  displayConfirmationModal,
+  displayConfirmationModal
 } = useTasks()
 
 const { selectedIndex, resetSelectedIndex } = useRowSelect(
@@ -136,12 +136,12 @@ const setCurrentDefinitionAndInstance = async (taskIndex: number) => {
     definition_id: tasks.value[taskIndex].definition_id,
     name: tasks.value[taskIndex].name,
     desc: tasks.value[taskIndex].desc,
-    timestamp: toDatetimeLocalValue(tasks.value[taskIndex].timestamp) as DateTimeString,
+    timestamp: toDatetimeLocalValue(tasks.value[taskIndex].timestamp) as DateTimeString
   }
 
   // TODO: Could be moved
   currentTaskDefinition.value = (await invoke('get_task_definition', {
-    id: currentTaskInstance.value.definition_id,
+    id: currentTaskInstance.value.definition_id
   })) as TaskDefinition
 
   // Convert timestamps to client's local time zone
@@ -179,13 +179,13 @@ watch(selectedIndex, (newIndex) => {
     // Row is above visible area
     container.scrollBy({
       top: rowRect.top - containerRect.top - 10,
-      behavior: 'smooth',
+      behavior: 'smooth'
     })
   } else if (rowRect.bottom > containerRect.bottom) {
     // Row is below visible area
     container.scrollBy({
       top: rowRect.bottom - containerRect.bottom + 10,
-      behavior: 'smooth',
+      behavior: 'smooth'
     })
   }
 })

@@ -61,9 +61,9 @@ export const useTasks = () => {
                 ? (new Date(
                     taskDefinition.recurrence.last_recurrence as DateTimeString
                   ).toISOString() as DateTimeString)
-                : null,
+                : null
             }
-          : null,
+          : null
       }
       console.log('Adding task: ', taskDefinitionToSave)
 
@@ -95,9 +95,9 @@ export const useTasks = () => {
             exceptions: taskDefinition.recurrence.exceptions,
             last_recurrence: new Date(
               taskDefinition.recurrence.last_recurrence as DateTimeString
-            ).toISOString() as DateTimeString,
+            ).toISOString() as DateTimeString
           }
-        : null,
+        : null
     }
     console.log('Updating task: ', taskDefinitionToSave)
 
@@ -135,6 +135,6 @@ export const useTasks = () => {
     toggleConfirmationModal,
     createTask,
     updateTask,
-    deleteTask,
+    deleteTask
   }
 }

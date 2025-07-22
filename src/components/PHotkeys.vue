@@ -25,53 +25,53 @@ const hotkeys = [
   {
     shortcut: 'N',
     description: 'New Task',
-    screens: ['MAIN'],
+    screens: ['MAIN']
   },
   {
     shortcut: '↑↓',
     description: 'Select Task',
-    screens: ['MAIN'],
+    screens: ['MAIN']
   },
   {
     shortcut: '⏎',
     description: 'Open Selected',
-    screens: ['MAIN'],
+    screens: ['MAIN']
   },
   {
     shortcut: '⌫',
     description: 'Delete Selected',
-    screens: ['MAIN'],
+    screens: ['MAIN']
   },
   {
     shortcut: 'ESC',
     description: 'Close',
-    screens: ['NEW_TASK_MODAL'],
+    screens: ['NEW_TASK_MODAL']
   },
   {
     shortcut: '⏎',
     description: 'Save',
-    screens: ['NEW_TASK_MODAL'],
+    screens: ['NEW_TASK_MODAL']
   },
   {
     shortcut: 'CTRL + ⏎',
     description: 'Dismiss Reminder',
-    screens: ['REMINDER_POPUP'],
+    screens: ['REMINDER_POPUP']
   },
   {
     shortcut: '⇥',
     description: 'Next input',
-    screens: ['NEW_TASK_MODAL'],
+    screens: ['NEW_TASK_MODAL']
   },
   {
     shortcut: 'Y',
     description: 'Yes',
-    screens: ['CONFIRMATION_MODAL'],
+    screens: ['CONFIRMATION_MODAL']
   },
   {
     shortcut: 'N',
     description: 'No',
-    screens: ['CONFIRMATION_MODAL'],
-  },
+    screens: ['CONFIRMATION_MODAL']
+  }
 ] as const as Readonly<Array<IHotkey>>
 
 defineProps<{

@@ -102,16 +102,30 @@
           <label for="recurrence-minutes" class="text-left">Repeat every</label>
           <input
             v-if="isRecurring"
-            v-model="localTask.recurrence!.minutes"
+            v-model="unitAmount"
             type="number"
-            class="rounded-md h-6 w-12 mx-1"
+            class="rounded h-6 w-16 mx-1"
             name="recurrence-minutes"
             id="recurrence-minutes"
             tabindex="5"
             min="1"
             autocomplete="off"
           />
-          <span class="text-left">minutes</span>
+          <select
+            id="unit"
+            name="unit"
+            class="border-2 border-secondary rounded"
+            v-model="unitName"
+          >
+            <option
+              v-for="[unit] of Object.entries(timeUnitToMinutesMap)"
+              :key="unit"
+              :value="unit"
+            >
+              {{ unitAmount > 1 ? pluralizeUnit(unit) : unit }}
+            </option>
+          </select>
+          <!-- <span>{{ unit.name }}</span> -->
         </div>
 
         <small class="text-left w-full mt-4"
@@ -139,9 +153,13 @@ import {
   getDefaultRecurrence,
   getDefaultTaskDefinition,
   isExistingDefinition,
-  isRecurringDefinition,
+  isRecurringDefinition
 } from '../helpers/task'
-import { convertMinutesToHighestUnit } from '../helpers/datetime'
+import {
+  convertMinutesToHighestUnit,
+  pluralizeUnit,
+  timeUnitToMinutesMap
+} from '../helpers/datetime'
 
 const props = withDefaults(
   defineProps<{
@@ -154,7 +172,7 @@ const props = withDefaults(
   }>(),
   {
     currentTask: getDefaultTaskDefinition,
-    display: false,
+    display: false
   }
 )
 
@@ -162,7 +180,7 @@ const localTask = ref(props.currentTask)
 
 enum Mode {
   CREATE,
-  UPDATE,
+  UPDATE
 }
 const mode = computed(() => (isExistingDefinition(localTask.value) ? Mode.UPDATE : Mode.CREATE))
 
@@ -170,9 +188,19 @@ const isRecurring = computed(() => isRecurringDefinition(localTask.value))
 
 enum Recurrence {
   AMOUNT,
-  UNIT,
+  UNIT
 }
 const recurrence = computed(() => convertMinutesToHighestUnit(localTask.value.recurrence?.minutes))
+
+const unitAmount = ref<number>(1)
+const unitName = ref<keyof typeof timeUnitToMinutesMap>('minute')
+
+// If the selected time unit or amount changes, recalculate the resulting amount of minutes
+watch([unitName, unitAmount], () => {
+  if (localTask.value.recurrence) {
+    localTask.value.recurrence.minutes = unitAmount.value * timeUnitToMinutesMap[unitName.value]
+  }
+})
 
 watch(
   () => props.currentTask,
