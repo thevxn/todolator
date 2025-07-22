@@ -15,7 +15,7 @@ const week = day * 7
 const month = week * 4
 const year = month * 12
 
-export enum TimeUnitEnum {
+export const enum TimeUnitEnum {
   NAME,
   MINUTES
 }
@@ -26,9 +26,9 @@ export const timeUnitToMinutesMap = {
   week,
   month,
   year
-}
+} as const
 
-export const timeUnits = [year, month, week, day, hour, minute]
+export const timeUnits = [year, month, week, day, hour, minute] as const
 export const convertMinutesToHighestUnit = (minutes: number | undefined) => {
   if (!minutes) return
 

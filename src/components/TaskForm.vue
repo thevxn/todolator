@@ -55,6 +55,7 @@
             type="datetime-local"
             class="w-full"
             tabindex="3"
+            step="60"
             required
           />
         </div>
@@ -76,7 +77,11 @@
             <span
               >repeats every
               <span class="text-secondary font-bold">{{ recurrence![Recurrence.AMOUNT] }}</span>
-              {{ recurrence![Recurrence.UNIT] }}</span
+              {{
+                (recurrence![Recurrence.AMOUNT] as number) > 1
+                  ? pluralizeUnit(recurrence![Recurrence.UNIT] as string)
+                  : recurrence![Recurrence.UNIT]
+              }}</span
             >
           </div>
         </div>
@@ -116,6 +121,7 @@
             name="unit"
             class="border-2 border-secondary rounded"
             v-model="unitName"
+            tabindex="6"
           >
             <option
               v-for="[unit] of Object.entries(timeUnitToMinutesMap)"
@@ -125,7 +131,6 @@
               {{ unitAmount > 1 ? pluralizeUnit(unit) : unit }}
             </option>
           </select>
-          <!-- <span>{{ unit.name }}</span> -->
         </div>
 
         <small class="text-left w-full mt-4"
@@ -134,7 +139,7 @@
         <button
           class="mb-4"
           @click="mode === Mode.CREATE ? $emit('create', localTask) : $emit('update', localTask)"
-          tabindex="6"
+          tabindex="7"
         >
           {{ submitText }}
         </button>
@@ -190,8 +195,11 @@ enum Recurrence {
   AMOUNT,
   UNIT
 }
+
+// Used for determining recurrence unit and amount when editing a task (read-only)
 const recurrence = computed(() => convertMinutesToHighestUnit(localTask.value.recurrence?.minutes))
 
+// Used for specifying recurrence when creating a new task
 const unitAmount = ref<number>(1)
 const unitName = ref<keyof typeof timeUnitToMinutesMap>('minute')
 
