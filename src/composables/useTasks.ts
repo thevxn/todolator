@@ -45,7 +45,7 @@ export const useTasks = () => {
     if (!taskDefinition.name || !taskDefinition.start) {
       console.log('missing required attributes')
       taskCreationError.value = 'Missing required attributes!'
-      return
+      throw new Error('Missing required attributes')
     }
 
     try {
@@ -82,7 +82,7 @@ export const useTasks = () => {
     if (!taskDefinition.name || !taskDefinition.start || !taskDefinition.id) {
       console.log('missing required attributes')
       taskCreationError.value = 'Missing required attributes!'
-      return
+      throw new Error('Missing required attributes')
     }
     const taskDefinitionToSave: TaskDefinition = {
       id: taskDefinition.id,
