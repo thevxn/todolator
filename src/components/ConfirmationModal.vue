@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="display"
-    class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-2 bg-primary rounded-md min-w-1/2"
+    class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-2 bg-primary rounded-md min-w-1/2 focus:outline-none"
     ref="modal"
     tabindex="0"
     @keydown.y.stop="$emit('submit')"
