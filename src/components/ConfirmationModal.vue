@@ -3,6 +3,9 @@
     v-if="display"
     class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-2 bg-primary rounded-md min-w-1/2"
     ref="modal"
+    tabindex="0"
+    @keydown.y.stop="$emit('submit')"
+    @keydown.n.stop="$emit('close')"
   >
     <div class="p-10">
       <h1 class="text-center text-error mb-10">Delete task {{ props.name }}?</h1>

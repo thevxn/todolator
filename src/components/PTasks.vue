@@ -288,11 +288,11 @@ onMounted(async () => {
           e.preventDefault()
         }
         // If Delete Confirmation modal is active, close it without deleting
-        if (displayConfirmationModal.value && selectedIndex.value !== null) {
-          toggleConfirmationModal()
-          e.stopPropagation()
-          e.preventDefault()
-        }
+        // if (displayConfirmationModal.value) {
+        //   toggleConfirmationModal()
+        //   e.stopPropagation()
+        //   e.preventDefault()
+        // }
         break
 
       case 'Escape':
@@ -325,13 +325,13 @@ onMounted(async () => {
         }
         break
 
-      case 'y':
-        if (displayConfirmationModal.value && selectedIndex.value !== null) {
-          await handleTaskDelete(tasks.value[selectedIndex.value].definition_id as UuidString)
-          e.stopPropagation()
-          e.preventDefault()
-        }
-        break
+      // case 'y':
+      //   if (displayConfirmationModal.value) {
+      //     await handleTaskDelete(tasks.value[selectedIndex.value].definition_id as UuidString)
+      //     e.stopPropagation()
+      //     e.preventDefault()
+      //   }
+      //   break
 
       default:
         break
