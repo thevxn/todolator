@@ -60,32 +60,6 @@
           />
         </div>
 
-        <div
-          class="flex flex-row items-center justify-start w-full border-t-1 border-t-gray-700 mt-2"
-          v-if="mode === Mode.UPDATE && isRecurring"
-        >
-          <!-- <div class="border-2 px-2 py-1 rounded-md border-[#11d6cc] text-[#11d6cc] font-bold">
-            Recurring
-          </div> -->
-          <div class="mt-2 text-sm text-gray-300" v-if="isRecurring && mode === Mode.UPDATE">
-            <span for="timestamp" class="text-left"
-              >First recurrence at
-              <b class="text-secondary">{{ new Date(localTask.start).toLocaleString() }}</b
-              >,</span
-            >
-            <br />
-            <span
-              >repeats every
-              <span class="text-secondary font-bold">{{ recurrence![Recurrence.AMOUNT] }}</span>
-              {{
-                (recurrence![Recurrence.AMOUNT] as number) > 1
-                  ? pluralizeUnit(recurrence![Recurrence.UNIT] as string)
-                  : recurrence![Recurrence.UNIT]
-              }}</span
-            >
-          </div>
-        </div>
-
         <div class="flex flex-row w-full gap-x-2 items-center" v-if="mode === Mode.CREATE">
           <label for="recurring" class="text-left font-bold">Recurring?</label>
           <input
@@ -136,8 +110,35 @@
         <small class="text-left w-full mt-4"
           ><span class="text-error">*</span> = Required attribute</small
         >
+
+        <div
+          class="flex flex-row items-center justify-start w-full border-t-1 border-t-gray-700 mt-2"
+          v-if="mode === Mode.UPDATE && isRecurring"
+        >
+          <!-- <div class="border-2 px-2 py-1 rounded-md border-[#11d6cc] text-[#11d6cc] font-bold">
+            Recurring
+          </div> -->
+          <div class="mt-2 text-sm text-gray-300" v-if="isRecurring && mode === Mode.UPDATE">
+            <span for="timestamp" class="text-left"
+              >First recurrence at
+              <b class="text-secondary">{{ new Date(localTask.start).toLocaleString() }}</b
+              >,</span
+            >
+            <br />
+            <span
+              >repeats every
+              <span class="text-secondary font-bold">{{ recurrence![Recurrence.AMOUNT] }}</span>
+              {{
+                (recurrence![Recurrence.AMOUNT] as number) > 1
+                  ? pluralizeUnit(recurrence![Recurrence.UNIT] as string)
+                  : recurrence![Recurrence.UNIT]
+              }}</span
+            >
+          </div>
+        </div>
+
         <button
-          class="mb-4"
+          class="mt-4 mb-8"
           @click="mode === Mode.CREATE ? $emit('create', localTask) : $emit('update', localTask)"
           tabindex="7"
         >

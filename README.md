@@ -12,4 +12,3 @@
 - Fix title bar on Mac (<https://v2.tauri.app/learn/window-customization/#creating-a-custom-titlebar>)
 - If you open delete modal with mouse, keybinds dont work
 - Remove seconds from date inputs
-- Opening a task in edit mode and closing the modal does not reset current task (the task is filled in when New Task is opened after)

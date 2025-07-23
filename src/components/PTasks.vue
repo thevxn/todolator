@@ -139,7 +139,6 @@ const setCurrentDefinitionAndInstance = async (taskIndex: number) => {
     timestamp: toDatetimeLocalValue(tasks.value[taskIndex].timestamp) as DateTimeString
   }
 
-  // TODO: Could be moved
   currentTaskDefinition.value = (await invoke('get_task_definition', {
     id: currentTaskInstance.value.definition_id
   })) as TaskDefinition
@@ -159,8 +158,10 @@ const setCurrentDefinitionAndInstance = async (taskIndex: number) => {
 }
 
 const resetCurrentDefinitionAndInstance = () => {
-  currentTaskDefinition.value = undefined
-  currentTaskInstance.value = undefined
+  nextTick(() => {
+    currentTaskDefinition.value = undefined
+    currentTaskInstance.value = undefined
+  })
 }
 
 // Watcher for selected task index to enable visual task select using hotkeys
@@ -213,6 +214,9 @@ const openDeleteConfirmation = async (taskIndex: number | null) => {
 }
 
 const closeModals = () => {
+  resetCurrentDefinitionAndInstance()
+  resetSelectedIndex()
+
   nextTick(() => {
     if (!displayConfirmationModal.value && !displayTaskModal.value) {
       resetSelectedIndex()
@@ -224,23 +228,33 @@ const closeModals = () => {
       toggleConfirmationModal()
     }
   })
-  resetCurrentDefinitionAndInstance()
 }
 
 const handleTaskCreate = async (task: TaskDefinition) => {
   console.log('Creating task: ', task)
-  await createTask(task)
+  try {
+    await createTask(task)
+  } catch (e) {
+    console.log(`Failed to create task: ${e}`)
+  }
 
   resetCurrentDefinitionAndInstance()
+  toggleTaskModal()
+
+  await loadTasks()
 }
 
 const handleTaskUpdate = async (task: TaskDefinition) => {
   try {
     await updateTask(task)
   } catch (e) {
-    throw new Error(`Failed to update task: ${e}`)
+    console.log(`Failed to update task: ${e}`)
   }
+
   resetCurrentDefinitionAndInstance()
+  toggleTaskModal()
+
+  await loadTasks()
 }
 
 const handleTaskDelete = async (id: UuidString | undefined) => {
@@ -256,6 +270,8 @@ const handleTaskDelete = async (id: UuidString | undefined) => {
   } catch (e) {
     console.log(`Failed to delete task: ${e}`)
   }
+
+  await loadTasks()
 }
 
 onMounted(async () => {
@@ -279,9 +295,9 @@ onMounted(async () => {
         break
 
       case 'Escape':
+        closeModals()
         e.stopPropagation()
         e.preventDefault()
-        closeModals()
         break
 
       case 'Enter':
@@ -290,26 +306,25 @@ onMounted(async () => {
           !displayConfirmationModal.value &&
           selectedIndex.value !== null
         ) {
+          openCreateUpdateModal(selectedIndex.value)
           e.stopPropagation()
           e.preventDefault()
-          openCreateUpdateModal(selectedIndex.value)
         }
         break
 
       case 'Backspace':
         if (!displayTaskModal.value && !displayConfirmationModal.value) {
+          openDeleteConfirmation(selectedIndex.value)
           e.stopPropagation()
           e.preventDefault()
-          openDeleteConfirmation(selectedIndex.value)
         }
         break
 
       case 'y':
         if (displayConfirmationModal.value && selectedIndex.value !== null) {
+          await handleTaskDelete(tasks.value[selectedIndex.value].definition_id as UuidString)
           e.stopPropagation()
           e.preventDefault()
-
-          await handleTaskDelete(tasks.value[selectedIndex.value].definition_id as UuidString)
         }
         break
 

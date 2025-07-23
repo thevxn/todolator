@@ -1,5 +1,4 @@
 export const toDatetimeLocalValue = (timestamp: string) => {
-  console.log('received timestamp: ', timestamp)
   const date = new Date(timestamp)
   const pad = (n: number) => n.toString().padStart(2, '0')
 
