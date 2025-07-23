@@ -148,7 +148,10 @@ const setCurrentDefinitionAndInstance = async (taskIndex: number) => {
   currentTaskDefinition.value.start = toDatetimeLocalValue(
     currentTaskDefinition.value.start as DateTimeString
   ) as DateTimeString
-  if (currentTaskDefinition.value.recurrence) {
+  if (
+    currentTaskDefinition.value.recurrence &&
+    currentTaskDefinition.value.recurrence.last_recurrence
+  ) {
     currentTaskDefinition.value.recurrence.last_recurrence = toDatetimeLocalValue(
       currentTaskDefinition.value.recurrence?.last_recurrence as DateTimeString
     ) as DateTimeString

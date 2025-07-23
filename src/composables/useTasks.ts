@@ -48,6 +48,8 @@ export const useTasks = () => {
       throw new Error('Missing required attributes')
     }
 
+    console.log('Create task received: ', taskDefinition)
+
     try {
       const taskDefinitionToSave: CreatedTaskDefinition = {
         name: taskDefinition.name,
@@ -84,6 +86,7 @@ export const useTasks = () => {
       taskCreationError.value = 'Missing required attributes!'
       throw new Error('Missing required attributes')
     }
+
     const taskDefinitionToSave: TaskDefinition = {
       id: taskDefinition.id,
       name: taskDefinition.name,
@@ -93,9 +96,11 @@ export const useTasks = () => {
         ? {
             minutes: taskDefinition.recurrence.minutes,
             exceptions: taskDefinition.recurrence.exceptions,
-            last_recurrence: new Date(
-              taskDefinition.recurrence.last_recurrence as DateTimeString
-            ).toISOString() as DateTimeString
+            last_recurrence: taskDefinition.recurrence.last_recurrence
+              ? (new Date(
+                  taskDefinition.recurrence.last_recurrence as DateTimeString
+                ).toISOString() as DateTimeString)
+              : null
           }
         : null
     }
