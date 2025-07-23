@@ -206,16 +206,17 @@ const openCreateUpdateModal = async (taskIndex: number | null) => {
 }
 
 const openDeleteConfirmation = async (taskIndex: number | null) => {
+  resetCurrentDefinitionAndInstance()
+
   if (taskIndex !== null) {
     await setCurrentDefinitionAndInstance(taskIndex)
-
-    toggleConfirmationModal()
   }
+  toggleConfirmationModal()
 }
 
 const closeModals = () => {
   resetCurrentDefinitionAndInstance()
-  resetSelectedIndex()
+  // resetSelectedIndex()
 
   nextTick(() => {
     if (!displayConfirmationModal.value && !displayTaskModal.value) {
@@ -313,7 +314,11 @@ onMounted(async () => {
         break
 
       case 'Backspace':
-        if (!displayTaskModal.value && !displayConfirmationModal.value) {
+        if (
+          !displayTaskModal.value &&
+          !displayConfirmationModal.value &&
+          selectedIndex.value !== null
+        ) {
           openDeleteConfirmation(selectedIndex.value)
           e.stopPropagation()
           e.preventDefault()
