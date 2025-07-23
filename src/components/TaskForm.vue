@@ -177,7 +177,7 @@ const props = withDefaults(
     errorText?: string
   }>(),
   {
-    currentTask: getDefaultTaskDefinition,
+    currentTask: () => getDefaultTaskDefinition(),
     display: false
   }
 )

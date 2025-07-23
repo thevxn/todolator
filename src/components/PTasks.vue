@@ -106,6 +106,7 @@ import ConfirmationModal from './ConfirmationModal.vue'
 import PIcon from './PIcon.vue'
 import { listen } from '@tauri-apps/api/event'
 import { invoke } from '@tauri-apps/api/core'
+import { getDefaultTaskDefinition } from '../helpers/task'
 
 const {
   tasks,
@@ -158,10 +159,8 @@ const setCurrentDefinitionAndInstance = async (taskIndex: number) => {
 }
 
 const resetCurrentDefinitionAndInstance = () => {
-  nextTick(() => {
-    currentTaskDefinition.value = undefined
-    currentTaskInstance.value = undefined
-  })
+  currentTaskDefinition.value = getDefaultTaskDefinition()
+  currentTaskInstance.value = undefined
 }
 
 // Watcher for selected task index to enable visual task select using hotkeys
@@ -196,8 +195,9 @@ watch(selectedIndex, (newIndex) => {
 
 const openCreateUpdateModal = async (taskIndex: number | null) => {
   console.log('called with taskIndex: ', taskIndex)
-  // TODO: Check where the task is being reset, find all places, refactor to be unified..
+
   resetCurrentDefinitionAndInstance()
+
   if (taskIndex !== null) {
     await setCurrentDefinitionAndInstance(taskIndex)
   }
@@ -211,12 +211,12 @@ const openDeleteConfirmation = async (taskIndex: number | null) => {
   if (taskIndex !== null) {
     await setCurrentDefinitionAndInstance(taskIndex)
   }
+
   toggleConfirmationModal()
 }
 
 const closeModals = () => {
   resetCurrentDefinitionAndInstance()
-  // resetSelectedIndex()
 
   nextTick(() => {
     if (!displayConfirmationModal.value && !displayTaskModal.value) {

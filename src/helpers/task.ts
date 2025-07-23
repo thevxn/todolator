@@ -1,4 +1,9 @@
-import { CreatedTaskDefinition, DateTimeString, TaskDefinition } from '../composables/useTasks'
+import {
+  CreatedTaskDefinition,
+  DateTimeString,
+  TaskDefinition,
+  UuidString
+} from '../composables/useTasks'
 import { toDatetimeLocalValue } from './datetime'
 
 export function isRecurringDefinition(task: TaskDefinition | CreatedTaskDefinition) {
@@ -12,8 +17,9 @@ export function isExistingDefinition(
   return 'id' in task && task.id !== ''
 }
 
-export const getDefaultTaskDefinition = (): CreatedTaskDefinition => {
+export const getDefaultTaskDefinition = (): TaskDefinition => {
   return {
+    id: '' as UuidString,
     name: '',
     desc: null,
     start: toDatetimeLocalValue(new Date(Date.now()).toISOString()) as DateTimeString,
