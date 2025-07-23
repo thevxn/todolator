@@ -2,6 +2,7 @@ mod commands;
 mod tasks;
 
 use std::{
+    error::Error,
     sync::Mutex,
     thread::{self},
     time::Duration,
@@ -12,7 +13,7 @@ use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, TrayIconBuilder, TrayIconEvent},
     webview::WebviewWindowBuilder,
-    App, AppHandle, Manager,
+    App, AppHandle, Manager, UserAttentionType,
 };
 
 use crate::{
@@ -62,9 +63,7 @@ fn setup_tray(app: &mut App) {
         .unwrap();
 }
 
-fn spawn_reminder(handle: AppHandle, task_name: String, label: String) {
-    // std::thread::spawn(move || {
-    println!("Beginning to spawn new window");
+fn spawn_reminder(handle: AppHandle, task_name: String, label: &str) -> Result<(), Box<dyn Error>> {
     let mut builder = WebviewWindowBuilder::new(
         &handle,
         label,
@@ -83,13 +82,18 @@ fn spawn_reminder(handle: AppHandle, task_name: String, label: String) {
     }
 
     builder.build().unwrap();
-    println!("Finished spawning new window");
-    // });
+
+    let window = handle.get_webview_window(&label.to_string());
+    window
+        .unwrap()
+        .request_user_attention(Some(UserAttentionType::Critical))?;
+
+    Ok(())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let mut builder = tauri::Builder::default()
         .setup(|app| {
             setup_tray(app);
 
@@ -130,8 +134,10 @@ pub fn run() {
                                 spawn_reminder(
                                     handle.clone(),
                                     next.0.name.clone(),
-                                    window_counter.to_string(),
-                                );
+                                    &window_counter.to_string(),
+                                )
+                                // TODO: Ensure better error handling
+                                .unwrap();
                             }
                         }
                         Duration::from_millis(100)
@@ -159,7 +165,22 @@ pub fn run() {
             get_next_task,
             complete_task,
             get_task_definition
-        ])
+        ]);
+
+    #[cfg(desktop)]
+    {
+        builder = builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            let main_window = app.get_webview_window("main").expect("no main window");
+
+            if main_window.is_minimized().unwrap_or(false) {
+                main_window.unminimize().unwrap();
+            } else {
+                main_window.show().unwrap();
+            }
+        }));
+    }
+
+    builder
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
