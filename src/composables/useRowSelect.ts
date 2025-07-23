@@ -1,4 +1,4 @@
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 
 export function useRowSelect(lengthRef: () => number, modalOpenRef: () => boolean) {
   const selectedIndex = ref<number | null>(null)
@@ -18,7 +18,7 @@ export function useRowSelect(lengthRef: () => number, modalOpenRef: () => boolea
   }
 
   const resetSelectedIndex = () => {
-    selectedIndex.value = null
+    nextTick(() => (selectedIndex.value = null))
   }
 
   const handleKeydown = (e: KeyboardEvent) => {
