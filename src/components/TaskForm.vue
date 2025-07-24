@@ -61,7 +61,7 @@
         </div>
 
         <div class="flex flex-row w-full gap-x-2 items-center" v-if="mode === Mode.CREATE">
-          <label for="recurring" class="text-left font-bold">Recurring?</label>
+          <label for="recurring" class="text-left font-bold mt-2">Recurring?</label>
           <input
             type="checkbox"
             class="w-5 h-5 rounded-md appearance-auto !mb-0"
@@ -83,7 +83,8 @@
             v-if="isRecurring"
             v-model="unitAmount"
             type="number"
-            class="rounded h-6 w-16 mx-1"
+            class="rounded h-6 mx-1"
+            :style="{ width: `${Math.max(String(unitAmount || 3).length + 4, 5)}ch` }"
             name="recurrence-minutes"
             id="recurrence-minutes"
             tabindex="5"
@@ -93,7 +94,7 @@
           <select
             id="unit"
             name="unit"
-            class="border-2 border-secondary rounded"
+            class="border-2 border-secondary rounded bg-primary w-20"
             v-model="unitName"
             tabindex="6"
           >
@@ -169,9 +170,10 @@ import {
 
 const props = withDefaults(
   defineProps<{
-    // Included if updating an existing definition
-    // Not included if creating a new one (undefined passed from the parent)
+    // Provided if updating an existing definition
+    // Not provided if creating a new one (undefined passed from the parent)
     currentTask?: CreatedTaskDefinition | TaskDefinition
+
     display: boolean
     submitText?: string
     errorText?: string
@@ -234,8 +236,7 @@ watch(
       unitAmount.value = 1
       unitName.value = 'minute'
     }
-  },
-  { immediate: true }
+  }
 )
 
 defineEmits(['create', 'update', 'close'])
