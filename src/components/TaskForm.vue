@@ -66,6 +66,7 @@
             width="24px"
             height="24px"
             class="text-secondary outline-none hover:cursor-help"
+            title="A recurring task keeps repeating in the specified interval. You cannot change the recurrence of a task after it has been created."
           />
           <label for="recurring" class="text-left font-bold mr-2 ml-0.5">Recurring?</label>
           <input
