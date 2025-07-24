@@ -60,8 +60,8 @@
           />
         </div>
 
-        <div class="flex flex-row w-full gap-x-2 items-center" v-if="mode === Mode.CREATE">
-          <label for="recurring" class="text-left font-bold mt-2">Recurring?</label>
+        <div class="flex flex-row w-full gap-x-2 items-center mt-2" v-if="mode === Mode.CREATE">
+          <label for="recurring" class="text-left font-bold">Recurring?</label>
           <input
             type="checkbox"
             class="w-5 h-5 rounded-md appearance-auto !mb-0"
@@ -77,13 +77,16 @@
           />
         </div>
 
-        <div class="flex flex-row w-full" v-if="isRecurring && mode === Mode.CREATE">
+        <div
+          class="flex flex-row w-full items-center gap-x-2"
+          v-if="isRecurring && mode === Mode.CREATE"
+        >
           <label for="recurrence-minutes" class="text-left">Repeat every</label>
           <input
             v-if="isRecurring"
             v-model="unitAmount"
             type="number"
-            class="rounded h-6 mx-1"
+            class="rounded h-8"
             :style="{ width: `${Math.max(String(unitAmount || 3).length + 4, 5)}ch` }"
             name="recurrence-minutes"
             id="recurrence-minutes"
@@ -91,17 +94,12 @@
             min="1"
             autocomplete="off"
           />
-          <select
-            id="unit"
-            name="unit"
-            class="border-2 border-secondary rounded bg-primary w-20"
-            v-model="unitName"
-            tabindex="6"
-          >
+          <select id="unit" name="unit" class="rounded bg-primary" v-model="unitName" tabindex="6">
             <option
               v-for="[unit] of Object.entries(timeUnitToMinutesMap)"
               :key="unit"
               :value="unit"
+              class="hover:bg-secondary hover:text-primary hover:font-bold"
             >
               {{ unitAmount > 1 ? pluralizeUnit(unit) : unit }}
             </option>
