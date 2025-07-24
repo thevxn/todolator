@@ -35,7 +35,7 @@
           placeholder="Description"
           name="desc"
           id="desc"
-          class="w-full"
+          class="w-full min-h-25"
           tabindex="2"
           autocomplete="off"
         ></textarea>
@@ -53,18 +53,24 @@
             name="timestamp"
             id="timestamp"
             type="datetime-local"
-            class="w-full"
+            class="w-full cursor-pointer"
             tabindex="3"
             step="60"
             required
           />
         </div>
 
-        <div class="flex flex-row w-full gap-x-2 items-center mt-2" v-if="mode === Mode.CREATE">
-          <label for="recurring" class="text-left font-bold">Recurring?</label>
+        <div class="flex flex-row w-full items-center mt-2" v-if="mode === Mode.CREATE">
+          <PIcon
+            :icon="'mingcute:information-line'"
+            width="24px"
+            height="24px"
+            class="text-secondary outline-none hover:cursor-help"
+          />
+          <label for="recurring" class="text-left font-bold mr-2 ml-0.5">Recurring?</label>
           <input
             type="checkbox"
-            class="w-5 h-5 rounded-md appearance-auto !mb-0"
+            class="w-5 h-5 rounded-md appearance-auto !mb-0 hover:cursor-pointer"
             name="recurring"
             id="recurring"
             tabindex="4"
@@ -78,7 +84,7 @@
         </div>
 
         <div
-          class="flex flex-row w-full items-center gap-x-2"
+          class="flex flex-row w-full items-center gap-x-2 pl-6"
           v-if="isRecurring && mode === Mode.CREATE"
         >
           <label for="recurrence-minutes" class="text-left">Repeat every</label>
@@ -86,7 +92,7 @@
             v-if="isRecurring"
             v-model="unitAmount"
             type="number"
-            class="rounded h-8"
+            class="rounded h-8 hover:cursor-pointer"
             :style="{ width: `${Math.max(String(unitAmount || 3).length + 4, 5)}ch` }"
             name="recurrence-minutes"
             id="recurrence-minutes"
@@ -94,12 +100,18 @@
             min="1"
             autocomplete="off"
           />
-          <select id="unit" name="unit" class="rounded bg-primary" v-model="unitName" tabindex="6">
+          <select
+            id="unit"
+            name="unit"
+            class="rounded bg-primary hover:cursor-pointer"
+            v-model="unitName"
+            tabindex="6"
+          >
             <option
               v-for="[unit] of Object.entries(timeUnitToMinutesMap)"
               :key="unit"
               :value="unit"
-              class="hover:bg-secondary hover:text-primary hover:font-bold"
+              class="hover:bg-secondary hover:text-primary hover:font-bold hover:cursor-pointer"
             >
               {{ unitAmount > 1 ? pluralizeUnit(unit) : unit }}
             </option>
@@ -135,15 +147,15 @@
             >
           </div>
         </div>
-
-        <button
-          class="mt-4 mb-8"
-          @click="mode === Mode.CREATE ? $emit('create', localTask) : $emit('update', localTask)"
-          tabindex="7"
-        >
-          {{ submitText }}
-        </button>
-        <span class="text-error text-lg" v-if="errorText">{{ errorText }}</span>
+        <div class="flex flex-col items-center justify-center mt-4 mb-5">
+          <button
+            @click="mode === Mode.CREATE ? $emit('create', localTask) : $emit('update', localTask)"
+            tabindex="7"
+          >
+            {{ submitText }}
+          </button>
+          <span class="text-error text-lg" v-if="errorText">{{ errorText }}</span>
+        </div>
       </div>
     </div>
     <PHotkeys screen-code="NEW_TASK_MODAL" />
@@ -152,6 +164,7 @@
 
 <script lang="ts" setup>
 import { computed, nextTick, ref, watch } from 'vue'
+
 import PHotkeys from './PHotkeys.vue'
 import { CreatedTaskDefinition, TaskDefinition } from '../composables/useTasks'
 import {
@@ -165,6 +178,7 @@ import {
   pluralizeUnit,
   timeUnitToMinutesMap
 } from '../helpers/datetime'
+import PIcon from './PIcon.vue'
 
 const props = withDefaults(
   defineProps<{

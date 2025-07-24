@@ -42,7 +42,11 @@ export const useTasks = () => {
   }
 
   const createTask = async (taskDefinition: CreatedTaskDefinition) => {
-    if (!taskDefinition.name || !taskDefinition.start) {
+    if (
+      !taskDefinition.name ||
+      !taskDefinition.start ||
+      (taskDefinition.recurrence && !taskDefinition.recurrence.minutes)
+    ) {
       taskCreationError.value = 'Missing required attributes!'
       throw new Error('Missing required attributes')
     }

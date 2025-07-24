@@ -24,27 +24,27 @@
       :current-task="currentTaskDefinition"
     />
 
-    <div
-      class="flex flex-row w-full items-center mt-10"
-      :class="tasks.length > 0 ? 'justify-end' : 'justify-center'"
-    >
-      <!-- New Task Button -->
-      <button tabindex="-1" @click="openCreateUpdateModal(null)">New Task</button>
+    <!-- Heading + New Task button -->
+    <div class="relative flex flex-row w-full items-center mt-10 justify-end">
+      <h2 class="absolute left-1/2 transform -translate-x-1/2 text-xl font-bold">
+        Upcoming Reminders
+      </h2>
+      <button tabindex="-1" @click="openCreateUpdateModal(null)" class="btn">New Task</button>
     </div>
 
     <!-- Main tasks table -->
     <div
       v-if="tasks.length > 0"
       id="tasks-table"
-      class="w-full mt-2 mb-10 rounded-lg overflow-hidden border border-gray-500 min-h-[200px]"
+      class="w-full mt-4 mb-10 rounded-lg overflow-hidden border border-gray-500 min-h-[200px]"
     >
       <div class="flex flex-col h-full">
         <div
           class="grid grid-cols-4 bg-secondary font-bold text-primary flex-shrink-0 border border-b-4 border-secondary"
         >
+          <div class="p-2">Time</div>
           <div class="p-2">Title</div>
           <div class="p-2">Description</div>
-          <div class="p-2">Remind At</div>
           <div class="p-2"></div>
         </div>
 
@@ -63,21 +63,29 @@
             "
           >
             <div class="p-2 flex flex-row gap-x-2 items-center">
-              {{ task.name }}
+              <span>{{ new Date(task.timestamp).toLocaleString() }}</span>
             </div>
-            <div class="p-2 flex flex-row gap-x-2 items-center">{{ task.desc || '-' }}</div>
-            <div class="p-2 flex flex-row gap-x-2 items-center">
-              {{ new Date(task.timestamp).toLocaleString() }}
+            <div
+              class="p-2 flex flex-row gap-x-2 items-center hover:cursor-help"
+              :title="task.name"
+            >
+              <span class="truncate">{{ task.name }}</span>
+            </div>
+            <div
+              class="p-2 flex flex-row gap-x-2 items-center hover:cursor-help"
+              :title="task.desc"
+            >
+              <span class="truncate">{{ task.desc || '-' }}</span>
             </div>
             <div class="p-2 flex flex-row gap-x-2 items-center justify-center">
               <PIcon
                 :icon="'mingcute:edit-2-line'"
-                class="hover:border-warning hover:border-2 border-2 border-[#ffffff00] p-1 active:bg-warning active:text-primary text-warning rounded-md outline-none"
+                class="hover:border-warning hover:border-2 border-2 border-[#ffffff00] p-1 active:bg-warning active:text-primary text-warning rounded-md outline-none hover:cursor-pointer"
                 @clicked="openCreateUpdateModal(i)"
               />
               <PIcon
                 :icon="'mingcute:delete-2-line'"
-                class="hover:border-error hover:border-2 border-2 border-[#ffffff00] p-1 active:bg-error active:text-primary text-error rounded-md outline-none"
+                class="hover:border-error hover:border-2 border-2 border-[#ffffff00] p-1 active:bg-error active:text-primary text-error rounded-md outline-none hover:cursor-pointer"
                 @clicked="openDeleteConfirmation(i)"
               />
             </div>
@@ -91,6 +99,9 @@
 
 <script setup lang="ts">
 import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { listen } from '@tauri-apps/api/event'
+import { invoke } from '@tauri-apps/api/core'
+
 import TaskForm from './TaskForm.vue'
 import PHotkeys from './PHotkeys.vue'
 import {
@@ -104,8 +115,6 @@ import { useRowSelect } from '../composables/useRowSelect'
 import { toDatetimeLocalValue } from '../helpers/datetime'
 import ConfirmationModal from './ConfirmationModal.vue'
 import PIcon from './PIcon.vue'
-import { listen } from '@tauri-apps/api/event'
-import { invoke } from '@tauri-apps/api/core'
 import { getDefaultTaskDefinition } from '../helpers/task'
 
 const {
@@ -235,27 +244,25 @@ const handleTaskCreate = async (task: TaskDefinition) => {
   console.log('Creating task: ', task)
   try {
     await createTask(task)
+    resetCurrentDefinitionAndInstance()
+    toggleTaskModal()
+
+    await loadTasks()
   } catch (e) {
     console.log(`Failed to create task: ${e}`)
   }
-
-  resetCurrentDefinitionAndInstance()
-  toggleTaskModal()
-
-  await loadTasks()
 }
 
 const handleTaskUpdate = async (task: TaskDefinition) => {
   try {
     await updateTask(task)
+    resetCurrentDefinitionAndInstance()
+    toggleTaskModal()
+
+    await loadTasks()
   } catch (e) {
     console.log(`Failed to update task: ${e}`)
   }
-
-  resetCurrentDefinitionAndInstance()
-  toggleTaskModal()
-
-  await loadTasks()
 }
 
 const handleTaskDelete = async (id: UuidString | undefined) => {
@@ -268,11 +275,10 @@ const handleTaskDelete = async (id: UuidString | undefined) => {
     resetSelectedIndex()
     resetCurrentDefinitionAndInstance()
     toggleConfirmationModal()
+    await loadTasks()
   } catch (e) {
     console.log(`Failed to delete task: ${e}`)
   }
-
-  await loadTasks()
 }
 
 onMounted(async () => {
