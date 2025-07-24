@@ -25,8 +25,17 @@
     />
 
     <!-- Heading + New Task button -->
-    <div class="relative flex flex-row w-full items-center mt-10 justify-end">
-      <h2 class="absolute left-1/2 transform -translate-x-1/2 text-xl font-bold">
+    <div
+      class="relative flex flex-row w-full items-center mt-10"
+      :class="{
+        'justify-end': tasks.length > 0,
+        'justify-center': tasks.length <= 0
+      }"
+    >
+      <h2
+        class="absolute left-1/2 transform -translate-x-1/2 text-xl font-bold"
+        v-if="tasks.length > 0"
+      >
         Upcoming Reminders
       </h2>
       <button tabindex="-1" @click="openCreateUpdateModal(null)" class="btn">New Task</button>
