@@ -114,8 +114,6 @@ pub fn run() {
                     let state = handle.state::<Mutex<TaskReminder>>();
                     let mut reminder = state.lock().unwrap();
 
-                    // println!("Next up: {:?}", reminder.task_instances.peek());
-
                     let task = reminder.task_instances.peek_mut();
 
                     let should_remind = if let Some(next) = &task {
