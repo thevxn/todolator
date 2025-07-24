@@ -219,16 +219,6 @@ watch(
   }
 )
 
-// TODO: Is this actually needed?
-watch(
-  () => props.display,
-  (shown) => {
-    if (!shown) {
-      localTask.value = getDefaultTaskDefinition()
-    }
-  }
-)
-
 const focusInput = ref<HTMLInputElement | null>(null)
 watch(
   () => props.display,
@@ -238,6 +228,11 @@ watch(
         // Focus the first input
         focusInput.value?.focus()
       })
+    } else {
+      // Reset the input values
+      localTask.value = getDefaultTaskDefinition()
+      unitAmount.value = 1
+      unitName.value = 'minute'
     }
   },
   { immediate: true }
