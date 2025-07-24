@@ -8,7 +8,10 @@
     @keydown.n.stop="$emit('close')"
   >
     <div class="p-10">
-      <h1 class="text-center text-error mb-10">Delete task {{ props.name }}?</h1>
+      <h1 class="text-center text-error mb-10">
+        Delete task <i>{{ props.name }}</i
+        >?
+      </h1>
       <div class="flex flex-row items-center justify-center gap-x-4">
         <button
           class="bg-primary border-error text-error hover:text-primary hover:bg-error active:text-error active:bg-primary"
