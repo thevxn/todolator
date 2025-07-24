@@ -98,9 +98,14 @@ impl TaskReminder {
     }
 
     pub fn load_task_definitions(&mut self) -> Result<(), Box<dyn Error>> {
-        let path = "tasks.json";
-        if !Path::new(path).exists() {
-            fs::write(path, "[]").expect("Failed to create tasks file")
+        let exe_path = std::env::current_exe().map_err(|e| e.to_string())?;
+        let exe_dir = exe_path
+            .parent()
+            .ok_or("Failed to get executable directory")?;
+        let tasks_path = exe_dir.join("tasks.json");
+
+        if !tasks_path.exists() {
+            fs::write(&tasks_path, "[]").map_err(|e| e.to_string())?;
         }
 
         let data = fs::read_to_string("./tasks.json")?;
