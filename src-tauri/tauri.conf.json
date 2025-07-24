@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "todolator",
+  "productName": "Todolator",
   "version": "0.1.0",
   "identifier": "dev.vxn.todolator",
   "build": {
@@ -16,7 +16,8 @@
         "width": 800,
         "height": 600,
         "decorations": false,
-        "zoomHotkeysEnabled": false
+        "zoomHotkeysEnabled": false,
+        "center": true
       }
     ],
     "security": {
