@@ -75,6 +75,8 @@ fn spawn_reminder(handle: AppHandle, task_name: String, label: &str) -> Result<(
     .resizable(true)
     .center()
     .focused(true)
+    .always_on_top(true)
+    .visible_on_all_workspaces(true)
     .inner_size(640.00, 350.00);
 
     #[cfg(target_os = "windows")]
