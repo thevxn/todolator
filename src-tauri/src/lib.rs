@@ -119,15 +119,19 @@ pub fn run() {
 
                 // Get the autostart manager
                 let autostart_manager = app.autolaunch();
-                // Enable autostart
-                let _ = autostart_manager.enable();
-                // Check enable state
+
+                let config = config::get();
+                let settings = &config.settings;
+                if settings.autostart {
+                    autostart_manager.enable().unwrap();
+                } else {
+                    autostart_manager.disable().unwrap();
+                }
+
                 println!(
                     "registered for autostart? {}",
                     autostart_manager.is_enabled().unwrap()
                 );
-                // Disable autostart
-                // let _ = autostart_manager.disable();
             }
 
             setup_tray(app);
