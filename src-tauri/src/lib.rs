@@ -105,6 +105,31 @@ pub fn run() {
                     .expect("app data directory exists"),
             );
 
+            #[cfg(desktop)]
+            {
+                use tauri_plugin_autostart::MacosLauncher;
+                use tauri_plugin_autostart::ManagerExt;
+
+                app.handle()
+                    .plugin(tauri_plugin_autostart::init(
+                        MacosLauncher::LaunchAgent,
+                        Some(vec!["--flag1", "--flag2"]),
+                    ))
+                    .unwrap();
+
+                // Get the autostart manager
+                let autostart_manager = app.autolaunch();
+                // Enable autostart
+                let _ = autostart_manager.enable();
+                // Check enable state
+                println!(
+                    "registered for autostart? {}",
+                    autostart_manager.is_enabled().unwrap()
+                );
+                // Disable autostart
+                // let _ = autostart_manager.disable();
+            }
+
             setup_tray(app);
 
             let mut reminder = TaskReminder {

@@ -1,25 +1,59 @@
 use once_cell::sync::OnceCell;
+use serde::{Deserialize, Serialize};
 use std::{fs, path::PathBuf};
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Settings {
+    pub autostart: bool,
+}
+
+impl Default for Settings {
+    fn default() -> Self {
+        Settings { autostart: true }
+    }
+}
 
 #[derive(Debug)]
 pub struct Config {
     pub data_path: PathBuf,
+    pub settings: Settings,
 }
 
 static CONFIG: OnceCell<Config> = OnceCell::new();
 static TASK_FILE_NAME: &str = "tasks.json";
+static SETTINGS_FILE_NAME: &str = "settings.json";
 
-fn setup_data(dir_path: &PathBuf) -> PathBuf {
+fn setup_config(dir_path: &PathBuf) -> (PathBuf, Settings) {
     if !dir_path.exists() {
-        fs::create_dir(dir_path).expect("Failed to create task file directory");
+        fs::create_dir(dir_path).expect("Failed to data directory");
     }
 
     let task_path = dir_path.join(TASK_FILE_NAME);
+    let settings_path = dir_path.join(SETTINGS_FILE_NAME);
+
     if !task_path.exists() {
         fs::write(&task_path, "[]").expect("Failed to initialize task file to valid json");
     }
 
-    task_path
+    let settings = if settings_path.exists() {
+        fs::read_to_string(&settings_path)
+            .ok()
+            .and_then(|s| serde_json::from_str::<Settings>(&s).ok())
+            .unwrap_or_else(Settings::default)
+    } else {
+        let default_settings = Settings::default();
+        fs::write(
+            settings_path,
+            serde_json::to_string(&default_settings).unwrap(),
+        )
+        .unwrap();
+
+        default_settings
+    };
+
+    println!("Loaded settings: {:?}", settings);
+
+    (task_path, settings)
 }
 
 pub fn get() -> &'static Config {
@@ -27,12 +61,12 @@ pub fn get() -> &'static Config {
 }
 
 pub fn init(data_dir_path: PathBuf) {
-    let full_path = setup_data(&data_dir_path);
-    // Needs to be called before the path is set on the config
+    let (data_path, settings) = setup_config(&data_dir_path);
 
     CONFIG
         .set(Config {
-            data_path: full_path,
+            data_path,
+            settings,
         })
         .expect("Config already initialized");
 }
