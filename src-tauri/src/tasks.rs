@@ -5,8 +5,9 @@ use std::cmp::Reverse;
 use std::collections::{BinaryHeap, HashMap};
 use std::error::Error;
 use std::fs;
-use std::path::Path;
 use uuid::Uuid;
+
+use crate::config;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(untagged)]
@@ -79,7 +80,8 @@ impl TaskReminder {
     fn save_task_definitions(&self) -> Result<(), Box<dyn Error>> {
         let tasks: Vec<TaskDefinition> = self.task_definitions.iter().map(|t| t.clone()).collect();
         let json_string = serde_json::to_string(&tasks)?;
-        fs::write("./tasks.json", json_string)?;
+
+        fs::write(&config::get().data_path, json_string)?;
 
         Ok(())
     }
@@ -98,17 +100,11 @@ impl TaskReminder {
     }
 
     pub fn load_task_definitions(&mut self) -> Result<(), Box<dyn Error>> {
-        let exe_path = std::env::current_exe().map_err(|e| e.to_string())?;
-        let exe_dir = exe_path
-            .parent()
-            .ok_or("Failed to get executable directory")?;
-        let tasks_path = exe_dir.join("tasks.json");
-
-        if !tasks_path.exists() {
-            fs::write(&tasks_path, "[]").map_err(|e| e.to_string())?;
-        }
-
-        let data = fs::read_to_string("./tasks.json")?;
+        println!(
+            "Loading task definitions from {:?}",
+            &config::get().data_path
+        );
+        let data = fs::read_to_string(&config::get().data_path)?;
         let parsed = serde_json::from_str::<Vec<TaskDefinition>>(&data)?;
 
         parsed.iter().for_each(|t| {

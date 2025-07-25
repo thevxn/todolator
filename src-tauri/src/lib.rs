@@ -1,4 +1,5 @@
 mod commands;
+mod config;
 mod tasks;
 
 use std::{
@@ -95,6 +96,15 @@ fn spawn_reminder(handle: AppHandle, task_name: String, label: &str) -> Result<(
 pub fn run() {
     let mut builder = tauri::Builder::default()
         .setup(|app| {
+            config::init(
+                // path::Path::new("tasks.json").to_path_buf(),
+                app.handle()
+                    .clone()
+                    .path()
+                    .app_data_dir()
+                    .expect("app data directory exists"),
+            );
+
             setup_tray(app);
 
             let mut reminder = TaskReminder {
