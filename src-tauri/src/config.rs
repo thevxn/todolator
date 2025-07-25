@@ -1,8 +1,13 @@
 use once_cell::sync::OnceCell;
 use serde::{Deserialize, Serialize};
-use std::{fs, path::PathBuf};
+use std::{
+    error::Error,
+    fs,
+    path::PathBuf,
+    sync::{Mutex, MutexGuard},
+};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Settings {
     pub autostart: bool,
 }
@@ -19,7 +24,7 @@ pub struct Config {
     pub settings: Settings,
 }
 
-static CONFIG: OnceCell<Config> = OnceCell::new();
+static CONFIG: OnceCell<Mutex<Config>> = OnceCell::new();
 static TASK_FILE_NAME: &str = "tasks.json";
 static SETTINGS_FILE_NAME: &str = "settings.json";
 
@@ -56,17 +61,35 @@ fn setup_config(dir_path: &PathBuf) -> (PathBuf, Settings) {
     (task_path, settings)
 }
 
-pub fn get() -> &'static Config {
-    CONFIG.get().expect("Config not initialized")
+pub fn get() -> MutexGuard<'static, Config> {
+    CONFIG
+        .get()
+        .expect("Config not initialized")
+        .lock()
+        .unwrap()
+}
+
+pub fn update_settings(settings: Settings) -> Result<(), Box<dyn Error>> {
+    let mut config = get();
+    config.settings = settings;
+
+    let settings_path = config.data_path.parent().unwrap().join("settings.json");
+
+    fs::write(
+        settings_path,
+        serde_json::to_string(&config.settings).unwrap(),
+    )?;
+
+    Ok(())
 }
 
 pub fn init(data_dir_path: PathBuf) {
     let (data_path, settings) = setup_config(&data_dir_path);
 
     CONFIG
-        .set(Config {
+        .set(Mutex::new(Config {
             data_path,
             settings,
-        })
+        }))
         .expect("Config already initialized");
 }

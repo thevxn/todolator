@@ -14,6 +14,7 @@
 
 ## Future Releases
 
+- Filtering & Sorting tasks
 - Configurable hotkeys
   - Replace current hardcoded hotkeys with variables & create mapping
 - Automated backups?

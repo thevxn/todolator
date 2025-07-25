@@ -4,7 +4,10 @@ use chrono::{DateTime, Utc};
 use tauri::State;
 use uuid::Uuid;
 
-use crate::tasks::{Recurrence, TaskDefinition, TaskInstance, TaskReminder};
+use crate::{
+    config::{self, Settings},
+    tasks::{Recurrence, TaskDefinition, TaskInstance, TaskReminder},
+};
 
 #[tauri::command]
 pub fn get_task_definition(
@@ -122,6 +125,20 @@ pub fn complete_task(
     task_reminder
         .mark_task_completed(task)
         .map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+#[tauri::command]
+pub fn get_settings() -> Result<Settings, String> {
+    let settings = config::get().settings.clone();
+
+    Ok(settings)
+}
+
+#[tauri::command]
+pub fn update_settings(settings: Settings) -> Result<(), String> {
+    config::update_settings(settings).map_err(|e| e.to_string())?;
 
     Ok(())
 }
