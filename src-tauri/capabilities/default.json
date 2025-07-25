@@ -8,6 +8,9 @@
     "opener:default",
     "core:window:default",
     "core:event:default",
-    "core:app:allow-app-hide"
+    "core:app:allow-app-hide",
+    "autostart:allow-enable",
+    "autostart:allow-disable",
+    "autostart:allow-is-enabled"
   ]
 }
