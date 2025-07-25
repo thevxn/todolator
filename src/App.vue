@@ -2,7 +2,7 @@
   <!-- https://v2.tauri.app/learn/window-customization/#creating-a-custom-titlebar -->
   <div class="titlebar">
     <div data-tauri-drag-region>
-      <img :src="logoUrl" width="30" />
+      <img class="ml-1" :src="logoUrl" width="30" />
     </div>
     <div class="controls">
       <button id="titlebar-minimize" title="minimize" @click="minimizeWindow">
