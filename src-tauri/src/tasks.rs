@@ -100,10 +100,6 @@ impl TaskReminder {
     }
 
     pub fn load_task_definitions(&mut self) -> Result<(), Box<dyn Error>> {
-        println!(
-            "Loading task definitions from {:?}",
-            &config::get().data_path
-        );
         let data = fs::read_to_string(&config::get().data_path)?;
         let parsed = serde_json::from_str::<Vec<TaskDefinition>>(&data)?;
 
