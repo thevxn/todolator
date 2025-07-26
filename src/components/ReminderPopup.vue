@@ -9,7 +9,7 @@
     <p class="overflow-auto px-4 max-h-25 mx-2" v-if="task?.desc">
       <span class="text-md text-font-primary">{{ task?.desc }}</span>
     </p>
-    <button class="mb-4 mt-4" @click="$emit('close', task)">Dismiss</button>
+    <button class="mb-4 mt-4" @click="handleDismiss">Dismiss</button>
     <PHotkeys screen-code="REMINDER_POPUP" />
   </div>
 </template>
@@ -20,19 +20,17 @@ import { TaskInstance } from '../composables/useTasks'
 import { convertFileSrc, invoke } from '@tauri-apps/api/core'
 import PHotkeys from './PHotkeys.vue'
 import { resolveResource } from '@tauri-apps/api/path'
-// import { readFile } from '@tauri-apps/plugin-fs'
-
-const audioPath = await resolveResource('resources/alarm.mp3')
-// const audio = await readFile(audioPath)
-
-const audioP = new Audio(convertFileSrc(audioPath))
-await audioP.play()
 
 const task = ref<TaskInstance>()
 const timestampDate = () => new Date(task.value?.timestamp as string)
 
+const audioPath = await resolveResource('resources/alarm.mp3')
+const audio = new Audio(convertFileSrc(audioPath))
+
 try {
   task.value = await invoke('get_next_task')
+
+  await audio.play()
 } catch (e) {
   console.log('Failed to load task: ', e)
   console.log(e)
@@ -49,6 +47,11 @@ onMounted(async () => {
 })
 
 const emit = defineEmits(['close'])
+
+const handleDismiss = () => {
+  audio.pause()
+  emit('close', task.value)
+}
 </script>
 
 <style></style>
