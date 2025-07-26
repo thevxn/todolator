@@ -7,11 +7,19 @@
     @keydown.y.stop="$emit('submit')"
     @keydown.n.stop="$emit('close')"
   >
-    <div class="p-10">
-      <h2 class="text-center text-error mb-10">
+    <div class="mt-1">
+      <PIcon
+        :icon="'mingcute:delete-2-line'"
+        class="px-2 text-error"
+        :height="'30px'"
+        :width="'30px'"
+      />
+    </div>
+    <div class="px-2 pb-8">
+      <h3 class="text-center text-font-primary mb-10">
         Delete task <i>{{ props.name }}</i
         >?
-      </h2>
+      </h3>
       <div class="flex flex-row items-center justify-center gap-x-4">
         <button
           class="bg-primary border-error text-error hover:text-primary hover:bg-error active:text-error active:bg-primary"
@@ -27,16 +35,15 @@
         </button>
       </div>
     </div>
-    <PHotkeys
-      screen-code="CONFIRMATION_MODAL"
-      :color="'bg-error'"
-    />
+    <PHotkeys screen-code="CONFIRMATION_MODAL" :color="'bg-error'" />
   </div>
 </template>
 
 <script lang="ts" setup>
 import { nextTick, ref, watch } from 'vue'
+
 import PHotkeys from './PHotkeys.vue'
+import PIcon from './PIcon.vue'
 
 const props = defineProps<{
   display: boolean

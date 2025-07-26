@@ -51,7 +51,7 @@ const hotkeys = [
   {
     shortcut: '⏎',
     description: 'Save',
-    screens: ['NEW_TASK_MODAL']
+    screens: ['NEW_TASK_MODAL', 'SETTINGS_MODAL']
   },
   {
     shortcut: 'CTRL + ⏎',

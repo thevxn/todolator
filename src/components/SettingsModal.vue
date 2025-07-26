@@ -7,14 +7,31 @@
     @keydown.y.stop="$emit('submit')"
     @keydown.n.stop="$emit('close')"
   >
-    <h2>
-      <PIcon :icon="'mingcute:settings-6-line'" class="px-2" :height="'30px'" :width="'30px'" />
-    </h2>
-    <div class="p-2">
-      <div class="flex flex-row items-center justify-center gap-x-4">
-        {{ settings }}
-      </div>
+    <div class="mt-1">
+      <PIcon
+        :icon="'mingcute:settings-6-line'"
+        class="px-2 text-secondary"
+        :height="'30px'"
+        :width="'30px'"
+      />
     </div>
+
+    <div
+      class="flex flex-col items-center justify-center gap-x-1 pb-8 gap-y-2 text-lg min-h-[180px]"
+    >
+      <div class="flex flex-row items-center justify-center">
+        <label for="autostart">Run on startup</label>
+        <input
+          id="autostart"
+          name="autostart"
+          type="checkbox"
+          class="ml-2 w-5 h-5 rounded-md appearance-auto !mb-0 hover:cursor-pointer"
+          :checked="settings?.autostart"
+        />
+      </div>
+      <button @click="$emit('submit')" tabindex="1">Save</button>
+    </div>
+
     <PHotkeys screen-code="SETTINGS_MODAL" />
   </div>
 </template>
@@ -25,6 +42,10 @@ import { invoke } from '@tauri-apps/api/core'
 
 import PHotkeys from './PHotkeys.vue'
 import PIcon from './PIcon.vue'
+
+interface Settings {
+  autostart: boolean
+}
 
 const props = defineProps<{
   display: boolean
@@ -45,7 +66,7 @@ watch(
   }
 )
 
-const settings = ref()
+const settings = ref<Settings>()
 
 onMounted(async () => {
   try {
