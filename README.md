@@ -2,6 +2,7 @@
 
 ## TODO
 
+- Mention in readme the location of `tasks.json`, `settings.json` and `alarm.mp3`
 - Fix button alignment on main screen when no tasks exist
 - Calendar units for recurrence
 - GUI paging
@@ -10,6 +11,7 @@
 
 - MacOS release
   - Fix title bar (<https://v2.tauri.app/learn/window-customization/#creating-a-custom-titlebar>)
+- Clean up the app data folder when uninstalling (maybe make it optional with a checkbox?)
 - Import/Export tasks
 - Filtering & Sorting tasks
 - Configurable hotkeys
