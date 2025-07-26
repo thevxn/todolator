@@ -21,7 +21,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; media-src 'self' asset: https://asset.localhost;",
+      "csp": null,
       "assetProtocol": {
         "enable": true,
         "scope": ["*/**"]
