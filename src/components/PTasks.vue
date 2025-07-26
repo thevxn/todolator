@@ -45,12 +45,12 @@
           :width="'24px'"
         />
       </button>
-      <h2
+      <!-- <h2
         class="absolute left-1/2 transform -translate-x-1/2 text-xl font-bold"
         v-if="tasks.length > 0"
       >
         Upcoming Reminders
-      </h2>
+      </h2> -->
 
       <button
         tabindex="-1"

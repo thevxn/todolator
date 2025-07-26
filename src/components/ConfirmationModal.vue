@@ -12,14 +12,18 @@
         :icon="'mingcute:delete-2-line'"
         class="px-2 text-error"
         :height="'30px'"
+        
+        
         :width="'30px'"
       />
     </div>
     <div class="px-2 pb-8">
-      <h3 class="text-center text-font-primary mb-10">
-        Delete task <i>{{ props.name }}</i
+      <span class="text-center text-font-primary mb-7 w-full inline-block text-lg mt-2">
+        Delete task
+        <b
+          ><i>{{ props.name }}</i></b
         >?
-      </h3>
+      </span>
       <div class="flex flex-row items-center justify-center gap-x-4">
         <button
           class="bg-primary border-error text-error hover:text-primary hover:bg-error active:text-error active:bg-primary"
