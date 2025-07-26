@@ -7,7 +7,8 @@
   ></div>
 
   <main class="flex flex-col items-center justify-center p-4">
-    <SettingsModal :display="displaySettingsModal" />
+    <SettingsModal :display="displaySettingsModal" @submit="toggleSettingsModal" />
+
     <ConfirmationModal
       :display="displayConfirmationModal"
       @submit="handleTaskDelete(currentTaskDefinition?.id)"
@@ -15,6 +16,7 @@
       :name="currentTaskInstance?.name"
       :id="currentTaskInstance?.definition_id"
     />
+
     <TaskForm
       submit-text="Save"
       :display="displayTaskModal"
@@ -43,6 +45,7 @@
           class="hover:cursor-pointer w-full h-full"
           :height="'24px'"
           :width="'24px'"
+          tabindex="-1"
         />
       </button>
       <!-- <h2
@@ -57,7 +60,7 @@
         class="flex flex-row items-center justify-center"
         @click="openCreateUpdateModal(null)"
       >
-        <PIcon :icon="'mingcute:add-line'" :height="'24px'" :width="'24px'" />
+        <PIcon :icon="'mingcute:add-line'" :height="'24px'" :width="'24px'" tabindex="-1" />
         New Task
       </button>
     </div>
@@ -352,11 +355,7 @@ onMounted(async () => {
         break
 
       case 'Enter':
-        if (
-          !displayTaskModal.value &&
-          !displayConfirmationModal.value &&
-          selectedIndex.value !== null
-        ) {
+        if (!isAnyModalActive() && selectedIndex.value !== null) {
           openCreateUpdateModal(selectedIndex.value)
           e.stopPropagation()
           e.preventDefault()

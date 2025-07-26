@@ -138,6 +138,8 @@ pub fn get_settings() -> Result<Settings, String> {
 
 #[tauri::command]
 pub fn update_settings(settings: Settings) -> Result<(), String> {
+    println!("Settings saved {:?}", settings);
+
     config::update_settings(settings).map_err(|e| e.to_string())?;
 
     Ok(())
