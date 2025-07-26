@@ -21,11 +21,12 @@
       }
     ],
     "security": {
-      "csp": null,
+      "csp": "default-src 'self'; media-src 'self' asset: https://asset.localhost;",
       "assetProtocol": {
         "enable": true,
         "scope": ["*/**"]
       },
+
       "capabilities": [
         {
           "identifier": "draggable-window",
@@ -36,7 +37,12 @@
             "core:event:allow-unlisten",
             "core:event:allow-emit",
             "core:event:default",
-            "core:app:allow-app-hide"
+            "core:app:allow-app-hide",
+            "core:path:allow-resolve-directory",
+            "core:path:default",
+            "fs:allow-read-file",
+            "fs:allow-audio-read-recursive",
+            "fs:allow-resource-read-recursive"
           ]
         }
       ]
@@ -51,6 +57,7 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "resources": { "../public/alarm.mp3": "resources/alarm.mp3" }
   }
 }

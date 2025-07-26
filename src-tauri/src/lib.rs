@@ -97,6 +97,7 @@ fn spawn_reminder(handle: AppHandle, task_name: String, label: &str) -> Result<(
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let mut builder = tauri::Builder::default()
+        .plugin(tauri_plugin_fs::init())
         .setup(|app| {
             config::init(
                 // path::Path::new("tasks.json").to_path_buf(),

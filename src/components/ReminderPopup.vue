@@ -17,8 +17,16 @@
 <script lang="ts" setup>
 import { onMounted, onUnmounted, ref } from 'vue'
 import { TaskInstance } from '../composables/useTasks'
-import { invoke } from '@tauri-apps/api/core'
+import { convertFileSrc, invoke } from '@tauri-apps/api/core'
 import PHotkeys from './PHotkeys.vue'
+import { resolveResource } from '@tauri-apps/api/path'
+// import { readFile } from '@tauri-apps/plugin-fs'
+
+const audioPath = await resolveResource('resources/alarm.mp3')
+// const audio = await readFile(audioPath)
+
+const audioP = new Audio(convertFileSrc(audioPath))
+await audioP.play()
 
 const task = ref<TaskInstance>()
 const timestampDate = () => new Date(task.value?.timestamp as string)
