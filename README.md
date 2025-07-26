@@ -2,6 +2,8 @@
 
 ## TODO
 
+- Add icon to the New Task button
+- Add icon to the create/update/delete modal in place of a heading
 - Fix title bar on Mac (<https://v2.tauri.app/learn/window-customization/#creating-a-custom-titlebar>)
 - Add autostart plugin
   - Add a way to manage autostart from the GUI (add settings to config + settings.json file ig)

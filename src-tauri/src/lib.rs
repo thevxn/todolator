@@ -19,8 +19,8 @@ use tauri::{
 
 use crate::{
     commands::{
-        close, complete_task, create_task, delete_task, get_next_task, get_task_definition,
-        get_tasks, maximize, minimize, update_task,
+        close, complete_task, create_task, delete_task, get_next_task, get_settings,
+        get_task_definition, get_tasks, maximize, minimize, update_settings, update_task,
     },
     tasks::TaskReminder,
 };
@@ -206,7 +206,9 @@ pub fn run() {
             delete_task,
             get_next_task,
             complete_task,
-            get_task_definition
+            get_task_definition,
+            get_settings,
+            update_settings
         ]);
 
     #[cfg(desktop)]

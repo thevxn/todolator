@@ -3,7 +3,25 @@
     v-if="display"
     class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-2 bg-primary rounded-md min-w-1/2 overflow-y-auto"
   >
-    <div class="p-5">
+    <div class="mt-1">
+      <PIcon
+        :icon="'mingcute:add-line'"
+        class="px-2"
+        :class="`text-${highlightClass}`"
+        :height="'30px'"
+        :width="'30px'"
+        v-if="mode === Mode.CREATE"
+      />
+      <PIcon
+        :icon="'mingcute:edit-2-line'"
+        class="px-2 rounded-md"
+        :class="`text-${highlightClass}`"
+        :height="'30px'"
+        :width="'30px'"
+        v-if="mode === Mode.UPDATE"
+      />
+    </div>
+    <div class="px-5 pb-5 pt-2">
       <!-- <h1 class="text-center" v-if="mode === Mode.CREATE">New Task</h1>
       <h1 class="text-center text-warning" v-else>Edit Task</h1> -->
 
@@ -21,6 +39,7 @@
           placeholder="Title"
           type="text"
           class="w-full"
+          :class="mode === Mode.UPDATE ? 'edit' : null"
           tabindex="1"
           ref="focusInput"
           name="title"
@@ -36,6 +55,7 @@
           name="desc"
           id="desc"
           class="w-full min-h-25"
+          :class="mode === Mode.UPDATE ? 'edit' : null"
           tabindex="2"
           autocomplete="off"
         ></textarea>
@@ -54,6 +74,7 @@
             id="timestamp"
             type="datetime-local"
             class="w-full cursor-pointer"
+            :class="mode === Mode.UPDATE ? 'edit' : null"
             tabindex="3"
             step="60"
             required
@@ -133,13 +154,13 @@
           <div class="mt-2 text-sm text-gray-300" v-if="isRecurring && mode === Mode.UPDATE">
             <span for="timestamp" class="text-left"
               >First recurrence at
-              <b class="text-secondary">{{ new Date(localTask.start).toLocaleString() }}</b
+              <b class="text-warning">{{ new Date(localTask.start).toLocaleString() }}</b
               >,</span
             >
             <br />
             <span
               >repeats every
-              <span class="text-secondary font-bold">{{ recurrence![Recurrence.AMOUNT] }}</span>
+              <span class="text-warning font-bold">{{ recurrence![Recurrence.AMOUNT] }}</span>
               {{
                 (recurrence![Recurrence.AMOUNT] as number) > 1
                   ? pluralizeUnit(recurrence![Recurrence.UNIT] as string)
@@ -152,6 +173,10 @@
           <button
             @click="mode === Mode.CREATE ? $emit('create', localTask) : $emit('update', localTask)"
             tabindex="7"
+            :class="{
+              'bg-warning border-warning hover:text-warning hover:bg-primary active:bg-warning active:border-warning active:text-primary':
+                mode === Mode.UPDATE
+            }"
           >
             {{ submitText }}
           </button>
@@ -159,7 +184,10 @@
         </div>
       </div>
     </div>
-    <PHotkeys screen-code="NEW_TASK_MODAL" />
+    <PHotkeys
+      screen-code="NEW_TASK_MODAL"
+      :color="mode === Mode.UPDATE ? 'bg-warning' : undefined"
+    />
   </div>
 </template>
 
@@ -204,6 +232,7 @@ enum Mode {
   UPDATE
 }
 const mode = computed(() => (isExistingDefinition(localTask.value) ? Mode.UPDATE : Mode.CREATE))
+const highlightClass = computed(() => (mode.value === Mode.CREATE ? 'secondary' : 'warning'))
 
 const isRecurring = computed(() => isRecurringDefinition(localTask.value))
 

@@ -7,41 +7,27 @@
     @keydown.y.stop="$emit('submit')"
     @keydown.n.stop="$emit('close')"
   >
-    <div class="p-10">
-      <h2 class="text-center text-error mb-10">
-        Delete task <i>{{ props.name }}</i
-        >?
-      </h2>
+    <h2>
+      <PIcon :icon="'mingcute:settings-6-line'" class="px-2" :height="'30px'" :width="'30px'" />
+    </h2>
+    <div class="p-2">
       <div class="flex flex-row items-center justify-center gap-x-4">
-        <button
-          class="bg-primary border-error text-error hover:text-primary hover:bg-error active:text-error active:bg-primary"
-          @click="$emit('submit')"
-        >
-          Yes
-        </button>
-        <button
-          class="bg-primary border-secondary text-secondary hover:text-primary hover:bg-secondary active:text-secondary active:bg-primary"
-          @click="$emit('close')"
-        >
-          No
-        </button>
+        {{ settings }}
       </div>
     </div>
-    <PHotkeys
-      screen-code="CONFIRMATION_MODAL"
-      :color="'bg-error'"
-    />
+    <PHotkeys screen-code="SETTINGS_MODAL" />
   </div>
 </template>
 
 <script lang="ts" setup>
-import { nextTick, ref, watch } from 'vue'
+import { nextTick, onMounted, ref, watch } from 'vue'
+import { invoke } from '@tauri-apps/api/core'
+
 import PHotkeys from './PHotkeys.vue'
+import PIcon from './PIcon.vue'
 
 const props = defineProps<{
   display: boolean
-  name?: string
-  id?: string
   // TODO: error messages
   errorText?: string
 }>()
@@ -58,6 +44,16 @@ watch(
     }
   }
 )
+
+const settings = ref()
+
+onMounted(async () => {
+  try {
+    settings.value = await invoke('get_settings')
+  } catch (e) {
+    console.log('Failed to fetch settings: ', e)
+  }
+})
 
 defineEmits(['submit', 'close'])
 </script>

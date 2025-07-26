@@ -2,11 +2,12 @@
   <!-- Modal overlay -->
   <div
     class="min-w-screen w-screen min-h-screen opacity-50 bg-black z-1 fixed"
-    v-if="displayTaskModal || displayConfirmationModal"
+    v-if="displayTaskModal || displayConfirmationModal || displaySettingsModal"
     @click="closeModals"
   ></div>
 
   <main class="flex flex-col items-center justify-center p-4">
+    <SettingsModal :display="displaySettingsModal" />
     <ConfirmationModal
       :display="displayConfirmationModal"
       @submit="handleTaskDelete(currentTaskDefinition?.id)"
@@ -24,7 +25,7 @@
       :current-task="currentTaskDefinition"
     />
 
-    <!-- Heading + New Task button -->
+    <!-- Settings button + Heading + New Task button -->
     <div
       class="relative flex flex-row w-full items-center mt-10"
       :class="{
@@ -32,13 +33,33 @@
         'justify-center': tasks.length <= 0
       }"
     >
+      <button
+        tabindex="-1"
+        @click="toggleSettingsModal"
+        class="absolute left-0 transform font-bold p-2"
+      >
+        <PIcon
+          :icon="'mingcute:settings-6-line'"
+          class="hover:cursor-pointer w-full h-full"
+          :height="'24px'"
+          :width="'24px'"
+        />
+      </button>
       <h2
         class="absolute left-1/2 transform -translate-x-1/2 text-xl font-bold"
         v-if="tasks.length > 0"
       >
         Upcoming Reminders
       </h2>
-      <button tabindex="-1" @click="openCreateUpdateModal(null)" class="btn">New Task</button>
+
+      <button
+        tabindex="-1"
+        class="flex flex-row items-center justify-center"
+        @click="openCreateUpdateModal(null)"
+      >
+        <PIcon :icon="'mingcute:add-line'" :height="'24px'" :width="'24px'" />
+        New Task
+      </button>
     </div>
 
     <!-- Main tasks table -->
@@ -123,8 +144,10 @@ import {
 import { useRowSelect } from '../composables/useRowSelect'
 import { toDatetimeLocalValue } from '../helpers/datetime'
 import ConfirmationModal from './ConfirmationModal.vue'
-import PIcon from './PIcon.vue'
 import { getDefaultTaskDefinition } from '../helpers/task'
+import PIcon from './PIcon.vue'
+import SettingsModal from './SettingsModal.vue'
+import { useSettings } from '../composables/useSettings'
 
 const {
   tasks,
@@ -143,6 +166,8 @@ const { selectedIndex, resetSelectedIndex } = useRowSelect(
   () => tasks.value.length,
   () => displayTaskModal.value
 )
+
+const { displaySettingsModal, toggleSettingsModal } = useSettings()
 
 const rowRefs = ref<HTMLElement[]>([])
 const tableRef = ref<HTMLElement | null>(null)
@@ -245,6 +270,9 @@ const closeModals = () => {
     }
     if (displayConfirmationModal.value) {
       toggleConfirmationModal()
+    }
+    if (displaySettingsModal.value) {
+      toggleSettingsModal()
     }
   })
 }

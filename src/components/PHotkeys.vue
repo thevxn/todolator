@@ -1,6 +1,7 @@
 <template>
   <div
-    class="absolute bottom-0 w-full flex flex-row items-center justify-center gap-4 bg-secondary text-primary font-semibold rounded-b-md invisible sm:visible"
+    class="absolute bottom-0 w-full flex flex-row items-center justify-center gap-4 text-primary font-semibold rounded-b-md invisible sm:visible"
+    :class="color"
   >
     <div
       v-for="hotkey in hotkeys.filter((h) => h.screens.includes(screenCode))"
@@ -13,7 +14,7 @@
 </template>
 
 <script lang="ts" setup>
-type Screen = 'MAIN' | 'NEW_TASK_MODAL' | 'CONFIRMATION_MODAL' | 'REMINDER_POPUP'
+type Screen = 'MAIN' | 'NEW_TASK_MODAL' | 'CONFIRMATION_MODAL' | 'REMINDER_POPUP' | 'SETTINGS_MODAL'
 
 interface IHotkey {
   shortcut: string
@@ -74,9 +75,15 @@ const hotkeys = [
   }
 ] as const as Readonly<Array<IHotkey>>
 
-defineProps<{
-  screenCode: Screen
-}>()
+withDefaults(
+  defineProps<{
+    screenCode: Screen
+    color?: string
+  }>(),
+  {
+    color: 'bg-secondary'
+  }
+)
 </script>
 
 <style></style>
