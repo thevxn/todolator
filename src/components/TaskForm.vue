@@ -154,7 +154,9 @@
           <div class="mt-2 text-sm text-gray-300" v-if="isRecurring && mode === Mode.UPDATE">
             <span for="timestamp" class="text-left"
               >First recurrence at
-              <b class="text-warning">{{ new Date(localTask.start).toLocaleString() }}</b
+              <b class="text-warning">{{
+                new Date(localTask.start).toLocaleString().slice(0, 17)
+              }}</b
               >,</span
             >
             <br />

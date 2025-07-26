@@ -3,7 +3,6 @@
 ## TODO
 
 - Fix title bar on Mac (<https://v2.tauri.app/learn/window-customization/#creating-a-custom-titlebar>)
-- Hide seconds in selects & in main overview table
 - GUI paging
 
 ## Future Releases

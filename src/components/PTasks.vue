@@ -27,7 +27,7 @@
       :current-task="currentTaskDefinition"
     />
 
-    <!-- Settings button + Heading + New Task button -->
+    <!-- Settings + New Task buttons -->
     <div
       class="relative flex flex-row w-full items-center mt-10"
       :class="{
@@ -48,12 +48,6 @@
           tabindex="-1"
         />
       </button>
-      <!-- <h2
-        class="absolute left-1/2 transform -translate-x-1/2 text-xl font-bold"
-        v-if="tasks.length > 0"
-      >
-        Upcoming Reminders
-      </h2> -->
 
       <button
         tabindex="-1"
@@ -96,7 +90,7 @@
             "
           >
             <div class="p-2 flex flex-row gap-x-2 items-center">
-              <span>{{ new Date(task.timestamp).toLocaleString() }}</span>
+              <span>{{ new Date(task.timestamp).toLocaleString().slice(0, 17) }}</span>
             </div>
             <div
               class="p-2 flex flex-row gap-x-2 items-center hover:cursor-help"
@@ -210,7 +204,7 @@ const resetCurrentDefinitionAndInstance = () => {
 }
 
 // Watcher for selected task index to enable visual task select using hotkeys
-// TODO: Fix weird behavior after messing around in the GUI (view being dragged every time arrow up/down is pressed)
+// TODO: Fix weird behavior after messing around in the GUI (view being dragged every time arrow up/down is pressed) - caused by desync between where the view has been scrolled to by mouse vs where it thinks it is moved by the keyboard
 watch(selectedIndex, (newIndex) => {
   if (newIndex === null || !tableRef.value) return
 
