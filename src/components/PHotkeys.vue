@@ -25,12 +25,17 @@ interface IHotkey {
 const hotkeys = [
   {
     shortcut: 'N',
-    description: 'New Task',
+    description: 'New',
     screens: ['MAIN']
   },
   {
     shortcut: '↑↓',
-    description: 'Select Task',
+    description: 'Select',
+    screens: ['MAIN']
+  },
+  {
+    shortcut: 'S',
+    description: 'Settings',
     screens: ['MAIN']
   },
   {

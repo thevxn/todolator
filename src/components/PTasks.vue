@@ -318,6 +318,11 @@ const handleTaskDelete = async (id: UuidString | undefined) => {
   }
 }
 
+const isAnyModalActive = () => {
+  console.log(displayTaskModal.value, displayConfirmationModal.value, displaySettingsModal.value)
+  return displayTaskModal.value || displayConfirmationModal.value || displaySettingsModal.value
+}
+
 onMounted(async () => {
   await loadTasks()
 
@@ -325,17 +330,19 @@ onMounted(async () => {
     switch (e.key) {
       case 'n':
         // If no modal is active, open New Task modal
-        if (!displayTaskModal.value && !displayConfirmationModal.value) {
+        if (!isAnyModalActive()) {
           openCreateUpdateModal(null)
           e.stopPropagation()
           e.preventDefault()
         }
-        // If Delete Confirmation modal is active, close it without deleting
-        // if (displayConfirmationModal.value) {
-        //   toggleConfirmationModal()
-        //   e.stopPropagation()
-        //   e.preventDefault()
-        // }
+        break
+
+      case 's':
+        if (!isAnyModalActive()) {
+          toggleSettingsModal()
+          e.stopPropagation()
+          e.preventDefault()
+        }
         break
 
       case 'Escape':
