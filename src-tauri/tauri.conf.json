@@ -40,9 +40,15 @@
             "core:app:allow-app-hide",
             "core:path:allow-resolve-directory",
             "core:path:default",
-            "fs:allow-read-file",
-            "fs:allow-audio-read-recursive",
-            "fs:allow-resource-read-recursive"
+            "fs:allow-audio-read",
+            {
+              "identifier": "fs:allow-exists",
+              "allow": [{ "path": "$APPDATA/**" }]
+            },
+            {
+              "identifier": "fs:scope",
+              "allow": [{ "path": "$APPDATA/**" }]
+            }
           ]
         }
       ]
@@ -57,7 +63,6 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ],
-    "resources": { "../public/alarm.mp3": "resources/alarm.mp3" }
+    ]
   }
 }

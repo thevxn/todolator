@@ -8,15 +8,6 @@
     "opener:default",
     "core:window:default",
     "core:event:default",
-    "core:app:allow-app-hide",
-    "autostart:allow-enable",
-    "autostart:allow-disable",
-    "autostart:allow-is-enabled",
-    "fs:allow-read-file",
-    "fs:allow-audio-read-recursive",
-    "fs:allow-resource-read-recursive",
-    "fs:allow-appdata-read",
-    "fs:allow-audio-meta-recursive",
-    "fs:allow-open"
+    "core:app:allow-app-hide"
   ]
 }
