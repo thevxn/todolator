@@ -1,6 +1,6 @@
 <template>
   <!-- https://v2.tauri.app/learn/window-customization/#creating-a-custom-titlebar -->
-  <div class="titlebar">
+  <div class="titlebar rounded-t">
     <div data-tauri-drag-region>
       <img class="ml-1" :src="logoUrl" width="30" />
     </div>
@@ -34,7 +34,7 @@
       </button>
     </div>
   </div>
-  <main>
+  <main class="overflow-hidden">
     <Suspense>
       <Tasks />
     </Suspense>
