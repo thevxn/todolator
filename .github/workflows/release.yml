@@ -1,6 +1,6 @@
 # https://v2.tauri.app/distribute/pipelines/github/
 
-name: 'publish'
+name: Release
 
 on:
   workflow_dispatch:
