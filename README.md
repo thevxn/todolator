@@ -77,13 +77,9 @@ npm run tauri build --release
 
 The built binary & installers will be created in `src-tauri/target/release`.
 
-## TODO
-
-- Calendar units for recurrence
-
 ## Future Releases
 
-- GUI paging
+- GUI paging to support displaying more than 30 upcoming reminders
 - Update paging so that all generated instances are not held in memory and do not grow with each new page
   - Only hold the current page and check if it's needed to regenerate upon every request for a page of tasks
 - MacOS release

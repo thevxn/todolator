@@ -209,7 +209,7 @@ import {
 import { pluralizeUnit, timeUnitToMinutesMap } from '../helpers/datetime'
 import PIcon from './PIcon.vue'
 
-type IntervalKey = 'Minutes' | 'Hourly' | 'Daily' | 'Weekly' | 'Monthly' | 'Yearly'
+type IntervalKey = 'Minutes' | 'Hourly' | 'Daily' | 'Weekly' | 'Monthly' | 'Yearly' | 'Workdays'
 
 const intervalMap = {
   minute: 'Minutes',
@@ -217,7 +217,8 @@ const intervalMap = {
   day: 'Daily',
   week: 'Weekly',
   month: 'Monthly',
-  year: 'Yearly'
+  year: 'Yearly',
+  workday: 'Workdays'
 } as const satisfies Record<string, IntervalKey>
 
 const props = withDefaults(

@@ -8,7 +8,7 @@ use std::fs;
 use uuid::Uuid;
 
 use crate::config;
-use crate::datetime::add_months;
+use crate::datetime::{add_months, add_workdays};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum RecurrenceInterval {
@@ -18,6 +18,7 @@ pub enum RecurrenceInterval {
     Weekly(i64),
     Monthly(i64),
     Yearly(i64),
+    Workdays(i64),
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -183,6 +184,7 @@ impl TaskReminder {
                                 d.start + Duration::minutes(i * number)
                             }
                         }
+
                         RecurrenceInterval::Hourly(number) => {
                             if let Some(last) = last_recurrence {
                                 *last + Duration::hours((i + 1) * number)
@@ -190,6 +192,7 @@ impl TaskReminder {
                                 d.start + Duration::hours(i * number)
                             }
                         }
+
                         RecurrenceInterval::Daily(number) => {
                             if let Some(last) = last_recurrence {
                                 *last + Duration::days((i + 1) * number)
@@ -197,6 +200,7 @@ impl TaskReminder {
                                 d.start + Duration::days(i * number)
                             }
                         }
+
                         RecurrenceInterval::Weekly(number) => {
                             if let Some(last) = last_recurrence {
                                 *last + Duration::weeks((i + 1) * number)
@@ -204,6 +208,7 @@ impl TaskReminder {
                                 d.start + Duration::weeks(i * number)
                             }
                         }
+
                         RecurrenceInterval::Monthly(number) => {
                             let mut t = last_recurrence.unwrap_or(d.start);
                             for _ in 0..=(i as u32) {
@@ -211,10 +216,19 @@ impl TaskReminder {
                             }
                             t
                         }
+
                         RecurrenceInterval::Yearly(number) => {
                             let mut t = last_recurrence.unwrap_or(d.start);
                             for _ in 0..=(i as u32) {
                                 t = add_months(t, 12 * (*number as u32));
+                            }
+                            t
+                        }
+
+                        RecurrenceInterval::Workdays(number) => {
+                            let mut t = last_recurrence.unwrap_or(d.start);
+                            for _ in 0..(i + 1) {
+                                t = add_workdays(t, *number);
                             }
                             t
                         }

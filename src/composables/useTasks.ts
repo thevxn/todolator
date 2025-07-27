@@ -8,6 +8,7 @@ export type Interval =
   | { Minutes: number }
   | { Hourly: number }
   | { Daily: number }
+  | { Workdays: number }
   | { Weekly: number }
   | { Monthly: number }
   | { Yearly: number }
