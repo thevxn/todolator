@@ -4,13 +4,21 @@ import { Ref, ref } from 'vue'
 export type UuidString = Branded<string, 'Uuidstring'>
 export type DateTimeString = Branded<string, 'DateTimeString'>
 
+export type Interval =
+  | { Minutes: number }
+  | { Hourly: number }
+  | { Daily: number }
+  | { Weekly: number }
+  | { Monthly: number }
+  | { Yearly: number }
+
 export interface CreatedTaskDefinition {
   name: string
   desc: string | null
   start: DateTimeString
   recurrence: {
     last_recurrence: DateTimeString | null
-    minutes: number
+    interval: Interval
     exceptions: Array<DateTimeString> | null
   } | null
 }
@@ -45,7 +53,7 @@ export const useTasks = () => {
     if (
       !taskDefinition.name ||
       !taskDefinition.start ||
-      (taskDefinition.recurrence && !taskDefinition.recurrence.minutes)
+      (taskDefinition.recurrence && !taskDefinition.recurrence.interval)
     ) {
       taskCreationError.value = 'Missing required attributes!'
       throw new Error('Missing required attributes')
@@ -57,7 +65,7 @@ export const useTasks = () => {
       start: new Date(taskDefinition.start).toISOString() as DateTimeString,
       recurrence: taskDefinition.recurrence
         ? {
-            minutes: taskDefinition.recurrence.minutes,
+            interval: taskDefinition.recurrence.interval,
             exceptions: taskDefinition.recurrence.exceptions,
             last_recurrence: taskDefinition.recurrence.last_recurrence
           }
@@ -84,7 +92,7 @@ export const useTasks = () => {
       start: new Date(taskDefinition.start).toISOString() as DateTimeString,
       recurrence: taskDefinition.recurrence
         ? {
-            minutes: taskDefinition.recurrence.minutes,
+            interval: taskDefinition.recurrence.interval,
             exceptions: taskDefinition.recurrence.exceptions,
             last_recurrence: taskDefinition.recurrence.last_recurrence
           }

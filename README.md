@@ -1,6 +1,6 @@
 # Todolator
 
-Todolator is a simple desktop task reminder designed to ensure it is hard to ignore the reminder (unlike other apps using push or in-browser notifications).
+Todolator is a simple desktop task reminder designed to ensure it is hard(er) to ignore the reminder (unlike other apps using push or in-browser notifications).
 
 ## Why
 

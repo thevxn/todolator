@@ -14,10 +14,6 @@ const week = day * 7
 const month = week * 4
 const year = month * 12
 
-export const enum TimeUnitEnum {
-  NAME,
-  MINUTES
-}
 export const timeUnitToMinutesMap = {
   minute,
   hour,
@@ -26,36 +22,5 @@ export const timeUnitToMinutesMap = {
   month,
   year
 } as const
-
-export const timeUnits = [year, month, week, day, hour, minute] as const
-export const convertMinutesToHighestUnit = (minutes: number | undefined) => {
-  if (!minutes) return
-
-  let foundUnit: keyof typeof timeUnitToMinutesMap | undefined
-  let foundAmount
-  for (const unitAmount of timeUnits) {
-    if (minutes % unitAmount === 0) {
-      const foundUnitObj = Object.entries(timeUnitToMinutesMap).find(
-        ({ 1: minutes }) => minutes === unitAmount
-      )
-
-      if (foundUnitObj) {
-        foundUnit = foundUnitObj[TimeUnitEnum.NAME] as keyof typeof timeUnitToMinutesMap
-      }
-
-      foundAmount = minutes / unitAmount
-
-      break
-    }
-  }
-
-  if (foundUnit && foundAmount && foundAmount > 1) {
-    pluralizeUnit(foundUnit)
-  }
-
-  console.log('Found unit: ', foundUnit)
-
-  return [foundAmount, foundUnit?.toLowerCase()]
-}
 
 export const pluralizeUnit = (unit: string) => unit + 's'

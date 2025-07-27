@@ -130,7 +130,7 @@
             tabindex="6"
           >
             <option
-              v-for="[unit] of Object.entries(timeUnitToMinutesMap)"
+              v-for="[unit] of Object.entries(intervalMap)"
               :key="unit"
               :value="unit"
               class="hover:bg-secondary hover:text-primary hover:font-bold hover:cursor-pointer"
@@ -168,12 +168,8 @@
             <br />
             <span
               >repeats every
-              <span class="text-warning font-bold">{{ recurrence![Recurrence.AMOUNT] }}</span>
-              {{
-                (recurrence![Recurrence.AMOUNT] as number) > 1
-                  ? pluralizeUnit(recurrence![Recurrence.UNIT] as string)
-                  : recurrence![Recurrence.UNIT]
-              }}</span
+              <span class="text-warning font-bold">{{ displayUnitNumber }}</span>
+              {{ displayUnitNumber > 1 ? pluralizeUnit(displayUnitName) : displayUnitName }}</span
             >
           </div>
         </div>
@@ -203,19 +199,26 @@
 import { computed, nextTick, ref, watch } from 'vue'
 
 import PHotkeys from './PHotkeys.vue'
-import { CreatedTaskDefinition, TaskDefinition } from '../composables/useTasks'
+import { CreatedTaskDefinition, Interval, TaskDefinition } from '../composables/useTasks'
 import {
   getDefaultRecurrence,
   getDefaultTaskDefinition,
   isExistingDefinition,
   isRecurringDefinition
 } from '../helpers/task'
-import {
-  convertMinutesToHighestUnit,
-  pluralizeUnit,
-  timeUnitToMinutesMap
-} from '../helpers/datetime'
+import { pluralizeUnit, timeUnitToMinutesMap } from '../helpers/datetime'
 import PIcon from './PIcon.vue'
+
+type IntervalKey = 'Minutes' | 'Hourly' | 'Daily' | 'Weekly' | 'Monthly' | 'Yearly'
+
+const intervalMap = {
+  minute: 'Minutes',
+  hour: 'Hourly',
+  day: 'Daily',
+  week: 'Weekly',
+  month: 'Monthly',
+  year: 'Yearly'
+} as const satisfies Record<string, IntervalKey>
 
 const props = withDefaults(
   defineProps<{
@@ -235,6 +238,30 @@ const props = withDefaults(
 
 const localTask = ref(props.currentTask)
 
+const displayUnitName = computed(() => {
+  if (localTask.value.recurrence) {
+    const [unit] = Object.entries(localTask.value.recurrence.interval)[0]
+
+    // [["minute", "Minutes"], ...]
+    const unitName = Object.entries(intervalMap).find((i) => i[1] === unit)
+
+    return unitName ? unitName[0] : ''
+  }
+
+  return ''
+})
+
+const displayUnitNumber = computed(() => {
+  if (localTask.value.recurrence) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [_unit, amount] = Object.entries(localTask.value.recurrence.interval)[0]
+
+    return amount
+  }
+
+  return 1
+})
+
 enum Mode {
   CREATE,
   UPDATE
@@ -244,22 +271,17 @@ const highlightClass = computed(() => (mode.value === Mode.CREATE ? 'secondary' 
 
 const isRecurring = computed(() => isRecurringDefinition(localTask.value))
 
-enum Recurrence {
-  AMOUNT,
-  UNIT
-}
-
-// Used for determining recurrence unit and amount when editing a task (read-only)
-const recurrence = computed(() => convertMinutesToHighestUnit(localTask.value.recurrence?.minutes))
-
 // Used for specifying recurrence when creating a new task
 const unitAmount = ref<number>(1)
-const unitName = ref<keyof typeof timeUnitToMinutesMap>('minute')
+const unitName = ref<keyof typeof timeUnitToMinutesMap>('day')
 
 // If the selected time unit or amount changes, recalculate the resulting amount of minutes
 watch([unitName, unitAmount], () => {
   if (localTask.value.recurrence) {
-    localTask.value.recurrence.minutes = unitAmount.value * timeUnitToMinutesMap[unitName.value]
+    const key = intervalMap[unitName.value]
+    localTask.value.recurrence.interval = {
+      [key]: unitAmount.value
+    } as Interval
   }
 })
 
@@ -284,7 +306,7 @@ watch(
       // Reset the input values
       localTask.value = getDefaultTaskDefinition()
       unitAmount.value = 1
-      unitName.value = 'minute'
+      unitName.value = 'day'
     }
   }
 )

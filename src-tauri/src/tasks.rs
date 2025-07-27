@@ -8,6 +8,17 @@ use std::fs;
 use uuid::Uuid;
 
 use crate::config;
+use crate::datetime::add_months;
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub enum RecurrenceInterval {
+    Minutes(i64),
+    Hourly(i64),
+    Daily(i64),
+    Weekly(i64),
+    Monthly(i64),
+    Yearly(i64),
+}
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(untagged)]
@@ -15,7 +26,7 @@ pub enum Recurrence {
     None,
     Recurring {
         last_recurrence: Option<DateTime<Utc>>,
-        minutes: i64,
+        interval: RecurrenceInterval,
         exceptions: Option<Vec<DateTime<Utc>>>,
     },
 }
@@ -149,11 +160,11 @@ impl TaskReminder {
             for i in 0..instances_required {
                 let recurrence_info = if let Some(Recurrence::Recurring {
                     last_recurrence,
-                    minutes,
+                    interval,
                     exceptions,
                 }) = &d.recurrence
                 {
-                    Some((last_recurrence, minutes, exceptions))
+                    Some((last_recurrence, interval, exceptions))
                 } else {
                     None
                 };
@@ -164,12 +175,51 @@ impl TaskReminder {
                 }
 
                 let timestamp = match recurrence_info {
-                    Some((last_recurrence, minutes, _exceptions)) => match *last_recurrence {
-                        Some(last) => last + Duration::minutes((i + 1) * minutes),
-
-                        None => d.start + Duration::minutes(i * minutes),
+                    Some((last_recurrence, interval, _)) => match interval {
+                        RecurrenceInterval::Minutes(number) => {
+                            if let Some(last) = last_recurrence {
+                                *last + Duration::minutes((i + 1) * number)
+                            } else {
+                                d.start + Duration::minutes(i * number)
+                            }
+                        }
+                        RecurrenceInterval::Hourly(number) => {
+                            if let Some(last) = last_recurrence {
+                                *last + Duration::hours((i + 1) * number)
+                            } else {
+                                d.start + Duration::hours(i * number)
+                            }
+                        }
+                        RecurrenceInterval::Daily(number) => {
+                            if let Some(last) = last_recurrence {
+                                *last + Duration::days((i + 1) * number)
+                            } else {
+                                d.start + Duration::days(i * number)
+                            }
+                        }
+                        RecurrenceInterval::Weekly(number) => {
+                            if let Some(last) = last_recurrence {
+                                *last + Duration::weeks((i + 1) * number)
+                            } else {
+                                d.start + Duration::weeks(i * number)
+                            }
+                        }
+                        RecurrenceInterval::Monthly(number) => {
+                            let mut t = last_recurrence.unwrap_or(d.start);
+                            for _ in 0..=(i as u32) {
+                                t = add_months(t, *number as u32);
+                            }
+                            t
+                        }
+                        RecurrenceInterval::Yearly(number) => {
+                            let mut t = last_recurrence.unwrap_or(d.start);
+                            for _ in 0..=(i as u32) {
+                                t = add_months(t, 12 * (*number as u32));
+                            }
+                            t
+                        }
                     },
-                    _ => d.start,
+                    None => d.start,
                 };
 
                 let exceptions = if let Some(recurrence) = recurrence_info {
@@ -251,7 +301,7 @@ impl TaskReminder {
         if let Some(definition) = self.get_task_definition_mut(task.definition_id) {
             if let Some(Recurrence::Recurring {
                 last_recurrence,
-                minutes: _,
+                interval: _,
                 exceptions: _,
             }) = &mut definition.recurrence
             {
@@ -316,7 +366,7 @@ mod tests {
             start: Utc.with_ymd_and_hms(2025, 1, 1, 12, 0, 0).unwrap(),
             recurrence: Some(Recurrence::Recurring {
                 last_recurrence: None,
-                minutes: 60,
+                interval: RecurrenceInterval::Minutes(60),
                 exceptions: None,
             }),
         }
@@ -436,7 +486,7 @@ mod tests {
                 start,
                 recurrence: Some(Recurrence::Recurring {
                     last_recurrence: None,
-                    minutes: 60,
+                    interval: RecurrenceInterval::Minutes(60),
                     exceptions: Some(vec![exception_time]),
                 }),
             }],
@@ -462,7 +512,7 @@ mod tests {
             start: Utc.with_ymd_and_hms(2025, 1, 1, 8, 0, 0).unwrap(),
             recurrence: Some(Recurrence::Recurring {
                 last_recurrence: None,
-                minutes: 5, // small interval to fill multiple pages quickly
+                interval: RecurrenceInterval::Minutes(60),
                 exceptions: None,
             }),
         };

@@ -27,10 +27,12 @@ export const getDefaultTaskDefinition = (): TaskDefinition => {
   }
 }
 
-export const getDefaultRecurrence = () => {
+export const getDefaultRecurrence = (): TaskDefinition['recurrence'] => {
   return {
     exceptions: null,
     last_recurrence: null,
-    minutes: 1
+    interval: {
+      Daily: 1
+    }
   }
 }
