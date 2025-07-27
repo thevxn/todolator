@@ -118,12 +118,12 @@ impl TaskReminder {
     /// Calculates task instances from definitions on demand.
     /// Generates enough instances to provide the requested page.
     ///
-    /// E.g., for page 0 with `PAGE_SIZE=30`, up to 30 instances are generated. For page 2 with the same `PAGE_SIZE`, up to 90 instances are returned.
+    /// E.g., for page 0 with `PAGE_SIZE=30`, up to 30 instances per definition are generated. For page 2 with the same `PAGE_SIZE`, up to 90 instances per definition are generated.
     pub fn generate_task_instances(&mut self, page: i32) {
         #[cfg(debug_assertions)]
         println!("Beginning to recalculate new instances");
-        
-        let definitions = self.task_definitions.clone();
+
+        let definitions = &self.task_definitions;
 
         // If any tasks already have a window spawned, the state must be kept and set accordingly on the new set of instances
         let mut window_spawned_map: HashMap<(Uuid, DateTime<Utc>), bool> = HashMap::new();
@@ -195,14 +195,17 @@ impl TaskReminder {
         });
 
         instances.sort_by_key(|i| i.timestamp);
-        instances.iter_mut().take(PAGE_SIZE as usize).for_each(|i| {
-            if window_spawned_map.contains_key(&(i.definition_id, i.timestamp)) {
-                i.window_spawned = *window_spawned_map
-                    .get(&(i.definition_id, i.timestamp))
-                    .unwrap_or(&false);
-            };
-            self.push_task_instance(i.clone());
-        });
+        instances
+            .iter_mut()
+            .take(instances_required as usize)
+            .for_each(|i| {
+                if window_spawned_map.contains_key(&(i.definition_id, i.timestamp)) {
+                    i.window_spawned = *window_spawned_map
+                        .get(&(i.definition_id, i.timestamp))
+                        .unwrap_or(&false);
+                };
+                self.push_task_instance(i.clone());
+            });
 
         self.calculated_instances = self.task_instances.len();
 
@@ -294,5 +297,195 @@ impl TaskReminder {
         self.generate_task_instances(0);
 
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::path::PathBuf;
+
+    use super::*;
+    use chrono::TimeZone;
+    use tempfile::tempdir;
+
+    fn sample_task_definition() -> TaskDefinition {
+        TaskDefinition {
+            id: Uuid::new_v4(),
+            name: "Sample Task".to_string(),
+            desc: Some("Sample Description".to_string()),
+            start: Utc.with_ymd_and_hms(2025, 1, 1, 12, 0, 0).unwrap(),
+            recurrence: Some(Recurrence::Recurring {
+                last_recurrence: None,
+                minutes: 60,
+                exceptions: None,
+            }),
+        }
+    }
+
+    #[test]
+    fn test_push_and_get_task_definition() {
+        let mut reminder = TaskReminder {
+            task_definitions: vec![],
+            task_instances: BinaryHeap::new(),
+            calculated_instances: 0,
+        };
+
+        let def = sample_task_definition();
+        let id = def.id;
+        reminder.push_task_definition(def.clone());
+
+        assert_eq!(
+            reminder.get_task_definition(id).unwrap().name,
+            "Sample Task"
+        );
+    }
+
+    #[test]
+    fn test_generate_single_instance() {
+        let mut reminder = TaskReminder {
+            task_definitions: vec![sample_task_definition()],
+            task_instances: BinaryHeap::new(),
+            calculated_instances: 0,
+        };
+
+        reminder.generate_task_instances(0);
+        let tasks = reminder.get_tasks(0);
+
+        assert!(!tasks.is_empty());
+        assert_eq!(tasks[0].name, "Sample Task");
+    }
+
+    #[test]
+    fn test_mark_task_completed_updates_last_recurrence() {
+        let temp_dir = tempdir().expect("Failed to create temp dir");
+        let test_data_path: PathBuf = temp_dir.path().join("tasks.json");
+
+        config::init(test_data_path.clone());
+
+        let mut reminder = TaskReminder {
+            task_definitions: vec![sample_task_definition()],
+            task_instances: BinaryHeap::new(),
+            calculated_instances: 0,
+        };
+
+        reminder.generate_task_instances(0);
+        let task = reminder.get_next_task().unwrap().clone();
+        reminder.mark_task_completed(task.clone()).unwrap();
+
+        let updated_def = reminder.get_task_definition(task.definition_id).unwrap();
+        if let Some(Recurrence::Recurring {
+            last_recurrence, ..
+        }) = &updated_def.recurrence
+        {
+            assert_eq!(*last_recurrence, Some(task.timestamp));
+        } else {
+            panic!("Expected recurring task");
+        }
+    }
+
+    #[test]
+    fn test_delete_task_definition() {
+        let temp_dir = tempdir().expect("Failed to create temp dir");
+        let test_data_path: PathBuf = temp_dir.path().join("tasks.json");
+
+        config::init(test_data_path.clone());
+
+        let mut reminder = TaskReminder {
+            task_definitions: vec![sample_task_definition()],
+            task_instances: BinaryHeap::new(),
+            calculated_instances: 0,
+        };
+
+        let id = reminder.task_definitions[0].id;
+        reminder.delete_task_definition(id).unwrap();
+
+        assert!(reminder.get_task_definition(id).is_none());
+    }
+
+    #[test]
+    fn test_non_recurring_task_generates_single_instance() {
+        let mut reminder = TaskReminder {
+            task_definitions: vec![TaskDefinition {
+                id: Uuid::new_v4(),
+                name: "One-time Task".to_string(),
+                desc: None,
+                start: Utc.with_ymd_and_hms(2025, 1, 1, 9, 0, 0).unwrap(),
+                recurrence: Some(Recurrence::None),
+            }],
+            task_instances: BinaryHeap::new(),
+            calculated_instances: 0,
+        };
+
+        reminder.generate_task_instances(0);
+        let tasks = reminder.get_tasks(0);
+
+        assert_eq!(tasks.len(), 1);
+        assert_eq!(tasks[0].name, "One-time Task");
+    }
+
+    #[test]
+    fn test_task_with_exception_does_not_generate_that_instance() {
+        let start = Utc.with_ymd_and_hms(2025, 1, 1, 10, 0, 0).unwrap();
+        let exception_time = start + Duration::minutes(60);
+
+        let mut reminder = TaskReminder {
+            task_definitions: vec![TaskDefinition {
+                id: Uuid::new_v4(),
+                name: "With Exception".to_string(),
+                desc: None,
+                start,
+                recurrence: Some(Recurrence::Recurring {
+                    last_recurrence: None,
+                    minutes: 60,
+                    exceptions: Some(vec![exception_time]),
+                }),
+            }],
+            task_instances: BinaryHeap::new(),
+            calculated_instances: 0,
+        };
+
+        reminder.generate_task_instances(0);
+        let tasks = reminder.get_tasks(0);
+
+        // Ensure that the exception timestamp is not in the generated list
+        for task in tasks {
+            assert_ne!(task.timestamp, exception_time);
+        }
+    }
+
+    #[test]
+    fn test_pagination_limits_task_output() {
+        let def = TaskDefinition {
+            id: Uuid::new_v4(),
+            name: "Paged Task".to_string(),
+            desc: None,
+            start: Utc.with_ymd_and_hms(2025, 1, 1, 8, 0, 0).unwrap(),
+            recurrence: Some(Recurrence::Recurring {
+                last_recurrence: None,
+                minutes: 5, // small interval to fill multiple pages quickly
+                exceptions: None,
+            }),
+        };
+
+        let mut reminder = TaskReminder {
+            task_definitions: vec![def],
+            task_instances: BinaryHeap::new(),
+            calculated_instances: 0,
+        };
+
+        // Generate page 0
+        let page_0 = reminder.get_tasks(0);
+        assert_eq!(page_0.len(), PAGE_SIZE as usize);
+
+        // Generate page 1
+        let page_1 = reminder.get_tasks(1);
+        assert_eq!(page_1.len(), PAGE_SIZE as usize);
+
+        // Ensure no duplicates between pages
+        let timestamps_page_0: Vec<_> = page_0.iter().map(|t| t.timestamp).collect();
+        let timestamps_page_1: Vec<_> = page_1.iter().map(|t| t.timestamp).collect();
+        assert!(timestamps_page_0
+            .iter()
+            .all(|ts| !timestamps_page_1.contains(ts)));
     }
 }

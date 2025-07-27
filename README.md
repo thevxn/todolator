@@ -61,14 +61,14 @@ The built binary & installers will be created in `src-tauri/target/release`.
 
 ## TODO
 
-- LICENCE
 - Try building for MacOS via GHA pipeline provided by tauri
-- Mention in readme the location of `tasks.json`, `settings.json` and `alarm.mp3`
 - Calendar units for recurrence
 - GUI paging
 
 ## Future Releases
 
+- Update paging so that all generated instances are not held in memory and do not grow with each new page
+  - Only hold the current page and check if it's needed to regenerate upon every request for a page of tasks
 - MacOS release
   - Fix title bar (<https://v2.tauri.app/learn/window-customization/#creating-a-custom-titlebar>)
 - Clean up the app data directory when uninstalling (maybe make it optional with a checkbox?)

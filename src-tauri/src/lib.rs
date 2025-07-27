@@ -61,8 +61,8 @@ fn setup_tray(app: &mut App) {
                 }
             }
             _ => {
-                #[cfg(debug_assertions)]
-                println!("unhandled event {event:?}");
+                // #[cfg(debug_assertions)]
+                // println!("unhandled event {event:?}");
             }
         })
         .build(app)
@@ -179,7 +179,7 @@ pub fn run() {
                             if !next.0.window_spawned {
                                 #[cfg(debug_assertions)]
                                 println!("Reminding task!!!: {:?}", next.0.timestamp);
-                                
+
                                 window_counter += 1;
 
                                 next.0.window_spawned = true;

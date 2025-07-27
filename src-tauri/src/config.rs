@@ -39,12 +39,6 @@ fn setup_config(dir_path: &PathBuf) -> (PathBuf, Settings) {
     let task_path = dir_path.join(TASK_FILE_NAME);
     let settings_path = dir_path.join(SETTINGS_FILE_NAME);
 
-    // Path relative to the location of the executable
-    // let exe_dir = std::env::current_exe()
-    //     .unwrap()
-    //     .parent()
-    //     .unwrap()
-    //     .to_path_buf();
     let resources_dir = dir_path.join("resources");
 
     if !resources_dir.exists() {
@@ -110,10 +104,10 @@ pub fn update_settings(settings: Settings) -> Result<(), Box<dyn Error>> {
 pub fn init(data_dir_path: PathBuf) {
     let (data_path, settings) = setup_config(&data_dir_path);
 
-    CONFIG
-        .set(Mutex::new(Config {
+    CONFIG.get_or_init(|| {
+        Mutex::new(Config {
             data_path,
             settings,
-        }))
-        .expect("Config already initialized");
+        })
+    });
 }

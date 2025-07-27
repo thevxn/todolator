@@ -4015,6 +4015,7 @@ dependencies = [
  "tauri-plugin-fs",
  "tauri-plugin-opener",
  "tauri-plugin-single-instance",
+ "tempfile",
  "uuid",
 ]
 
