@@ -20,6 +20,24 @@ I also wanted to create a desktop app, learn the basics of Rust and use Tauri - 
 
 Your data stays on your computer, you decide what to do with it. Todolator uses no telemetry, stores no data about you and does not require internet connection.
 
+## Installation
+
+Download the installer for your OS and Architecture from [releases](https://github.com/thevxn/todolator/releases).
+
+- **Windows x64:**
+  - `Todolator_X.Y.Z_x64_en-US.msi`
+  - `Todolator_X.Y.Z_x64-setup.exe`
+- **MacOS Apple Silicon:**
+  - `Todolator_X.Y.Z_aarch64.dmg`
+  - `Todolator_aarch64.app.tar.gz`
+- **MacOS Intel:**
+  - `Todolator_X.Y.Z_x64.dmg`
+  - `Todolator_x64.app.tar.gz`
+- **Linux x64:**
+  - `Todolator_X.Y.Z_amd64.AppImage`
+  - `Todolator_X.Y.Z_amd64.deb` (Debian/Ubuntu-based distros)
+  - `Todolator-X.Y.Z-1.x86_64.rpm` (Red Hat/Fedora/openSUSE-based distros)
+
 ## Configuration
 
 ### App Data Directory
@@ -61,12 +79,11 @@ The built binary & installers will be created in `src-tauri/target/release`.
 
 ## TODO
 
-- Try building for MacOS via GHA pipeline provided by tauri
 - Calendar units for recurrence
-- GUI paging
 
 ## Future Releases
 
+- GUI paging
 - Update paging so that all generated instances are not held in memory and do not grow with each new page
   - Only hold the current page and check if it's needed to regenerate upon every request for a page of tasks
 - MacOS release
