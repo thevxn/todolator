@@ -5,6 +5,7 @@ on:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
+  workflow_dispatch: 
 
 env:
   CARGO_TERM_COLOR: always
@@ -17,6 +18,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Run tests
+      working-directory: src-tauri
       run: cargo test --verbose
 
   linux_x64:
@@ -24,6 +26,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Run tests
+      working-directory: src-tauri
       run: cargo test --verbose
   
   linux_arm64:
@@ -31,6 +34,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Run tests
+      working-directory: src-tauri
       run: cargo test --verbose
 
   macOS_intel:
@@ -38,6 +42,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Run tests
+      working-directory: src-tauri
       run: cargo test --verbose
 
   macOS_arm64:
@@ -45,5 +50,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Run tests
+      working-directory: src-tauri
       run: cargo test --verbose
 
