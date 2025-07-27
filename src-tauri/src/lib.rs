@@ -65,6 +65,7 @@ fn setup_tray(app: &mut App) {
 }
 
 fn spawn_reminder(handle: AppHandle, task_name: String, label: &str) -> Result<(), Box<dyn Error>> {
+    #[cfg_attr(not(target_os = "windows"), allow(unused_mut))]
     let mut builder = WebviewWindowBuilder::new(
         &handle,
         label,
