@@ -42,16 +42,21 @@ mod tests {
 
     #[test]
     fn test_days_in_month() {
-        assert_eq!(days_in_month(2024, 2), 29); // Leap year
         assert_eq!(days_in_month(2023, 2), 28);
         assert_eq!(days_in_month(2023, 1), 31);
         assert_eq!(days_in_month(2023, 4), 30);
     }
 
     #[test]
-    fn test_add_months_basic() {
+    fn test_days_leap_year() {
+        assert_eq!(days_in_month(2024, 2), 29);
+    }
+
+    #[test]
+    fn test_add_months() {
         let date = Utc.with_ymd_and_hms(2023, 1, 15, 12, 0, 0).unwrap();
         let result = add_months(date, 1);
+
         assert_eq!(result, Utc.with_ymd_and_hms(2023, 2, 15, 12, 0, 0).unwrap());
     }
 
@@ -59,6 +64,7 @@ mod tests {
     fn test_add_months_wrap_year() {
         let date = Utc.with_ymd_and_hms(2023, 11, 30, 9, 0, 0).unwrap();
         let result = add_months(date, 2);
+
         assert_eq!(result, Utc.with_ymd_and_hms(2024, 1, 30, 9, 0, 0).unwrap());
     }
 
@@ -66,14 +72,15 @@ mod tests {
     fn test_add_months_day_adjustment() {
         let date = Utc.with_ymd_and_hms(2023, 1, 31, 8, 0, 0).unwrap();
         let result = add_months(date, 1);
-        // February 2023 only has 28 days
+
         assert_eq!(result, Utc.with_ymd_and_hms(2023, 2, 28, 8, 0, 0).unwrap());
     }
 
     #[test]
     fn test_add_workdays_simple() {
-        let monday = Utc.with_ymd_and_hms(2023, 7, 24, 10, 0, 0).unwrap(); // Monday
+        let monday = Utc.with_ymd_and_hms(2023, 7, 24, 10, 0, 0).unwrap();
         let result = add_workdays(monday, 5);
+
         assert_eq!(result.weekday(), Weekday::Mon);
         assert_eq!(
             result.date_naive(),
@@ -83,8 +90,9 @@ mod tests {
 
     #[test]
     fn test_add_workdays_over_weekend() {
-        let friday = Utc.with_ymd_and_hms(2023, 7, 21, 10, 0, 0).unwrap(); // Friday
+        let friday = Utc.with_ymd_and_hms(2023, 7, 21, 10, 0, 0).unwrap();
         let result = add_workdays(friday, 1);
+
         assert_eq!(result.weekday(), Weekday::Mon);
         assert_eq!(
             result.date_naive(),
@@ -94,8 +102,9 @@ mod tests {
 
     #[test]
     fn test_add_workdays_multiple_weeks() {
-        let tuesday = Utc.with_ymd_and_hms(2023, 7, 18, 10, 0, 0).unwrap(); // Tuesday
+        let tuesday = Utc.with_ymd_and_hms(2023, 7, 18, 10, 0, 0).unwrap();
         let result = add_workdays(tuesday, 10);
+
         assert_eq!(result.weekday(), Weekday::Tue);
         assert_eq!(
             result.date_naive(),
