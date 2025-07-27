@@ -1,6 +1,6 @@
 [package]
 name = "todolator"
-version = "0.1.0"
+version = "1.0.0"
 description = "Why do it now, when you can do it later?"
 authors = ["Tackx"]
 edition = "2021"
