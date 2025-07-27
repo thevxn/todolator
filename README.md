@@ -2,6 +2,13 @@
 
 Todolator is a simple desktop task reminder designed to ensure it is hard(er) to ignore the reminder (unlike other apps using push or in-browser notifications).
 
+<img src="docs/5.png" alt="todolator" width="70%"/>
+<img src="docs/4.png" alt="todolator" width="70%"/>
+
+![Todolator Demo](docs/showcase.gif)
+
+Download the full quality showcase video: <https://github.com/thevxn/todolator/blob/master/docs/showcase.mp4>
+
 ## Why
 
 I created Todolator because usual push notifications or in-browser notifications from apps like Google Calendar are not enough to grab my attention and not forget the task at hand. I also had experience with desktop apps like [Kana](https://kanasolution.com/products/kana-reminder/) and [Desktop Reminder](https://www.desktop-reminder.com/en/index.html), however these are now quite outdated and/or not completely free.
