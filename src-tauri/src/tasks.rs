@@ -65,7 +65,9 @@ pub struct TaskReminder {
 
 impl TaskReminder {
     fn push_task_definition(&mut self, definition: TaskDefinition) {
+        #[cfg(debug_assertions)]
         println!("Pushing def: {:?}", definition);
+
         self.task_definitions.push(definition)
     }
 
@@ -107,6 +109,7 @@ impl TaskReminder {
             self.push_task_definition(t.clone());
         });
 
+        #[cfg(debug_assertions)]
         println!("Loaded task definitions: {:?}", self.task_definitions);
 
         Ok(())
@@ -117,7 +120,9 @@ impl TaskReminder {
     ///
     /// E.g., for page 0 with `PAGE_SIZE=30`, up to 30 instances are generated. For page 2 with the same `PAGE_SIZE`, up to 90 instances are returned.
     pub fn generate_task_instances(&mut self, page: i32) {
+        #[cfg(debug_assertions)]
         println!("Beginning to recalculate new instances");
+        
         let definitions = self.task_definitions.clone();
 
         // If any tasks already have a window spawned, the state must be kept and set accordingly on the new set of instances
@@ -200,12 +205,15 @@ impl TaskReminder {
         });
 
         self.calculated_instances = self.task_instances.len();
+
+        #[cfg(debug_assertions)]
         println!("Calculated instances: {:?}", self.task_instances.len());
-        // println!("{:?}", self.task_instances)
     }
 
     pub fn get_tasks(&mut self, page: i32) -> Vec<TaskInstance> {
+        #[cfg(debug_assertions)]
         println!("Generating task instances...");
+
         self.generate_task_instances(page);
 
         let item_from = (page * PAGE_SIZE) as usize;
@@ -231,6 +239,7 @@ impl TaskReminder {
         let instances = &mut self.task_instances;
         instances.pop();
 
+        #[cfg(debug_assertions)]
         println!(
             "Task marked as completed (popped off the instances heap). Timestamp: {:?}",
             task.timestamp
@@ -261,6 +270,7 @@ impl TaskReminder {
         if let Some(task) = definitions.iter_mut().find(|d| d.id == updated.id) {
             *task = updated;
 
+            #[cfg(debug_assertions)]
             println!("Updated task definition: {:?}", task)
         };
 

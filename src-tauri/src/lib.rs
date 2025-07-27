@@ -35,10 +35,13 @@ fn setup_tray(app: &mut App) {
         .icon(app.default_window_icon().unwrap().clone())
         .on_menu_event(|app, event| match event.id.as_ref() {
             "quit" => {
+                #[cfg(debug_assertions)]
                 println!("quit menu item was clicked");
+
                 app.exit(0);
             }
             _ => {
+                #[cfg(debug_assertions)]
                 println!("menu item {:?} not handled", event.id);
             }
         })
@@ -47,6 +50,7 @@ fn setup_tray(app: &mut App) {
                 button: MouseButton::Left,
                 ..
             } => {
+                #[cfg(debug_assertions)]
                 println!("double left-click pressed");
 
                 let app = tray.app_handle();
@@ -57,7 +61,8 @@ fn setup_tray(app: &mut App) {
                 }
             }
             _ => {
-                // println!("unhandled event {event:?}");
+                #[cfg(debug_assertions)]
+                println!("unhandled event {event:?}");
             }
         })
         .build(app)
@@ -135,6 +140,7 @@ pub fn run() {
                     }
                 }
 
+                #[cfg(debug_assertions)]
                 println!(
                     "registered for autostart? {}",
                     autostart_manager.is_enabled().unwrap()
@@ -171,7 +177,9 @@ pub fn run() {
                     if should_remind {
                         if let Some(mut next) = task {
                             if !next.0.window_spawned {
+                                #[cfg(debug_assertions)]
                                 println!("Reminding task!!!: {:?}", next.0.timestamp);
+                                
                                 window_counter += 1;
 
                                 next.0.window_spawned = true;

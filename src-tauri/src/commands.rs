@@ -29,7 +29,6 @@ pub fn get_tasks(state: State<'_, Mutex<TaskReminder>>) -> Result<Vec<TaskInstan
     let mut state = state.lock().map_err(|e| e.to_string())?;
 
     let tasks = state.get_tasks(0);
-    // println!("GET TASKS: {:?}", tasks);
 
     Ok(tasks)
 }
@@ -39,7 +38,9 @@ pub fn get_next_task(state: State<'_, Mutex<TaskReminder>>) -> Result<TaskInstan
     let state = state.lock().map_err(|e| e.to_string())?;
 
     if let Some(task) = state.get_next_task() {
+        #[cfg(debug_assertions)]
         println!("Loaded next task for popup: {:?}", task);
+
         Ok(task.clone())
     } else {
         Err("No tasks available".to_string())
