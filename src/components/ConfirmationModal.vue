@@ -12,18 +12,28 @@
         :icon="'mingcute:delete-2-line'"
         class="px-2 text-error"
         :height="'30px'"
-        
-        
         :width="'30px'"
       />
     </div>
     <div class="px-2 pb-8">
-      <span class="text-center text-font-primary mb-7 w-full inline-block text-lg mt-2">
+      <span class="text-center text-font-primary w-full inline-block text-lg mt-2">
         Delete task
         <b
           ><i>{{ props.name }}</i></b
         >?
       </span>
+      <div
+        class="flex flex-row items-center justify-center text-center mb-7 w-full text-warning gap-x-1"
+      >
+        <PIcon
+          :icon="'mingcute:alert-line'"
+          class="text-warning"
+          :height="'30px'"
+          :width="'30px'"
+        />
+        <span>All recurrences of the parent task will be deleted!</span>
+      </div>
+
       <div class="flex flex-row items-center justify-center gap-x-4">
         <button
           class="bg-primary border-error text-error hover:text-primary hover:bg-error active:text-error active:bg-primary"
