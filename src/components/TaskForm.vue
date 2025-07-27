@@ -155,7 +155,13 @@
             <span for="timestamp" class="text-left"
               >First recurrence at
               <b class="text-warning">{{
-                new Date(localTask.start).toLocaleString().slice(0, 17)
+                new Date(localTask.start).toLocaleString(undefined, {
+                  year: 'numeric',
+                  month: 'numeric',
+                  day: 'numeric',
+                  hour: 'numeric',
+                  minute: 'numeric'
+                })
               }}</b
               >,</span
             >

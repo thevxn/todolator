@@ -109,7 +109,15 @@
             "
           >
             <div class="p-2 flex flex-row gap-x-2 items-center">
-              <span>{{ new Date(task.timestamp).toLocaleString().slice(0, 17) }}</span>
+              <span>{{
+                new Date(task.timestamp).toLocaleString(undefined, {
+                  year: 'numeric',
+                  month: 'numeric',
+                  day: 'numeric',
+                  hour: 'numeric',
+                  minute: 'numeric'
+                })
+              }}</span>
             </div>
             <div
               class="p-2 flex flex-row gap-x-2 items-center hover:cursor-help"
