@@ -73,7 +73,7 @@
         class="flex flex-row items-center justify-center"
         @click="openCreateUpdateModal(null)"
       >
-        <PIcon :icon="'mingcute:add-line'" :height="'24px'" :width="'24px'" tabindex="-1" />
+        <PIcon :icon="'mingcute:add-line'" :height="'24px'" :width="'24px'" tabindex="-1" class="mr-1" />
         New Task
       </button>
     </div>
