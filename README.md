@@ -1,9 +1,40 @@
 # Todolator
 
+## Configuration
+
+Your tasks and settings' location will depend on your OS:
+
+**Windows**
+
+- ``
+
+**Linux**
+
+- ``
+
+**MacOS**
+
+- ``
+
+## Run Locally
+
+```sh
+npm i && \
+npm run tauri dev
+```
+
+## Build
+
+```sh
+npm run tauri build --release
+```
+
+The built binary & installers will be created in `src-tauri/target/release`.
+
 ## TODO
 
+- Try building for MacOS via GHA pipeline provided by tauri
 - Mention in readme the location of `tasks.json`, `settings.json` and `alarm.mp3`
-- Fix button alignment on main screen when no tasks exist
 - Calendar units for recurrence
 - GUI paging
 

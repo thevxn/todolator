@@ -6,6 +6,23 @@
     @click="closeModals"
   ></div>
 
+  <!-- Settings button showed in the top right corner if no tasks are present -->
+  <div class="flex flex-col w-full pt-8" v-if="tasks.length <= 0">
+    <button
+      tabindex="-1"
+      @click="toggleSettingsModal"
+      class="absolute left-2 transform font-bold p-2"
+    >
+      <PIcon
+        :icon="'mingcute:settings-6-line'"
+        class="hover:cursor-pointer w-full h-full"
+        :height="'24px'"
+        :width="'24px'"
+        tabindex="-1"
+      />
+    </button>
+  </div>
+
   <main class="flex flex-col items-center justify-center p-4">
     <SettingsModal :display="displaySettingsModal" @submit="toggleSettingsModal" />
 
@@ -35,10 +52,12 @@
         'justify-center': tasks.length <= 0
       }"
     >
+      <!-- Settings button showed in the same row as the New Task button if tasks are present -->
       <button
         tabindex="-1"
         @click="toggleSettingsModal"
         class="absolute left-0 transform font-bold p-2"
+        v-if="tasks.length > 0"
       >
         <PIcon
           :icon="'mingcute:settings-6-line'"
