@@ -211,25 +211,64 @@ impl TaskReminder {
 
                         RecurrenceInterval::Monthly(number) => {
                             let mut t = last_recurrence.unwrap_or(d.start);
-                            for _ in 0..=(i as u32) {
-                                t = add_months(t, *number as u32);
-                            }
+
+                            // If the task has a last recurrence, start adding unit from the first instance
+                            // Else (the task has not ocurred yet), start adding unit from the second instance
+                            let start = {
+                                if last_recurrence.is_some() {
+                                    0
+                                } else {
+                                    1
+                                }
+                            };
+
+                            // If it has already ocurred before or if i > 0, add the number of units
+                            if last_recurrence.is_some() || i > 0 {
+                                for _ in start..=(i as u32) {
+                                    t = add_months(t, *number as u32);
+                                }
+                            };
+
                             t
                         }
 
                         RecurrenceInterval::Yearly(number) => {
                             let mut t = last_recurrence.unwrap_or(d.start);
-                            for _ in 0..=(i as u32) {
-                                t = add_months(t, 12 * (*number as u32));
-                            }
+
+                            let start = {
+                                if last_recurrence.is_some() {
+                                    0
+                                } else {
+                                    1
+                                }
+                            };
+
+                            if last_recurrence.is_some() || i > 0 {
+                                for _ in start..=(i as u32) {
+                                    t = add_months(t, *number as u32);
+                                }
+                            };
+
                             t
                         }
 
                         RecurrenceInterval::Workdays(number) => {
                             let mut t = last_recurrence.unwrap_or(d.start);
-                            for _ in 0..(i + 1) {
-                                t = add_workdays(t, *number);
-                            }
+
+                            let start = {
+                                if last_recurrence.is_some() {
+                                    0
+                                } else {
+                                    1
+                                }
+                            };
+
+                            if last_recurrence.is_some() || i > 0 {
+                                for _ in start..=(i as u32) {
+                                    t = add_workdays(t, *number);
+                                }
+                            };
+
                             t
                         }
                     },
