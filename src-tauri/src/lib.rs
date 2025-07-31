@@ -134,12 +134,10 @@ pub fn run() {
                 let config = config::get();
                 let settings = &config.settings;
 
-                if autostart_manager.is_enabled().unwrap_or(false) {
-                    if settings.autostart {
-                        autostart_manager.enable().unwrap();
-                    } else {
-                        autostart_manager.disable().unwrap();
-                    }
+                if settings.autostart {
+                    autostart_manager.enable().unwrap();
+                } else {
+                    autostart_manager.disable().unwrap();
                 }
 
                 #[cfg(debug_assertions)]
