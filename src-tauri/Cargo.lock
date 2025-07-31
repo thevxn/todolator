@@ -4003,7 +4003,7 @@ dependencies = [
 
 [[package]]
 name = "todolator"
-version = "1.0.2"
+version = "1.0.3"
 dependencies = [
  "chrono",
  "once_cell",
