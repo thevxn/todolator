@@ -26,19 +26,14 @@
         "enable": true,
         "scope": ["*/**"]
       },
-
       "capabilities": [
         {
           "identifier": "draggable-window",
           "windows": ["*"],
           "permissions": [
             "core:window:allow-start-dragging",
-            "core:event:allow-listen",
-            "core:event:allow-unlisten",
-            "core:event:allow-emit",
             "core:event:default",
             "core:app:allow-app-hide",
-            "core:path:allow-resolve-directory",
             "core:path:default",
             "fs:allow-audio-read",
             {
