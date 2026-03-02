@@ -25,28 +25,7 @@
       "assetProtocol": {
         "enable": true,
         "scope": ["*/**"]
-      },
-      "capabilities": [
-        {
-          "identifier": "draggable-window",
-          "windows": ["*"],
-          "permissions": [
-            "core:window:allow-start-dragging",
-            "core:event:default",
-            "core:app:allow-app-hide",
-            "core:path:default",
-            "fs:allow-audio-read",
-            {
-              "identifier": "fs:allow-exists",
-              "allow": [{ "path": "$APPDATA/**" }]
-            },
-            {
-              "identifier": "fs:scope",
-              "allow": [{ "path": "$APPDATA/**" }]
-            }
-          ]
-        }
-      ]
+      }
     }
   },
   "bundle": {
