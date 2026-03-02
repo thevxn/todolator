@@ -63,7 +63,9 @@ export const useTasks = () => {
     const taskDefinitionToSave: CreatedTaskDefinition = {
       name: taskDefinition.name,
       desc: taskDefinition.desc,
-      start: new Date(taskDefinition.start).toISOString() as DateTimeString,
+      start: new Date(taskDefinition.start)
+        .toLocaleString('sv')
+        .replace(' ', 'T') as DateTimeString,
       recurrence: taskDefinition.recurrence
         ? {
             interval: taskDefinition.recurrence.interval,
@@ -90,7 +92,9 @@ export const useTasks = () => {
       id: taskDefinition.id,
       name: taskDefinition.name,
       desc: taskDefinition.desc,
-      start: new Date(taskDefinition.start).toISOString() as DateTimeString,
+      start: new Date(taskDefinition.start)
+        .toLocaleString('sv')
+        .replace(' ', 'T') as DateTimeString,
       recurrence: taskDefinition.recurrence
         ? {
             interval: taskDefinition.recurrence.interval,

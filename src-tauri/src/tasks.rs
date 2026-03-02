@@ -1,4 +1,4 @@
-use chrono::{DateTime, Duration, Utc};
+use chrono::{DateTime, Duration, NaiveDateTime, TimeZone, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json;
 use std::cmp::Reverse;
@@ -26,9 +26,9 @@ pub enum RecurrenceInterval {
 pub enum Recurrence {
     None,
     Recurring {
-        last_recurrence: Option<DateTime<Utc>>,
+        last_recurrence: Option<NaiveDateTime>,
         interval: RecurrenceInterval,
-        exceptions: Option<Vec<DateTime<Utc>>>,
+        exceptions: Option<Vec<NaiveDateTime>>,
     },
 }
 
@@ -38,7 +38,7 @@ pub struct TaskDefinition {
     pub name: String,
     pub desc: Option<String>,
     pub recurrence: Option<Recurrence>,
-    pub start: DateTime<Utc>,
+    pub start: NaiveDateTime,
 }
 
 #[derive(Debug, Clone, Eq, Serialize, Deserialize)]
@@ -157,6 +157,9 @@ impl TaskReminder {
 
         let mut instances: Vec<TaskInstance> = Vec::new();
 
+        let tz_name = iana_time_zone::get_timezone().unwrap();
+        let tz: chrono_tz::Tz = tz_name.parse().unwrap();
+
         definitions.iter().for_each(|d| {
             for i in 0..instances_required {
                 let recurrence_info = if let Some(Recurrence::Recurring {
@@ -176,103 +179,99 @@ impl TaskReminder {
                 }
 
                 let timestamp = match recurrence_info {
-                    Some((last_recurrence, interval, _)) => match interval {
-                        RecurrenceInterval::Minutes(number) => {
-                            if let Some(last) = last_recurrence {
-                                *last + Duration::minutes((i + 1) * number)
-                            } else {
-                                d.start + Duration::minutes(i * number)
-                            }
-                        }
+                    Some((last_recurrence, interval, _)) => {
+                        let start_local = match tz.from_local_datetime(&d.start) {
+                            chrono::LocalResult::Single(dt) => dt,
+                            chrono::LocalResult::Ambiguous(dt, _) => dt,
+                            chrono::LocalResult::None => tz
+                                .from_local_datetime(&(d.start + Duration::hours(1)))
+                                .unwrap(),
+                        };
 
-                        RecurrenceInterval::Hourly(number) => {
-                            if let Some(last) = last_recurrence {
-                                *last + Duration::hours((i + 1) * number)
-                            } else {
-                                d.start + Duration::hours(i * number)
-                            }
-                        }
+                        let last_local =
+                            last_recurrence.map(|lr| match tz.from_local_datetime(&lr) {
+                                chrono::LocalResult::Single(dt) => dt,
+                                chrono::LocalResult::Ambiguous(dt, _) => dt,
+                                chrono::LocalResult::None => {
+                                    tz.from_local_datetime(&(lr + Duration::hours(1))).unwrap()
+                                }
+                            });
 
-                        RecurrenceInterval::Daily(number) => {
-                            if let Some(last) = last_recurrence {
-                                *last + Duration::days((i + 1) * number)
-                            } else {
-                                d.start + Duration::days(i * number)
-                            }
-                        }
-
-                        RecurrenceInterval::Weekly(number) => {
-                            if let Some(last) = last_recurrence {
-                                *last + Duration::weeks((i + 1) * number)
-                            } else {
-                                d.start + Duration::weeks(i * number)
-                            }
-                        }
-
-                        RecurrenceInterval::Monthly(number) => {
-                            let mut t = last_recurrence.unwrap_or(d.start);
-
-                            // If the task has a last recurrence, start adding unit from the first instance
-                            // Else (the task has not ocurred yet), start adding unit from the second instance
-                            let start = {
-                                if last_recurrence.is_some() {
-                                    0
+                        let local_time = match interval {
+                            RecurrenceInterval::Minutes(number) => {
+                                if let Some(last) = last_local {
+                                    last + Duration::minutes((i + 1) * number)
                                 } else {
-                                    1
+                                    start_local + Duration::minutes(i * number)
                                 }
-                            };
+                            }
 
-                            // If it has already ocurred before or if i > 0, add the number of units
-                            if last_recurrence.is_some() || i > 0 {
-                                for _ in start..=(i as u32) {
-                                    t = add_months(t, *number as u32);
-                                }
-                            };
-
-                            t
-                        }
-
-                        RecurrenceInterval::Yearly(number) => {
-                            let mut t = last_recurrence.unwrap_or(d.start);
-
-                            let start = {
-                                if last_recurrence.is_some() {
-                                    0
+                            RecurrenceInterval::Hourly(number) => {
+                                if let Some(last) = last_local {
+                                    last + Duration::hours((i + 1) * number)
                                 } else {
-                                    1
+                                    start_local + Duration::hours(i * number)
                                 }
-                            };
+                            }
 
-                            if last_recurrence.is_some() || i > 0 {
-                                for _ in start..=(i as u32) {
-                                    t = add_months(t, *number as u32);
-                                }
-                            };
-
-                            t
-                        }
-
-                        RecurrenceInterval::Workdays(number) => {
-                            let mut t = last_recurrence.unwrap_or(d.start);
-
-                            let start = {
-                                if last_recurrence.is_some() {
-                                    0
+                            RecurrenceInterval::Daily(number) => {
+                                if let Some(last) = last_local {
+                                    last + Duration::days((i + 1) * number)
                                 } else {
-                                    1
+                                    start_local + Duration::days(i * number)
                                 }
-                            };
+                            }
 
-                            if last_recurrence.is_some() || i > 0 {
-                                for _ in start..=(i as u32) {
-                                    t = add_workdays(t, *number);
+                            RecurrenceInterval::Weekly(number) => {
+                                if let Some(last) = last_local {
+                                    last + Duration::weeks((i + 1) * number)
+                                } else {
+                                    start_local + Duration::weeks(i * number)
                                 }
-                            };
+                            }
 
-                            t
-                        }
-                    },
-                    None => d.start,
+                            RecurrenceInterval::Monthly(number) => {
+                                let mut t = last_local.unwrap_or(start_local);
+                                let start_idx = if last_local.is_some() { 0 } else { 1 };
+                                for _ in start_idx..=(i as u32) {
+                                    t = add_months(t.with_timezone(&Utc), *number as u32)
+                                        .with_timezone(&tz);
+                                }
+                                t
+                            }
+
+                            RecurrenceInterval::Yearly(number) => {
+                                let mut t = last_local.unwrap_or(start_local);
+                                let start_idx = if last_local.is_some() { 0 } else { 1 };
+                                for _ in start_idx..=(i as u32) {
+                                    t = add_months(t.with_timezone(&Utc), *number as u32)
+                                        .with_timezone(&tz);
+                                }
+                                t
+                            }
+
+                            RecurrenceInterval::Workdays(number) => {
+                                let mut t = last_local.unwrap_or(start_local);
+                                let start_idx = if last_local.is_some() { 0 } else { 1 };
+                                for _ in start_idx..=(i as u32) {
+                                    t = add_workdays(t.with_timezone(&Utc), *number)
+                                        .with_timezone(&tz);
+                                }
+                                t
+                            }
+                        };
+
+                        // Finally, convert back to UTC
+                        local_time.with_timezone(&Utc)
+                    }
+                    None => match tz.from_local_datetime(&d.start) {
+                        chrono::LocalResult::Single(dt) => dt,
+                        chrono::LocalResult::Ambiguous(dt, _) => dt,
+                        chrono::LocalResult::None => tz
+                            .from_local_datetime(&(d.start + Duration::hours(1)))
+                            .unwrap(),
+                    }
+                    .with_timezone(&Utc),
                 };
 
                 let exceptions = if let Some(recurrence) = recurrence_info {
@@ -281,8 +280,9 @@ impl TaskReminder {
                     None
                 };
 
+                let timestamp_naive = timestamp.with_timezone(&tz).naive_local();
                 let should_skip = match exceptions {
-                    Some(list) => list.iter().any(|e| e == &timestamp),
+                    Some(list) => list.iter().any(|e| e == &timestamp_naive),
                     None => false,
                 };
                 if !should_skip {
@@ -358,7 +358,9 @@ impl TaskReminder {
                 exceptions: _,
             }) = &mut definition.recurrence
             {
-                *last_recurrence = Some(task.timestamp);
+                let tz_name = iana_time_zone::get_timezone().unwrap();
+                let tz: chrono_tz::Tz = tz_name.parse().unwrap();
+                *last_recurrence = Some(task.timestamp.with_timezone(&tz).naive_local());
                 self.save_task_definitions()?;
             } else {
                 self.delete_task_definition(task.definition_id)?;
@@ -408,7 +410,7 @@ mod tests {
     use std::path::PathBuf;
 
     use super::*;
-    use chrono::TimeZone;
+    use chrono::NaiveDate;
     use tempfile::tempdir;
 
     fn sample_task_definition() -> TaskDefinition {
@@ -416,7 +418,10 @@ mod tests {
             id: Uuid::new_v4(),
             name: "Sample Task".to_string(),
             desc: Some("Sample Description".to_string()),
-            start: Utc.with_ymd_and_hms(2025, 1, 1, 12, 0, 0).unwrap(),
+            start: NaiveDate::from_ymd_opt(2025, 1, 1)
+                .unwrap()
+                .and_hms_opt(12, 0, 0)
+                .unwrap(),
             recurrence: Some(Recurrence::Recurring {
                 last_recurrence: None,
                 interval: RecurrenceInterval::Minutes(60),
@@ -480,7 +485,13 @@ mod tests {
             last_recurrence, ..
         }) = &updated_def.recurrence
         {
-            assert_eq!(*last_recurrence, Some(task.timestamp));
+            let tz_name = iana_time_zone::get_timezone().unwrap();
+            let tz: chrono_tz::Tz = tz_name.parse().unwrap();
+
+            assert_eq!(
+                *last_recurrence,
+                Some(task.timestamp.with_timezone(&tz).naive_local())
+            );
         } else {
             panic!("Expected recurring task");
         }
@@ -512,7 +523,10 @@ mod tests {
                 id: Uuid::new_v4(),
                 name: "One-time Task".to_string(),
                 desc: None,
-                start: Utc.with_ymd_and_hms(2025, 1, 1, 9, 0, 0).unwrap(),
+                start: NaiveDate::from_ymd_opt(2025, 1, 1)
+                    .unwrap()
+                    .and_hms_opt(9, 0, 0)
+                    .unwrap(),
                 recurrence: Some(Recurrence::None),
             }],
             task_instances: BinaryHeap::new(),
@@ -528,7 +542,11 @@ mod tests {
 
     #[test]
     fn test_task_with_exception_does_not_generate_that_instance() {
-        let start = Utc.with_ymd_and_hms(2025, 1, 1, 10, 0, 0).unwrap();
+        let start = NaiveDate::from_ymd_opt(2025, 1, 1)
+            .unwrap()
+            .and_hms_opt(10, 0, 0)
+            .unwrap();
+
         let exception_time = start + Duration::minutes(60);
 
         let mut reminder = TaskReminder {
@@ -550,9 +568,15 @@ mod tests {
         reminder.generate_task_instances(0);
         let tasks = reminder.get_tasks(0);
 
+        let tz_name = iana_time_zone::get_timezone().unwrap();
+        let tz: chrono_tz::Tz = tz_name.parse().unwrap();
+
         // Ensure that the exception timestamp is not in the generated list
         for task in tasks {
-            assert_ne!(task.timestamp, exception_time);
+            assert_ne!(
+                task.timestamp.with_timezone(&tz).naive_local(),
+                exception_time
+            );
         }
     }
 
@@ -562,7 +586,10 @@ mod tests {
             id: Uuid::new_v4(),
             name: "Paged Task".to_string(),
             desc: None,
-            start: Utc.with_ymd_and_hms(2025, 1, 1, 8, 0, 0).unwrap(),
+            start: NaiveDate::from_ymd_opt(2025, 1, 1)
+                .unwrap()
+                .and_hms_opt(8, 0, 0)
+                .unwrap(),
             recurrence: Some(Recurrence::Recurring {
                 last_recurrence: None,
                 interval: RecurrenceInterval::Minutes(60),

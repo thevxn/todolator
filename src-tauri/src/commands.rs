@@ -1,6 +1,6 @@
 use std::sync::Mutex;
 
-use chrono::{DateTime, Utc};
+use chrono::NaiveDateTime;
 use tauri::State;
 use uuid::Uuid;
 
@@ -59,7 +59,7 @@ pub fn create_task(
     let task_reminder = &mut state;
 
     let parsed_start = start
-        .parse::<DateTime<Utc>>()
+        .parse::<NaiveDateTime>()
         .map_err(|e| format!("Invalid start datetime: {}", e))?;
 
     let new_task = TaskDefinition {

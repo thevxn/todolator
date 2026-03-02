@@ -22,7 +22,9 @@ export const getDefaultTaskDefinition = (): TaskDefinition => {
     id: '' as UuidString,
     name: '',
     desc: null,
-    start: toDatetimeLocalValue(new Date(Date.now()).toISOString()) as DateTimeString,
+    start: toDatetimeLocalValue(
+      new Date(Date.now()).toLocaleString('sv').replace(' ', 'T') as DateTimeString
+    ) as DateTimeString,
     recurrence: null
   }
 }

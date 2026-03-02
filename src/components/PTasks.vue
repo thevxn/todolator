@@ -73,7 +73,13 @@
         class="flex flex-row items-center justify-center"
         @click="openCreateUpdateModal(null)"
       >
-        <PIcon :icon="'mingcute:add-line'" :height="'24px'" :width="'24px'" tabindex="-1" class="mr-1" />
+        <PIcon
+          :icon="'mingcute:add-line'"
+          :height="'24px'"
+          :width="'24px'"
+          tabindex="-1"
+          class="mr-1"
+        />
         New Task
       </button>
     </div>
@@ -110,7 +116,7 @@
           >
             <div class="p-2 flex flex-row gap-x-2 items-center">
               <span>{{
-                new Date(task.timestamp).toLocaleString(undefined, {
+                new Date(toDatetimeLocalValue(task.timestamp)).toLocaleString(undefined, {
                   year: 'numeric',
                   month: 'numeric',
                   day: 'numeric',
