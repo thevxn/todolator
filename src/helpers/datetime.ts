@@ -2,9 +2,22 @@ export const toDatetimeLocalValue = (timestamp: string) => {
   const date = new Date(timestamp)
   const pad = (n: number) => n.toString().padStart(2, '0')
 
+  const currentDateTime = new Date(Date.now())
+
+  const displayDate = new Date(date.getTime()) // Copy the date
+  switch (true) {
+    case currentDateTime.getTimezoneOffset() > date.getTimezoneOffset():
+      displayDate.setHours(date.getHours() - 1)
+      break
+
+    case currentDateTime.getTimezoneOffset() < date.getTimezoneOffset():
+      displayDate.setHours(date.getHours() + 1)
+      break
+  }
+
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
     date.getDate()
-  )}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+  )}T${pad(displayDate.getHours())}:${pad(date.getMinutes())}`
 }
 
 const minute = 1
