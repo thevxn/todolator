@@ -4031,7 +4031,7 @@ dependencies = [
 
 [[package]]
 name = "todolator"
-version = "1.0.3"
+version = "1.0.4"
 dependencies = [
  "chrono",
  "chrono-tz",
