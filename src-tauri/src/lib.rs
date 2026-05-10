@@ -136,7 +136,7 @@ pub fn run() {
 
                 if settings.autostart {
                     autostart_manager.enable().unwrap();
-                } else {
+                } else if autostart_manager.is_enabled().unwrap() {
                     autostart_manager.disable().unwrap();
                 }
 
